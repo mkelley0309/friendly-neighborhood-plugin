@@ -1,0 +1,10 @@
+# Normalize line endings in the repo to LF; convert on checkout per platform.
+* text=auto
+
+# These are executed by bash/python on Linux & macOS — they MUST be LF,
+# even when checked out on Windows, or the shebang/interpreter breaks.
+*.sh   text eol=lf
+*.py   text eol=lf
+
+# Windows-native scripts stay CRLF.
+*.ps1  text eol=crlf

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "statusLine": {
+    "type": "command",
+    "command": "bash .claude/statusline.sh"
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Bash(bash .claude/statusline.sh:*)",
+      "Bash(python tools/workstream.py:*)",
+      "Bash(python -B tools/workstream.py:*)",
+      "Bash(python3 tools/workstream.py:*)",
+      "Bash(py tools/workstream.py:*)",
+      "Bash(python tools/objective.py:*)",
+      "Bash(python -B tools/objective.py:*)",
+      "Bash(python3 tools/objective.py:*)",
+      "Bash(py tools/objective.py:*)",
+      "Bash(python tools/patrol.py:*)",
+      "Bash(python -B tools/patrol.py:*)",
+      "Bash(python3 tools/patrol.py:*)",
+      "Bash(py tools/patrol.py:*)",
+      "Bash(python tools/gate.py:*)",
+      "Bash(python -B tools/gate.py:*)",
+      "Bash(python3 tools/gate.py:*)",
+      "Bash(py tools/gate.py:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Edit(control-plane/**)",
+      "Write(control-plane/**)",
+      "Edit(knowledge/**)",
+      "Write(knowledge/**)",
+      "Edit(_now.md)",
+      "Write(_now.md)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Read(.env)",
+      "Read(**/.env)",
+      "Read(**/secrets/**)"
+    ]
+  }
+}

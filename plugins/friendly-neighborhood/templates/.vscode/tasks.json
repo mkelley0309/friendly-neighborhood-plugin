@@ -1,0 +1,47 @@
+{
+  // Friendly Neighborhood — Observation Deck.
+  // Terminal -> Run Task -> "🕷 Observation Deck" opens three colored tail panes
+  // (spideys / support / villains). Each agent narrates its work via
+  // .claude/scripts/agent-log.sh; a spidey wearing the symbiote shows in the black suit.
+  // The same presentation.group tiles the three panes side by side.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🕷 Observation Deck",
+      "dependsOn": ["obs: spideys", "obs: support", "obs: villains"],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "group": "none"
+    },
+    {
+      "label": "obs: spideys",
+      "type": "shell",
+      "isBackground": true,
+      "linux":   { "command": "tail", "args": ["-n", "100", "-F", "${workspaceFolder}/.claude/logs/agents/spideys.log"] },
+      "osx":     { "command": "tail", "args": ["-n", "100", "-F", "${workspaceFolder}/.claude/logs/agents/spideys.log"] },
+      "windows": { "command": "Get-Content", "args": ["-Path", "${workspaceFolder}\\.claude\\logs\\agents\\spideys.log", "-Wait", "-Tail", "100"] },
+      "presentation": { "group": "observation-deck", "panel": "dedicated", "reveal": "always", "echo": false, "focus": false, "showReuseMessage": false, "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "obs: support",
+      "type": "shell",
+      "isBackground": true,
+      "linux":   { "command": "tail", "args": ["-n", "100", "-F", "${workspaceFolder}/.claude/logs/agents/support.log"] },
+      "osx":     { "command": "tail", "args": ["-n", "100", "-F", "${workspaceFolder}/.claude/logs/agents/support.log"] },
+      "windows": { "command": "Get-Content", "args": ["-Path", "${workspaceFolder}\\.claude\\logs\\agents\\support.log", "-Wait", "-Tail", "100"] },
+      "presentation": { "group": "observation-deck", "panel": "dedicated", "reveal": "always", "echo": false, "focus": false, "showReuseMessage": false, "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "obs: villains",
+      "type": "shell",
+      "isBackground": true,
+      "linux":   { "command": "tail", "args": ["-n", "100", "-F", "${workspaceFolder}/.claude/logs/agents/villains.log"] },
+      "osx":     { "command": "tail", "args": ["-n", "100", "-F", "${workspaceFolder}/.claude/logs/agents/villains.log"] },
+      "windows": { "command": "Get-Content", "args": ["-Path", "${workspaceFolder}\\.claude\\logs\\agents\\villains.log", "-Wait", "-Tail", "100"] },
+      "presentation": { "group": "observation-deck", "panel": "dedicated", "reveal": "always", "echo": false, "focus": false, "showReuseMessage": false, "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

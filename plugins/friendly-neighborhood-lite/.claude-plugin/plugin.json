@@ -1,0 +1,56 @@
+{
+  "name": "friendly-neighborhood-lite",
+  "displayName": "Friendly Neighborhood (Lite)",
+  "version": "0.2.0",
+  "description": "The LEAN themed edition of Friendly Neighborhood. Defensible differentiators: three-tier work model (responsibility = long-lived why/role/annual objective; mission = multi-session multi-handoff; patrol = single work unit); progressive distillation at every handoff; peer-reviewed knowledge vault pipeline; a two-track decision mechanic (hard signals → deterministic gate via tools/gate.py; soft signals → affirmative villain dissent + recorded judgment, no fake scores); and the symbiote (turn-limited self-escalation). Tiny roster only — spideys peter/miguel/noir, support jameson, villains carnage/mysterio/kingpin. No full cast, no per-agent screenplay, no themes, no phase-council tables.",
+  "author": { "name": "Matt" },
+  "license": "MIT",
+  "keywords": [
+    "harness",
+    "workflow",
+    "orchestration",
+    "agents",
+    "spider-man",
+    "token-budget",
+    "knowledge-management",
+    "planning"
+  ],
+  "homepage": "https://github.com/mkelley0309/friendly-neighborhood-plugin",
+  "repository": "https://github.com/mkelley0309/friendly-neighborhood-plugin",
+  "defaultEnabled": true,
+  "userConfig": {
+    "default_persona": {
+      "type": "string",
+      "title": "Default Spider-persona",
+      "description": "Which web-slinger drives the main session.",
+      "default": "peter"
+    },
+    "symbiote_max_turns": {
+      "type": "number",
+      "title": "Symbiote turn cap",
+      "description": "Max turns the high-power (miguel/opus) agent may run before the church bell forces a return to baseline.",
+      "default": 8,
+      "min": 1,
+      "max": 50
+    },
+    "dissent_passive": {
+      "type": "boolean",
+      "title": "Passive villain dissent",
+      "description": "Run the villain dissent check automatically every turn (costs tokens) instead of on-demand only.",
+      "default": false
+    },
+    "workspace_root": {
+      "type": "directory",
+      "title": "Workspace root override",
+      "description": "Optional. Absolute path to the harness workspace. Leave empty to use the directory Claude Code was launched from.",
+      "required": false
+    },
+    "max_concurrent_agents": {
+      "type": "number",
+      "title": "Max concurrent subagents",
+      "description": "Soft budget for how many subagents may run in flight at once — a cost/coordination guideline, not a safety cap. Also set during origin-story.",
+      "default": 2,
+      "min": 1
+    }
+  }
+}

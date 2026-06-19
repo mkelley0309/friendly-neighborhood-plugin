@@ -1,0 +1,56 @@
+{
+  "name": "friendly-neighborhood",
+  "displayName": "Friendly Neighborhood",
+  "version": "0.2.0",
+  "description": "An opinionated Claude Code harness for serious, long-horizon work, re-themed Spider-Man. Three tiers of work (responsibility → mission → patrol), a peer-reviewed knowledge-vault pipeline, progressive distillation at every handoff, and a decision mechanic that splits hard signals (a deterministic gate) from soft ones (affirmative villain dissent). Plus a Spider-cast of agents, the symbiote (disciplined, turn-limited model escalation), a live per-character observation deck, and native autonomous looping. Cheap by default; ceremony scaled to the work.",
+  "author": { "name": "Matt" },
+  "license": "MIT",
+  "keywords": [
+    "harness",
+    "workflow",
+    "orchestration",
+    "agents",
+    "spider-man",
+    "token-budget",
+    "knowledge-management",
+    "planning"
+  ],
+  "homepage": "https://github.com/mkelley0309/friendly-neighborhood-plugin",
+  "repository": "https://github.com/mkelley0309/friendly-neighborhood-plugin",
+  "defaultEnabled": true,
+  "userConfig": {
+    "default_persona": {
+      "type": "string",
+      "title": "Default Spider-persona",
+      "description": "Which web-slinger drives the main session.",
+      "default": "peter"
+    },
+    "symbiote_max_turns": {
+      "type": "number",
+      "title": "Symbiote turn cap",
+      "description": "Max turns the high-power (miguel/opus) agent may run before the church bell forces a return to baseline.",
+      "default": 8,
+      "min": 1,
+      "max": 50
+    },
+    "dissent_passive": {
+      "type": "boolean",
+      "title": "Passive villain dissent",
+      "description": "Run the villain dissent check automatically every turn (costs tokens) instead of on-demand only.",
+      "default": false
+    },
+    "workspace_root": {
+      "type": "directory",
+      "title": "Workspace root override",
+      "description": "Optional. Absolute path to the harness workspace. Leave empty to use the directory Claude Code was launched from.",
+      "required": false
+    },
+    "max_concurrent_agents": {
+      "type": "number",
+      "title": "Max concurrent subagents",
+      "description": "Soft budget for how many subagents may run in flight at once — a cost/coordination guideline, not a safety cap. Also set during origin-story.",
+      "default": 2,
+      "min": 1
+    }
+  }
+}

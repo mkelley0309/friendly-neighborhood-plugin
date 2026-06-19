@@ -1,0 +1,30 @@
+{
+  "name": "friendly-neighborhood",
+  "owner": {
+    "name": "Matt",
+    "url": "https://github.com/mkelley0309"
+  },
+  "metadata": {
+    "description": "An opinionated Claude Code workflow + knowledge harness in three editions — un-themed (harness-core), bare themed (lite), and full Spider-Man (friendly-neighborhood). Install one."
+  },
+  "plugins": [
+    {
+      "name": "harness-core",
+      "source": "./plugins/harness-core",
+      "description": "Un-themed edition: the full three-tier orchestration (objective → workstream → task) + knowledge-vault pipeline, observational hooks, statusline, and scaffolder. Original naming, no agent personas, no theme.",
+      "version": "0.2.0"
+    },
+    {
+      "name": "friendly-neighborhood-lite",
+      "source": "./plugins/friendly-neighborhood-lite",
+      "description": "Bare-minimum themed edition: the harness + Spider-Man skin and voice, a tiny agent roster, and the three mechanics — without the full cast, screenplay, themes, or phase-council.",
+      "version": "0.2.0"
+    },
+    {
+      "name": "friendly-neighborhood",
+      "source": "./plugins/friendly-neighborhood",
+      "description": "Full themed edition: 32-agent Spider-cast, the 14-villain dissent council, contextual phase-council, screenplay output, a live per-character observation deck (VS Code), themes, and all three moral mechanics.",
+      "version": "0.2.0"
+    }
+  ]
+}
