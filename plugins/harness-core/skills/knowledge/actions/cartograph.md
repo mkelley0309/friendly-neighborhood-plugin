@@ -1,6 +1,6 @@
 # Action: Cartograph
 
-Add cross-vault wiki-links to existing vault notes' Related sections, create or update `vault/_graph/` cross-cutting indexes, and add `related:` frontmatter to existing notes.
+Add **intra-subtree** wiki-links to existing notes' Related sections (with `related:` frontmatter), and record **cross-subtree** connections in `vault/_graph/` hub indexes — **never** as direct cross-subtree `Related:` links.
 
 ## When to run
 
@@ -89,7 +89,11 @@ Build a deduplicated link plan before writing anything.
 
 ### 4. Write links and frontmatter
 
-For each approved link pair (source → target):
+**Link-target validation (MANDATORY — prevents phantom nodes).** Before writing ANY `[[target]]` wiki-link, verify the target resolves to an existing note. For a full vault-path target, confirm `vault/{target}.md` exists with a Glob/Read check — do NOT guess a sub-path (e.g. `…/topic/overview`) when the real note is the leaf (`…/topic`). For a short target, confirm exactly one note has that basename. If the target does not exist, do not write the link — point at the correct note or skip it. The same rule applies to slugs in `related:` frontmatter. A wiki-link to a nonexistent path renders as a greyed phantom node and spawns a blank stub on click.
+
+**Route by subtree (MANDATORY).** If source and target are in the **same subtree**, write a `Related:` link (a, b below). If they are in **different subtrees**, do **not** write a direct `Related:` link — record the connection in a `vault/_graph/{topic}` hub instead (Step 5). Cartographer never authors branch-to-branch `Related:` links across subtrees.
+
+For each approved (validated) **intra-subtree** link pair (source → target):
 
 #### a. Related section
 
@@ -129,7 +133,7 @@ Do not touch any other frontmatter field.
 
 ### 5. Update or create `_graph/` indexes
 
-For any cross-cutting theme that surfaces across two or more subtrees, create or update `vault/_graph/{topic}.md`.
+This is **the** mechanism for cross-subtree connections (not direct `Related:` links). For any cross-cutting theme that surfaces across two or more subtrees — and for every approved link pair whose source and target live in **different subtrees** — create or update `vault/_graph/{topic}.md`.
 
 **Create format:**
 

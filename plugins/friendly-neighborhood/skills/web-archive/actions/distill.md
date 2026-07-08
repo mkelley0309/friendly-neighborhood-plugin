@@ -267,6 +267,8 @@ Each distill run is scoped to exactly one source slug and that source's concept-
 
 Wiki-links produced by curation subagents are intra-silo only — they may link to notes within the same concept-domain subtree. Cross-subtree links (e.g. a `vault/domain-knowledge/` note linking to `vault/reference/`) are never authored by Distill. Cross-subtree link enrichment is Cartographer's responsibility.
 
+**Link-target validation (MANDATORY — prevents phantom nodes / wrong paths).** Before a curation subagent writes any `[[target]]` wiki-link (or a slug in `related:` frontmatter), it must verify the target resolves to an existing note with a Glob/Read check. Do NOT guess a sub-path (e.g. `…/topic/overview`) when the real note is the leaf (`…/topic`); for a short target, confirm exactly one note has that basename. If the target does not exist, do not write the link — point at the correct existing note or omit it. A wiki-link to a nonexistent path renders as a greyed phantom node and spawns a blank stub on click.
+
 If a curation subagent returns a note that logically belongs in a different subtree than the recipe specifies, write it to staging and flag it in the report. Do not re-route it to an out-of-scope subtree — ask the user.
 
 ---

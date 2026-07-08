@@ -98,3 +98,11 @@ Scope every subagent to a subtree. In the agent prompt, always include:
 | Tool / script work | `tools/` |
 
 Cross-subtree work (e.g., planning + execution) stays in main context — never delegate cross-boundary tasks to a single subagent.
+
+**Cross-boundary work is the orchestrator's job, never the agent's.** A scoped agent stays entirely within its subtree (reads *and* writes). When a task spans subtrees, `control-plane` (main context) coordinates by deploying the **right agent per subtree** and passing distilled artifacts between them — it does not send one agent across the boundary:
+
+- Need vault knowledge for a build? → deploy a **knowledge agent** scoped to `knowledge/vault/` to read/curate; brief the next agent with its distilled result.
+- Need to shape a project's architecture? → deploy a **design/planning agent** scoped to `projects/<name>/`.
+- Need to write code? → deploy an **implementation agent** into a **worktree** of that project's git repo.
+
+**Isolation by scope:** directory-scoped prompts for non-git subtrees (`control-plane/`, `knowledge/`); **worktree isolation** for code work inside a git-repo project. Never set `isolation: "worktree"` when the base is `control-plane/` — it is not a git repo. Brief every scoped agent with the **absolute path** of its own subtree (agents don't resolve sibling top-level subtrees by glob).

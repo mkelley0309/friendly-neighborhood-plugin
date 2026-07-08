@@ -1,7 +1,7 @@
 {
   "name": "harness-core",
   "displayName": "Harness Core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An opinionated workflow + knowledge harness with four structural differentiators: (1) three-tier work model — objective (long-lived why, Key Results, milestones, decisions log) → workstream (heavy QRDPIV lifecycle, multi-session) → task (lightweight unit, proportional admin); (2) progressive distillation — compress at every handoff, proportional to work size, lossy and phase-targeted; (3) peer-reviewed knowledge pipeline — scout → harvest → distill → cartograph → sync, vault grows only by admission, nothing rewrites itself unsupervised; (4) a deterministic verification gate (tools/gate.py, GO/NO-GO exit code) for hard measurable concerns, leaving soft judgments qualitative and recorded; plus determinism for the repeatable — any task done twice becomes a CLI. No agent personas, no theme — just the capabilities.",
   "author": { "name": "Matt" },
   "license": "MIT",

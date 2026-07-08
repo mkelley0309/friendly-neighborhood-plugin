@@ -1,7 +1,7 @@
 {
   "name": "friendly-neighborhood",
   "displayName": "Friendly Neighborhood",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "An opinionated Claude Code harness for serious, long-horizon work, re-themed Spider-Man. Three tiers of work (responsibility → mission → patrol), a peer-reviewed knowledge-vault pipeline, progressive distillation at every handoff, and a decision mechanic that splits hard signals (a deterministic gate) from soft ones (affirmative villain dissent). Plus a Spider-cast of agents, the symbiote (disciplined, turn-limited model escalation), a live per-character observation deck, and native autonomous looping. Cheap by default; ceremony scaled to the work.",
   "author": { "name": "Matt" },
   "license": "MIT",
