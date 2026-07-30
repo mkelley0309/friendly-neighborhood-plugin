@@ -139,6 +139,32 @@ Architectural and structural decisions made before planning. Produced from `rese
 
 ---
 
+## `outline.md` Template
+
+Written during Design when the deliverable's own structure needs agreement before planning (document section order, vault layout, API shape, deck arc). Fold into `design.md` instead when the structure is small enough not to be referenced repeatedly.
+
+```markdown
+# {Mission Name} — Outline
+
+Structure of the deliverable, agreed before planning. Authoritative over `research.md` where a `[D]` below supersedes it.
+
+## Structure
+
+1. **{Section}** — {what it must carry, and why it sits here}
+2. **{Section}** — {…}
+
+## Governing Decisions
+
+- `[D] {Decision}` — {rationale; what it supersedes, if anything}
+- `[D] {Decision}` — {…}
+
+## Open Structural Questions
+
+{Anything still unagreed — must close before implement}
+```
+
+---
+
 ## `plan.md` Template
 
 ```markdown
