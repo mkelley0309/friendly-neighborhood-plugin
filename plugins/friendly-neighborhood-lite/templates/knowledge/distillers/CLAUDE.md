@@ -45,8 +45,9 @@ Incremental by default. Full rebuild is possible but not the norm.
 
 - Wiki-links produced by a distiller are intra-silo only
 - Cross-subtree links are never authored by a distiller
+- A link *up* to a concept hub — `[[_graph/<concept>]]` — is always allowed, from any subtree
 
-Cross-referencing is a separate concern, deferred until enough silos exist.
+Cross-referencing is Cartographer's concern. Cross-tree relationships live in `vault/_graph/` concept hubs, never as inline links between subtrees. When a distillation surfaces a cross-tree connection worth keeping, note it for Cartographer rather than writing the link yourself.
 
 **Exception — the perspective distiller.** First-party input is classified by content, not bound to one subtree, so the perspective distiller may write to whichever vault concept subtree fits each note. It still produces only intra-silo wiki-links within whichever subtree a note lands in; cross-subtree linking remains Cartographer's job.
 
@@ -67,7 +68,7 @@ All vault-writing agents must follow these rules without exception:
 
 - **Vault root is `knowledge/vault/`.** Obsidian resolves wikilinks from that root — not from the filesystem root or any parent.
 - **Never include `vault/` as a prefix.** Write `[[domain-knowledge/concept]]`, not `[[vault/domain-knowledge/concept]]`.
-- **Verify cross-subtree targets before writing.** If you are linking to a note outside the subtree you are currently writing, confirm the target path exists (Glob or Read check) before writing the link. Do not assume path structure — a directory you expect may not exist or may be named differently.
+- **Verify every target before writing.** Confirm the target path exists (Glob or Read check) before writing any link. Do not assume path structure — a directory you expect may not exist or may be named differently, and do not guess a sub-path (`…/topic/overview`) when the real note is the leaf (`…/topic`). An unresolved link renders as a greyed phantom node and spawns a blank stub on click.
 - **Correct:** `[[domain-knowledge/concept]]`, `[[reference/glossary/term]]`
 - **Wrong:** `[[vault/domain-knowledge/concept]]`, `[[domain-knowledge/nonexistent-subdir/concept]]` (phantom subdirectory)
 

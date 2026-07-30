@@ -65,7 +65,7 @@ Invoke as `/friendly-neighborhood:<name>`.
 | `responsibility` | A long-lived, review-cycle objective with structured tracking — Key Results, milestones, linked missions, cadence, health, and an append-only decisions log. |
 | `mission` | Complex, multi-session work run through the heavy **QRDPIV** lifecycle (questions → research → design → plan → implement → validate → cleanup; or **RPIV** when the spec is clear). May link child patrols. |
 | `patrol` | A lightweight unit or one iteration against a mission — proportional admin only (assignment, checklist, handoff, lessons). Promote to a mission if it grows. |
-| `web-archive` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → sync. |
+| `web-archive` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → audit → sync. |
 | `spider-sense` | A manual pre-flight danger check before a risky operation (companion to the automatic hook). |
 | `symbiote` | Borrowed power — a **spidey** spawns a higher-powered clone of *itself* for a hard sub-task, hard-capped by turns. |
 | `church-bell` | Kills the symbiote — de-escalate on a villain dissent or turn overrun, confirm baseline, log the cost. |

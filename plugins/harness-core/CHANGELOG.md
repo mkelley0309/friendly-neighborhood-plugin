@@ -3,6 +3,21 @@
 All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.3.0] — 2026-07-30
+
+### Added
+- **`audit` action** on the knowledge skill (`actions/audit.md`) — run the vault linter, sanity-check the counts against disk, render a report of record into `knowledge/audits/`, **gate on the user**, then apply only safe auto-fixes. Editorial classes (cross-tree migration, ownership fields, deletions) are never auto-applied.
+- **`tools/vault-lint.py`** — stdlib-only static linter for the vault, 12 checks (C1–C12). Report-only by default; `fix` applies only safe, enumerated auto-fixes and never deletes or migrates cross-tree links. Vault root resolves from `$WORKSPACE_ROOT` (falls back to cwd); concept subtrees are auto-discovered from the top-level folders under `vault/`, with a `--subtrees` override — no vault layout is baked in.
+- **`knowledge/vault/_graph/index.md`** — the concept-layer contract: concept-node schema, hub list, and the rules for how the layer is maintained.
+- **`knowledge/audits/index.md`** — audit report register and conventions.
+
+### Changed
+- **`_graph/` is now the semantic concept layer, not a flat index.** Hubs are concept nodes (`note_type: concept`) with `aliases`, `related_concepts`, a definition, concept-to-concept edges that each state *why*, and evidence grouped under role headings. **Every hub link carries a `— rationale`; a bare link is a defect** (C10). Replaces the old `note_type: graph-index` bullet-list format.
+- **Cross-tree linking is the concept layer's job, everywhere.** The rule now appears in the skill, the Cartographer contract (`knowledge/AGENTS.md`), the distiller contract (`knowledge/distillers/CLAUDE.md`), and `vault-conventions.md` — not just in the cartograph action. A note may always link *up* to a hub; it may never link sideways into another concept subtree. Enforced by C8.
+- **Scout classifies queue signals before verifying them** (`actions/scout.md`). Source signals get source verification (2b–2d); workstream/research-complete signals get new **step 2e** instead — confirm the artifact still exists, route it to Harvest if it does, and close it as orphaned/source-lost if the workstream was cleaned up. Prevents source verification running against a path that was never a source, and stops dead signals sitting `pending` forever.
+- **Scout no longer false-flags merged perspective notes as undistilled** (`actions/scout.md`). A perspective note counts as distilled if *any* of three references exist — `source_path:`, a `merged_sources:` entry, or a `Synthesized from:` body line — because multi-source notes name only their primary in `source_path`.
+- **Distiller link validation broadened** (`knowledge/distillers/CLAUDE.md`): verify *every* target before writing, not just cross-subtree ones, and never guess a sub-path when the real note is the leaf.
+
 ## [0.2.1] — 2026-07-08
 
 ### Changed

@@ -1,6 +1,6 @@
 ---
 name: knowledge
-description: Manage the knowledge pipeline — a knowledge system that scouts pending signals, harvests and stages candidates, distills sources and first-party perspective into the vault (your linked vault of notes), cartographs cross-vault links, and syncs upstream sources. Use when you want to pull web content or notes into your personal knowledge base, check what's queued for processing, or enrich existing vault notes with cross-links.
+description: Manage the knowledge pipeline — a knowledge system that scouts pending signals, harvests and stages candidates, distills sources and first-party perspective into the vault (your linked vault of notes), cartographs cross-vault links, audits vault health, and syncs upstream sources. Use when you want to pull web content or notes into your personal knowledge base, check what's queued for processing, enrich existing vault notes with cross-links, or lint the vault for structural drift.
 ---
 
 # Skill: knowledge
@@ -16,6 +16,7 @@ The vault is a growing network of linked notes.
 - User says "distill [a source]", "curate [a source] into the vault", "update vault from sources"
 - User says "distill perspective", "pull my perspective notes into the vault"
 - User says "cartograph the vault", "add cross-links", "run Cartographer"
+- User says "audit the vault", "lint the vault", "check vault health/consistency", "run vault-lint"
 - User says "sync sources", "refresh docs", "run docs-sync"
 - After a workstream research phase completes and a queue signal has been written
 - Content surfaces that is the user's own opinion/view/experience — auto-route it to `perspective/{domain}/` (it becomes pipeline input)
@@ -35,7 +36,8 @@ Load exactly one action file per invocation.
 | Session-start queue check, source + perspective verification, stale staging review | `actions/scout.md` |
 | Classify verified sources, write staging candidates, auto-route first-party content to perspective | `actions/harvest.md` |
 | Recipe-driven distillation of a source — or `perspective/{domain}` — into vault | `actions/distill.md` |
-| Add cross-vault wiki-links and update `_graph/` indexes | `actions/cartograph.md` |
+| Add cross-vault wiki-links and update `_graph/` concept hubs | `actions/cartograph.md` |
+| Audit/lint vault health (structure, cross-tree links, hub rationales) via `tools/vault-lint.py`; store report in `knowledge/audits/` | `actions/audit.md` |
 | Refresh upstream sources via your source-sync mechanism, write queue signal | `actions/sync.md` |
 
 ## Two raw-input zones
@@ -62,9 +64,11 @@ The vault uses concept-domain subtrees. A typical starting layout:
 
 - `vault/domain-knowledge/` — field-level domain expertise
 - `vault/reference/` — reference material and how-to guides
-- `vault/_graph/` — cross-cutting index notes (Cartographer-owned)
+- `vault/_graph/` — the semantic **concept layer**: one hub per concept, and the single home for cross-tree relationships (Cartographer-owned)
 
 Subtrees are fully customizable per domain. Each source's `recipe.md` defines the source→subtree mapping for that source.
+
+**Cross-tree links live in `_graph/`, not inline.** A note in one concept subtree must not link directly to a note in a *different* concept subtree — that relationship is authored into the relevant `_graph/{concept}` hub with a rationale. Notes link **up** to their hubs (`[[_graph/<concept>]]` is always an allowed target); intra-tree links stay inline as normal. Enforced by `vault-lint` check C8.
 
 ## Related
 
@@ -76,3 +80,5 @@ Subtrees are fully customizable per domain. Each source's `recipe.md` defines th
 - Upstream source sync: a source-sync skill **you provide** (e.g. `docs-sync`) — what to pull is domain-specific, so the harness bundles none; any skill or script that writes raw content into `knowledge/sources/{source}/` and updates its `_manifest.md` fills this role. Invoked by `actions/sync.md`.
 - Queue signals: `knowledge/distillers/queue/`
 - Staging: `knowledge/distillers/staging/`
+- Concept-layer schema + hub list: `knowledge/vault/_graph/index.md`
+- Vault linter + audit reports of record: `tools/vault-lint.py`, `knowledge/audits/`

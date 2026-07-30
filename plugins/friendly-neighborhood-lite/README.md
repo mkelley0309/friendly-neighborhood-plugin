@@ -8,7 +8,7 @@ The bare-minimum Spider-Man harness built around real differentiators: a **three
 
 - **Three-tier orchestration** — `responsibility` (long-lived why: role / annual objective / career goal) → `mission` (multi-session, multi-handoff) → `patrol` (single work unit), with backing CLIs and auditable lifecycles.
 - **Progressive distillation** — every handoff compresses to a dense artifact; understanding stays high, tokens stay low.
-- **Knowledge vault pipeline** (`web-archive`) — scout → harvest → distill → cartograph → sync, admitted only by peer review.
+- **Knowledge vault pipeline** (`web-archive`) — scout → harvest → distill → cartograph → audit → sync, admitted only by peer review.
 - **Decision mechanic** — hard concerns → `tools/gate.py` (deterministic gate, pass/fail); soft concerns → villain dissent + recorded judgment.
 - **The symbiote** — turn-limited self-escalation (`symbiote_max_turns`), killed by the church bell on overrun or dissent.
 - **A tiny roster (7 agents):** `peter` (driver), `miguel` (architect), `noir` (debugging), `jameson` (QA) · critics `carnage`, `mysterio`, `kingpin`.

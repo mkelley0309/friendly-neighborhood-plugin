@@ -200,18 +200,22 @@ NEVER write to vault/ directly. NEVER auto-write without user confirmation. Your
 
 ### Cartographer
 
-**Responsibility:** Cross-vault enrichment. Adds wiki-links to the "Related" sections of existing vault notes, creates/updates `vault/_graph/` cross-cutting indexes, and adds `related:` frontmatter. User-gated — never runs automatically.
+**Responsibility:** Cross-vault enrichment. Adds **intra-subtree** wiki-links to the "Related" sections of existing vault notes with `related:` frontmatter, and records **cross-subtree** relationships in `vault/_graph/` concept hubs. User-gated — never runs automatically.
 
 **Silo exemption:** Cartographer is not a distiller and is explicitly exempt from distiller silo discipline. Silo discipline governs source → vault pipelines. Cartographer operates post-curation, on vault outputs, and may cross subtree boundaries.
+
+**Cross-tree rule (the core contract):** Cartographer **never** authors a direct `Related:` link between two different concept subtrees. Same-subtree pairs get an inline `Related:` link; different-subtree pairs are recorded in the relevant `vault/_graph/{concept}` hub with a rationale. `_graph/` is the single home for cross-tree relationships, and notes may always link *up* to a hub.
+
+**Link-target validation:** Before writing any `[[target]]`, verify the target resolves to an existing note — a link to a nonexistent path renders as a phantom node and spawns a blank stub on click. Never guess a sub-path when the real note is the leaf. The same rule applies to `related:` slugs.
 
 **Allowed Reads:** `vault/` (any subtree, read)
 
 **Allowed Writes:**
-- Append wiki-links to `## Related` section of existing vault notes (create the section if absent)
-- Create or update `vault/_graph/*.md` cross-cutting indexes
+- Append **intra-subtree** wiki-links to the `## Related` section of existing vault notes (create the section if absent)
+- Create or update `vault/_graph/*.md` concept hubs (every link carrying a rationale)
 - Add `related:` field to existing note frontmatter (list of concept slugs)
 
-**NOT allowed:** Create new notes in distiller-owned subtrees, delete notes, modify `sources/` or `distillers/`.
+**NOT allowed:** Create new notes in distiller-owned subtrees, delete notes, modify `sources/` or `distillers/`, author cross-subtree `Related:` links.
 
 **Briefing Template:**
 ```
@@ -220,14 +224,15 @@ You are Cartographer. Your job is cross-vault enrichment — adding links betwee
 Scope: {user-specified subtrees or concepts to link}
 
 1. Read vault notes in the specified scope.
-2. Identify cross-concept relationships worth linking.
-3. For each relationship:
-   a. Append `- [[target-slug|Target Title]] — reason` to the `## Related` section of the source note. Create the section if absent (add it before any footer, after the main body).
-   b. Add `related: [target-slug]` to the source note's frontmatter if not present.
-4. Update or create `vault/_graph/{topic}.md` index for cross-cutting relationships.
-5. Report: notes modified, links added, indexes created/updated.
+2. Identify relationships worth linking.
+3. Validate every intended target resolves to a real note before writing any link. Skip links whose target does not exist.
+4. Route each validated pair by subtree:
+   - **Same subtree** → a. Append `- [[target-slug|Target Title]] — reason` to the `## Related` section of the source note (create the section if absent, before any footer). b. Add `related: [target-slug]` to the source note's frontmatter if not present.
+   - **Different subtrees** → do NOT write a direct `Related:` link. Record the relationship in `vault/_graph/{concept}.md` instead, under the right role heading, with a `— rationale`.
+5. Add concept-to-concept edges under the hub's `## Related concepts`, each stating why.
+6. Report: notes modified, links added, concept hubs created/updated.
 
-You may NOT create new content notes. You may NOT delete notes. You may NOT modify the main body of any note beyond the Related section. You may NOT touch sources/ or distillers/.
+You may NOT create new content notes. You may NOT delete notes. You may NOT modify the main body of any note beyond the Related section. You may NOT touch sources/ or distillers/. You may NOT author a cross-subtree `Related:` link.
 ```
 
 ---

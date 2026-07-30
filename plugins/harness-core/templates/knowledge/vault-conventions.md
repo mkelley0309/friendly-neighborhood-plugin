@@ -19,7 +19,8 @@ vault/
     {expandable — structure emerges from content}
   reference/         ← curated reference material: standards, specs, glossaries
     {expandable}
-  _graph/            ← Cartographer cross-cutting indexes; never browsed directly
+  _graph/            ← the semantic concept layer: one hub per concept, and the
+                       single home for cross-tree relationships (Cartographer-owned)
 ```
 
 > **These are example subtrees — rename or add to fit your domain.**
@@ -34,6 +35,34 @@ Key rules:
 
 - One subtree may be designated as the only place where exact-copy source material is admitted (e.g. `reference/`). All other subtrees require synthesis and semantic density.
 - `_graph/` is Cartographer-owned. Human editors do not write here.
+
+---
+
+## Cross-Tree Links Live in `_graph/`
+
+`_graph/` is the vault's **semantic concept layer** — one hub per concept, and the substrate concept search lands on. It is also the *only* place cross-tree relationships are authored.
+
+- **A note in one concept subtree must NOT link directly to a note in a different concept subtree.** That relationship belongs in the relevant `_graph/{concept}` hub, under `## Related concepts` or `## Evidence & supporting material`, carrying a rationale.
+- **Notes link *up* to their hubs.** `[[_graph/<concept>]]` is always an allowed target from anywhere, as is a `related: [<concept>]` frontmatter entry.
+- **Intra-tree links stay inline** in the note body and `## Related` section as normal.
+- **Hubs are curator-maintained** (Cartographer / the knowledge skill's `cartograph` action), never extended by source distillers. When a distillation surfaces a cross-tree connection, route it to Cartographer rather than appending a cross-subtree link in the note.
+- **Every hub link carries a rationale.** A bare link is a defect.
+
+Enforced by `tools/vault-lint.py` (C8 cross-tree links outside `_graph`; C10 hub links missing a rationale). See `vault/_graph/index.md` for the concept-node schema.
+
+### Concept-node schema
+
+```yaml
+---
+note_type: concept
+concept: <slug>
+aliases: [synonyms a searcher would use]
+tags: [knowledge, graph, concept/<slug>]
+related_concepts: [other hub slugs]
+---
+```
+
+Body: `# {Concept}` → **What it is.** → **Why it matters.** → `## Related concepts` (concept-to-concept edges, each stating *why*) → `## Evidence & supporting material` (links grouped under role headings, every link carrying a `— rationale`).
 
 ---
 

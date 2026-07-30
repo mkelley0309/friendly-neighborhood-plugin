@@ -1,11 +1,11 @@
 # Action: Cartograph
 
-Add **intra-subtree** wiki-links to existing notes' Related sections (with `related:` frontmatter), and record **cross-subtree** connections in `vault/_graph/` hub indexes — **never** as direct cross-subtree `Related:` links.
+Add **intra-subtree** wiki-links to existing notes' Related sections (with `related:` frontmatter), and record **cross-subtree** connections in `vault/_graph/` concept hubs — **never** as direct cross-subtree `Related:` links.
 
 ## When to run
 
 - User-invoked only. Never runs automatically.
-- Typical triggers: patrol cleanup, finishing a distillation batch, user says "cross-link these notes", "run Cartographer", "map relationships in X subtree"
+- Typical triggers: mission cleanup, finishing a distillation batch, user says "cross-link these notes", "run Cartographer", "map relationships in X subtree"
 - Never triggered by Scout, Harvester, or Peer Reviewer
 
 ---
@@ -22,7 +22,7 @@ Cartographer is not a distiller. It operates post-curation and is explicitly exe
 |---|---|
 | Read | `vault/` (any subtree) |
 | Write — existing notes | Append to `## Related` section; add `related:` frontmatter field |
-| Write — indexes | Create or update `vault/_graph/*.md` |
+| Write — concept hubs | Create or update `vault/_graph/*.md` |
 
 **Never:**
 - Create new content notes in distiller-owned subtrees
@@ -91,7 +91,7 @@ Build a deduplicated link plan before writing anything.
 
 **Link-target validation (MANDATORY — prevents phantom nodes).** Before writing ANY `[[target]]` wiki-link, verify the target resolves to an existing note. For a full vault-path target, confirm `vault/{target}.md` exists with a Glob/Read check — do NOT guess a sub-path (e.g. `…/topic/overview`) when the real note is the leaf (`…/topic`). For a short target, confirm exactly one note has that basename. If the target does not exist, do not write the link — point at the correct note or skip it. The same rule applies to slugs in `related:` frontmatter. A wiki-link to a nonexistent path renders as a greyed phantom node and spawns a blank stub on click.
 
-**Route by subtree (MANDATORY).** If source and target are in the **same subtree**, write a `Related:` link (a, b below). If they are in **different subtrees**, do **not** write a direct `Related:` link — record the connection in a `vault/_graph/{topic}` hub instead (Step 5). Cartographer never authors branch-to-branch `Related:` links across subtrees.
+**Route by subtree (MANDATORY).** If source and target are in the **same subtree**, write a `Related:` link (a, b below). If they are in **different subtrees**, do **not** write a direct `Related:` link — record the connection in a `vault/_graph/{concept}` hub instead (Step 5). Cartographer never authors branch-to-branch `Related:` links across subtrees.
 
 For each approved (validated) **intra-subtree** link pair (source → target):
 
@@ -131,29 +131,38 @@ Do not touch any other frontmatter field.
 
 ---
 
-### 5. Update or create `_graph/` indexes
+### 5. Update or create `_graph/` concept hubs
 
-This is **the** mechanism for cross-subtree connections (not direct `Related:` links). For any cross-cutting theme that surfaces across two or more subtrees — and for every approved link pair whose source and target live in **different subtrees** — create or update `vault/_graph/{topic}.md`.
+This is **the** mechanism for cross-subtree connections (not direct `Related:` links). For every approved link pair whose source and target live in **different subtrees** — and for any cross-cutting theme that surfaces across two or more subtrees — record the relationship in the relevant `vault/_graph/{concept}.md` concept hub, with a rationale. `_graph/` is the semantic concept layer and the single home for cross-tree relationships.
 
-**Create format:**
+**Concept-node schema (create):**
 
 ```markdown
 ---
-note_type: graph-index
-topic: <slug>
-tags: [knowledge, graph]
+note_type: concept
+concept: <slug>
+aliases: [synonyms a searcher would use]
+tags: [knowledge, graph, concept/<slug>]
+related_concepts: [other hub slugs]
 ---
 
-# {Topic} — Cross-Vault Index
+# {Concept}
 
-Notes across the vault related to this concept:
+**What it is.** {2–3 sentence definition.}
 
-- [[note-slug|Note Title]] (`vault/{subtree}/`) — one-line summary
+**Why it matters.** {what the reader gains from it.}
+
+## Related concepts
+- [[_graph/{other-concept}|Other Concept]] — why the two concepts relate.
+
+## Evidence & supporting material
+### {Role heading: How it works / Positioning / Domain application / …}
+- [[{subtree}/{note-slug}|Note Title]] — one-line rationale.
 ```
 
-**Update format:** append new entries to the list; do not remove or reorder existing entries.
+**Update format:** add the note under the right role heading with a rationale, and add cross-concept edges under `## Related concepts`. **Every link MUST carry a `— rationale`** (a bare link is a defect — `vault-lint` check C10). Do not remove or reorder existing entries.
 
-One index file per cross-cutting topic. Use kebab-case slugs for file names (e.g., `vault/_graph/topic-name.md`).
+One hub per concept; kebab-case slugs (e.g. `vault/_graph/concept-name.md`). See `vault/_graph/index.md` for the full schema and the maintained hub list.
 
 ---
 
@@ -166,8 +175,8 @@ After all writes complete, report:
 | Notes modified | N | list of paths |
 | Links added | N | list of (source → target) pairs |
 | Frontmatter fields added | N | list of notes where `related:` was added or extended |
-| `_graph/` indexes created | N | list of new index files |
-| `_graph/` indexes updated | N | list of updated index files |
+| `_graph/` concept hubs created | N | list of new hub files |
+| `_graph/` concept hubs updated | N | list of updated hub files |
 
 If no links met the quality bar, say so explicitly and explain why.
 

@@ -17,7 +17,7 @@ Most harnesses track tasks. This one tracks *why the work exists* and enforces h
 ## What you get
 
 - **Three-tier orchestration** — `objective` → `workstream` → `task` (long-lived goal → heavy QRDPIV lifecycle → lightweight unit), each with a backing Python CLI and an auditable lifecycle.
-- **A knowledge-vault pipeline** (`knowledge`) — scout → harvest → distill → cartograph → sync, into a linked markdown vault. No database, no lock-in, no Obsidian required (it's just markdown).
+- **A knowledge-vault pipeline** (`knowledge`) — scout → harvest → distill → cartograph → audit → sync, into a linked markdown vault. No database, no lock-in, no Obsidian required (it's just markdown).
 - **Workstream lifecycle** — a QRDPIV/RPIV framework (questions → research → design → plan → implement → validate → cleanup) with mandatory progressive distillation, fresh-context research handoffs, and a verification gate before close.
 - **Observational hooks** — session/tool/stop logging + a recovery breadcrumb on failure, to `.claude/logs/`.
 - **A statusline** surfacing the active workstream + phase and tier counts.
@@ -53,7 +53,7 @@ Invoke as `/harness-core:<name>`.
 | `workstream` | Heavy QRDPIV lifecycle (questions → research → design → plan → implement → validate → cleanup) for complex multi-session work. |
 | `task` | Lightweight unit with proportional admin (assignment/checklist/handoff/lessons). Promote to a workstream if it grows. |
 | `objective` | Long-lived, review-cycle goal with Key Results, milestones, linked workstreams, and an append-only decisions log. |
-| `knowledge` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → sync. |
+| `knowledge` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → audit → sync. |
 | `loop` | Run a prompt or skill on a recurring interval; native autonomous looping for long-running or polling work. |
 
 `tools/gate.py` — the deterministic verification gate; run with `python -B tools/gate.py run`. Exits GO (0) or NO-GO (1) based on hard measurable checks (tests, lint, budget, deny-list). Called by the workstream lifecycle at the validate phase before close.

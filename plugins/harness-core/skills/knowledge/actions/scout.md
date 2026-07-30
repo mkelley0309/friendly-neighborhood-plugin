@@ -27,6 +27,10 @@ If there are no pending items, skip to Step 4 (stale staging scan).
 
 Process each pending queue item in order.
 
+**First classify the signal — the two kinds take different verification:**
+- **Source signal** — `research_path` / `target_vault_subtrees` resolve to a `knowledge/sources/{source-slug}/` slug. Run 2b–2d (source verification).
+- **Workstream / research-complete signal** — `signal: research-complete`, or `research_path` points under `control-plane/`. There is **no source folder** to verify — run **2e** instead of 2b–2d. (2a still applies; 2e sets the final status.)
+
 **2a. Mark status as processing**
 
 Update the queue file's frontmatter:
@@ -74,6 +78,14 @@ status: verified | stale
 
 If a verification record already exists for this source slug, overwrite it with the updated `verified_at` and current `status`.
 
+**2e. Workstream / research-complete signals — confirm the artifact still exists (do not run source verification).**
+
+These signals point at workstream research output, not a source folder, so 2b–2d do not apply. Instead:
+
+1. Check that the artifact at `research_path` **still exists**. Workstreams are deleted on cleanup and `outputs/` retains only durable artifacts — a research doc named in a stale signal is often gone.
+2. **If it exists** → the signal is a **Harvest candidate** (not a source-distill). Record it as such for the report; leave `status: processing` for a Harvest pass to pick up (mark `done` only once harvested).
+3. **If it is gone** (workstream cleaned up) → the signal is **orphaned / source-lost**. Set `status: done` with a breadcrumb naming what no longer exists and what (if anything) survives in `outputs/`. Never leave it `pending` — it can never be harvested — and do not run source verification against it.
+
 ---
 
 ### 3. Mark each processed item done
@@ -112,7 +124,13 @@ Do not delete, modify, or move any staging files.
 knowledge/perspective/{domain}/
 ```
 
-For each domain, check whether its notes have been distilled into the vault yet. A perspective note is **undistilled** if no vault note carries `provenance: first-party` with a `source_path` pointing at it. (Sample-check: grep the vault for `provenance: first-party` and compare `source_path` values against the perspective files present.)
+For each domain, check whether its notes have been distilled into the vault yet. A perspective note counts as **distilled** if ANY vault note references it in **any** of three ways — check all three before flagging it:
+
+1. `source_path:` frontmatter points at it (the primary-source case);
+2. a `merged_sources:` frontmatter list names it (folded into a multi-source note as a secondary); or
+3. a `Synthesized from:` body line names its filename.
+
+**Why all three:** multi-source notes name only their *primary* in `source_path` and carry the rest as secondaries. Checking `source_path` alone yields false positives — a note merged as a secondary looks undistilled and gets needlessly re-flagged. So grep the vault for `provenance: first-party`, compare `source_path` **and** `merged_sources`, **and** grep vault bodies for the perspective filename before concluding a note is undistilled. A perspective note is **undistilled** only when none of the three references exist.
 
 Surface undistilled perspective domains as candidates for a Distill pass. Do not distill them — Scout only flags.
 
@@ -138,6 +156,7 @@ Queue:
   - Processed this pass: <N>
   - Sources verified: <list of source slugs>
   - Sources stale/failed: <list, or "none">
+  - Workstream signals: <harvest-pending: list | source-lost (artifact gone): list | none>
 
 Perspective:
   - Domains: <list of perspective/{domain} folders>
