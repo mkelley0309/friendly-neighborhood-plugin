@@ -99,12 +99,17 @@ def ensure_portfolio_index():
 
 # ── commands ──────────────────────────────────────────────────────────────────
 
-def cmd_list(_args):
-    if not PORTFOLIO_INDEX.exists():
-        die(f"portfolio index not found: {PORTFOLIO_INDEX}")
-    in_active = False
-    after_sep = False
-    for line in PORTFOLIO_INDEX.read_text(encoding="utf-8").splitlines():
+SEPARATOR_RE = re.compile(r"^\|[\s\-|]+\|$")
+
+def parse_index_rows(text):
+    """Return the data rows of the Active table, across all ### subgroups.
+
+    The Active table may be split under ### subgroup headings, each with its own
+    header + separator row. Without resetting per subgroup, every subgroup header
+    after the first is mistaken for a data row.
+    """
+    rows, in_active, after_sep = [], False, False
+    for line in text.splitlines():
         if line.startswith("## Active"):
             in_active, after_sep = True, False
             continue
@@ -113,11 +118,21 @@ def cmd_list(_args):
             continue
         if not in_active:
             continue
-        if re.match(r"^\|[\s\-|]+\|$", line):
+        if line.startswith("### "):
+            after_sep = False
+            continue
+        if SEPARATOR_RE.match(line):
             after_sep = True
             continue
         if after_sep and line.startswith("|") and "*(none yet)*" not in line:
-            print(line)
+            rows.append(line)
+    return rows
+
+def cmd_list(_args):
+    if not PORTFOLIO_INDEX.exists():
+        die(f"portfolio index not found: {PORTFOLIO_INDEX}")
+    for line in parse_index_rows(PORTFOLIO_INDEX.read_text(encoding="utf-8")):
+        print(line)
 
 
 def cmd_status(args):

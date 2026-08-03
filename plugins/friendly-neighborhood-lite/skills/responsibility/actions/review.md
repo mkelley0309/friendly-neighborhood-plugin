@@ -21,6 +21,8 @@ python -B tools/objective.py status {name}
 
 `status` now prints Key Results (with targets and current values), milestone done/total counts, and linked missions. Read the output, then also read `control-plane/objectives/{name}/index.md` for full context (frontmatter: `health:`, `cadence:`; all sections).
 
+Then read the most recent entry in `control-plane/objectives/{name}/reviews/`. This is what makes a review a comparison rather than a snapshot — `update-kr` overwrites `current` in place, so the dated entries are the only record of trajectory.
+
 ### 2. Update Key Results
 
 For each KR where the current value has changed, run:
@@ -74,7 +76,25 @@ python -B tools/objective.py log-decision {name} "{decision}" "{rationale}"
 
 Or load `actions/log-decision.md` for the full decision-logging flow.
 
-### 7. Report to user
+### 7. Record the review
+
+A cadence-driven review that leaves no trace cannot be compared against next time:
+
+```
+python -B tools/objective.py review {name}
+```
+
+This scaffolds `reviews/YYYY-MM-DD.md` pre-filled with the KR values, milestones, missions, and health you just set. It does not modify `index.md`.
+
+Complete the parts the tool cannot generate:
+
+- **Health Assessment** — the call *and its evidence*. Cite a line in `index.md`, a linked mission, or a decision entry. A health value with no evidence is an assertion, and the generated placeholder says so; leaving it produces a file that looks complete and says nothing.
+- **Movement Since Last Review** — what changed against the previous entry, what did not, and why. This is the section the folder exists for.
+- **Decisions Taken** — carry anything material into the append-only `## Key Decisions Log` as well.
+
+Skip this only for a passing status question. If cadence prompted the review, record it.
+
+### 8. Report to user
 
 ```
 Responsibility: {name}
@@ -94,6 +114,7 @@ Answer these implicitly in the report, or raise explicitly if the user is asking
 
 - **Is the responsibility still well-shaped?** If success criteria look obsolete or definition of done has drifted, flag it.
 - **Are KRs meaningful?** If a KR can't be updated with a real current value, it may need to be rewritten.
+- **Are there KRs at all, and should there be?** A responsibility with no Key Results is legitimate if it is discovery-stage or gated and the decisions log says so. It is a problem if the KRs were simply never derived. Check which — and if a Success Criterion states no count, threshold, or baseline, leave it as prose and log the gap. **A KR with an invented target is worse than no KR.**
 - **Are linked missions active and aligned?** Workstreams listed under Missions should be making progress. Orphaned or stale missions are a signal.
 - **Are blockers accumulating?** If health is `blocked` or `stale` for more than one review cycle, suggest re-scoping.
 - **Is the decisions log current?** Gaps between the last decision date and active work suggest undocumented choices — surface this.
@@ -104,6 +125,7 @@ Based on the review, recommend one of:
 
 - **Continue** — status is clear, tactical work proceeds. Point the user at the relevant mission or patrol.
 - **Open a mission** — if new coordinated work is needed, suggest `/friendly-neighborhood-lite:mission`, then `link-mission`.
+- **Link a delivered mission** — `python -B tools/objective.py link-mission {name} workstreams/_log/<entry> --status complete`. A responsibility showing "(none yet)" despite delivered work misreports its own state.
 - **Log a decision** — if the user's conversation surfaced a decision worth capturing, load `actions/log-decision.md`.
 - **Close out** — if success criteria are met or the responsibility is being retired, load `actions/complete.md`.
 - **Re-scope** — if the responsibility has drifted, suggest reviewing and updating Success Criteria / Definition of Done sections and resetting KRs via `add-kr`.
