@@ -59,7 +59,7 @@ An objective may own child workstreams directly, child tasks directly, or both. 
 objective: kebab-case-name
 status: active | complete
 health: on-track | at-risk | blocked | stale
-cadence: "monthly" | "bi-weekly" | "quarterly" | ...
+cadence: weekly | bi-weekly | monthly | quarterly | semi-annual | annual
 created: YYYY-MM-DD
 completed: YYYY-MM-DD          # set at close; folder retained
 tags: [objective, ...]

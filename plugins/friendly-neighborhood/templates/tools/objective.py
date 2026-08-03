@@ -15,6 +15,11 @@ WORKSPACE = Path(os.environ.get("WORKSPACE_ROOT") or os.getcwd()).resolve()
 OBJECTIVES_DIR = WORKSPACE / "control-plane" / "objectives"
 PORTFOLIO_INDEX = OBJECTIVES_DIR / "index.md"
 
+# Ordered enums, mirroring workstream.py's VALID_PHASES. Kept as module constants
+# so the CLI, its error messages, and any caller read from one definition.
+VALID_HEALTH = ("on-track", "at-risk", "blocked", "stale")
+VALID_CADENCE = ("weekly", "bi-weekly", "monthly", "quarterly", "semi-annual", "annual")
+
 def die(msg):
     print(f"error: {msg}", file=sys.stderr)
     sys.exit(1)
@@ -54,38 +59,76 @@ def read_index(name):
         die(f"index.md not found for '{name}'")
     return p, p.read_text(encoding="utf-8")
 
-def fm_get(text, field):
-    m = re.search(rf"^{re.escape(field)}:\s*(.+)$", text, re.MULTILINE)
-    return m.group(1).strip().strip('"') if m else None
+def _fm_bounds(text):
+    """Line indices [start, end) of the frontmatter body, exclusive of both fences.
 
-def fm_set(text, field, value):
-    """Set an existing frontmatter field. Adds field before closing --- if absent."""
-    if re.search(rf"^{re.escape(field)}:", text, re.MULTILINE):
-        return re.sub(
-            rf"^({re.escape(field)}:\s*).*$",
-            f"\\g<1>{value}",
-            text, flags=re.MULTILINE, count=1
-        )
-    # Insert before the CLOSING --- of frontmatter. Anchoring on the first ---
-    # would match the opening fence and push the field outside the block.
+    Returns None when the file has no terminated frontmatter block. Every helper
+    below scopes itself to this range: an unscoped `^field:` regex also matches a
+    same-named line in the document body, so a read can return body text and a
+    write can silently rewrite it.
+    """
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].rstrip() != "---":
-        die("cannot add frontmatter field: file does not open with a '---' fence")
+        return None
     for i in range(1, len(lines)):
         if lines[i].rstrip() == "---":
-            lines.insert(i, f"{field}: {value}\n")
+            return 1, i
+    return None
+
+def _line_parts(raw):
+    """Split a raw line into (content, terminator), preserving CRLF vs LF."""
+    content = raw.rstrip("\r\n")
+    return content, raw[len(content):]
+
+def fm_get(text, field):
+    bounds = _fm_bounds(text)
+    if not bounds:
+        return None
+    start, end = bounds
+    lines = text.splitlines(keepends=True)
+    pat = re.compile(rf"^{re.escape(field)}:\s*(.+)$")
+    for i in range(start, end):
+        m = pat.match(_line_parts(lines[i])[0])
+        if m:
+            return m.group(1).strip().strip('"')
+    return None
+
+def fm_set(text, field, value):
+    """Set a frontmatter field, inserting before the closing --- when absent."""
+    bounds = _fm_bounds(text)
+    if not bounds:
+        die("cannot set frontmatter field: file does not open with a terminated '---' fence")
+    start, end = bounds
+    lines = text.splitlines(keepends=True)
+    pat = re.compile(rf"^({re.escape(field)}:\s*).*$")
+    for i in range(start, end):
+        content, term = _line_parts(lines[i])
+        m = pat.match(content)
+        if m:
+            lines[i] = f"{m.group(1)}{value}{term}"
             return "".join(lines)
-    die("cannot add frontmatter field: unterminated frontmatter block")
+    term = _line_parts(lines[end - 1])[1] or "\n" if end > start else "\n"
+    lines.insert(end, f"{field}: {value}{term}")
+    return "".join(lines)
 
 def fm_add_field_after(text, after_field, new_field, value):
     """Insert a new frontmatter field after another field (no-op if already present)."""
-    if re.search(rf"^{re.escape(new_field)}:", text, re.MULTILINE):
-        return text  # already present
-    return re.sub(
-        rf"^({re.escape(after_field)}:.*$)",
-        f"\\g<1>\n{new_field}: {value}",
-        text, flags=re.MULTILINE, count=1
-    )
+    bounds = _fm_bounds(text)
+    if not bounds:
+        return text
+    start, end = bounds
+    lines = text.splitlines(keepends=True)
+    present = re.compile(rf"^{re.escape(new_field)}:")
+    anchor = re.compile(rf"^{re.escape(after_field)}:")
+    for i in range(start, end):
+        if present.match(_line_parts(lines[i])[0]):
+            return text  # already present
+    for i in range(start, end):
+        content, term = _line_parts(lines[i])
+        if anchor.match(content):
+            lines.insert(i + 1, f"{new_field}: {value}{term or chr(10)}")
+            return "".join(lines)
+    return text  # anchor field absent — leave unchanged
 
 # ---------------------------------------------------------------------------
 # Portfolio-index helpers (grouping-aware)
@@ -553,9 +596,8 @@ def cmd_complete(args):
 
 
 def cmd_health(args):
-    valid = {"on-track", "at-risk", "blocked", "stale"}
-    if args.value not in valid:
-        die(f"health must be one of: {', '.join(sorted(valid))}")
+    if args.value not in VALID_HEALTH:
+        die(f"health must be one of: {', '.join(VALID_HEALTH)}")
     idx_path, idx_text = read_index(args.name)
     idx_text = fm_set(idx_text, "health", args.value)
     idx_path.write_text(idx_text, encoding="utf-8")
@@ -563,6 +605,8 @@ def cmd_health(args):
 
 
 def cmd_set_cadence(args):
+    if args.cadence not in VALID_CADENCE:
+        die(f"cadence must be one of: {', '.join(VALID_CADENCE)}")
     idx_path, idx_text = read_index(args.name)
     idx_text = fm_set(idx_text, "cadence", args.cadence)
     idx_path.write_text(idx_text, encoding="utf-8")
