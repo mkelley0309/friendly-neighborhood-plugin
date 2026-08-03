@@ -55,7 +55,7 @@ Every research phase follows these rules — no exceptions:
 1. **Each pass writes to disk first.** Subagent pass findings go to `_working/research-{type}-{n}.md` before anything else. Raw pass output is never consumed by main context.
 2. **Distillation runs in a fresh context.** A separate distillation subagent reads only `_working/` files and writes `research.md`. It has no access to the conversation or pass instructions.
 3. **Main context reads only `research.md`.** Not `_working/` files, not pass summaries — only the distilled output.
-4. **Passes run before distillation.** All pass files must exist on disk before distillation begins. Parallel passes are encouraged; sequential distillation is required.
+4. **Passes run before distillation.** Run passes **sequentially, one at a time** — a stalled or half-written pass file leaves the workstream in an unrecoverable state, and certainty of completion outranks speed. All pass files must exist on disk before distillation begins, and distillation is itself a single sequential step.
 
 These rules enforce progressive distillation, structured handoffs to clean context windows, limited token usage, and semantic density — the properties that make a workstream coherent across multiple sessions.
 

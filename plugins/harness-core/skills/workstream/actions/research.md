@@ -75,10 +75,12 @@ Rules for sources:
 - Provided pass: note "User-provided" with today's date; the material itself is the source.
 
 Pass types and their scopes:
-- `research-knowledge-{n}.md` — vault and sources; use the Explore subagent
+- `research-knowledge-{n}.md` — vault and sources; use the general-purpose subagent (Sonnet)
 - `research-web-{n}.md` — external sources; use the general-purpose subagent with WebSearch
-- `research-codebase-{n}.md` — project code and config; use the Explore subagent
+- `research-codebase-{n}.md` — project code and config; use the general-purpose subagent (Sonnet)
 - `research-provided-{n}.md` — user-supplied material; write verbatim or lightly structured to disk before proceeding
+
+**Do not use the Explore subagent for any pass.** Explore is read-only — it has no Write tool — so it cannot write its own pass file, which the protocol above requires. Having the orchestrator write the file on Explore's behalf is not a workaround: it would put raw pass output through main context, violating the rule that main context never reads raw pass output.
 
 Run passes **sequentially, one at a time**. Do not run distillation until **all** pass files exist on disk. Certainty of completion takes priority over speed — a stalled or half-written pass file leaves the workstream in an unrecoverable state.
 
