@@ -66,9 +66,16 @@ def fm_set(text, field, value):
             f"\\g<1>{value}",
             text, flags=re.MULTILINE, count=1
         )
-    # Insert before the closing --- of frontmatter
-    return re.sub(r"^(---\s*\n)", f"{field}: {value}\n\\g<1>", text, count=1,
-                  flags=re.MULTILINE)
+    # Insert before the CLOSING --- of frontmatter. Anchoring on the first ---
+    # would match the opening fence and push the field outside the block.
+    lines = text.splitlines(keepends=True)
+    if not lines or lines[0].rstrip() != "---":
+        die("cannot add frontmatter field: file does not open with a '---' fence")
+    for i in range(1, len(lines)):
+        if lines[i].rstrip() == "---":
+            lines.insert(i, f"{field}: {value}\n")
+            return "".join(lines)
+    die("cannot add frontmatter field: unterminated frontmatter block")
 
 def fm_add_field_after(text, after_field, new_field, value):
     """Insert a new frontmatter field after another field (no-op if already present)."""
@@ -79,6 +86,71 @@ def fm_add_field_after(text, after_field, new_field, value):
         f"\\g<1>\n{new_field}: {value}",
         text, flags=re.MULTILINE, count=1
     )
+
+# ---------------------------------------------------------------------------
+# Portfolio-index helpers (grouping-aware)
+#
+# The Active table may be split across ### subgroup headings, each with its own
+# header + separator row. Anything that walks the table must reset per subgroup,
+# or every subgroup's header row after the first is mistaken for a data row.
+# ---------------------------------------------------------------------------
+
+SEPARATOR_RE = re.compile(r"^\|[\s\-|]+\|$")
+
+def parse_index_rows(text):
+    """Return the data rows of the Active table, across all ### subgroups."""
+    rows, in_active, after_sep = [], False, False
+    for line in text.splitlines():
+        if line.startswith("## Active"):
+            in_active, after_sep = True, False
+            continue
+        if line.startswith("## "):
+            in_active = False
+            continue
+        if not in_active:
+            continue
+        if line.startswith("### "):
+            after_sep = False          # new subgroup — its header row follows
+            continue
+        if SEPARATOR_RE.match(line):
+            after_sep = True
+            continue
+        if after_sep and line.startswith("|") and "*(none yet)*" not in line:
+            rows.append(line)
+    return rows
+
+def index_insert_point(text, subgroup=None):
+    """Line index just after the separator row of the Active table.
+
+    With `subgroup`, targets that ### subgroup's separator; without, the first
+    separator in Active. Returns None if no matching separator is found.
+    """
+    in_active, current = False, None
+    for i, line in enumerate(text.splitlines()):
+        if line.startswith("## Active"):
+            in_active, current = True, None
+            continue
+        if line.startswith("## "):
+            in_active = False
+            continue
+        if not in_active:
+            continue
+        if line.startswith("### "):
+            current = line[4:].strip()
+            continue
+        if SEPARATOR_RE.match(line):
+            if subgroup is None or (current and current.startswith(subgroup)):
+                return i + 1
+    return None
+
+def normalize_workstream_ref(ref):
+    """Bare name → workstreams/<name>; explicit paths (incl. _log/ entries) pass through."""
+    return ref if "/" in ref else f"workstreams/{ref}"
+
+def workstream_ref_exists(ref):
+    """True if the reference resolves on disk, as a folder index or a _log/ entry."""
+    base = WORKSPACE / "control-plane" / ref
+    return (base / "index.md").exists() or base.exists() or base.with_suffix(".md").exists()
 
 # ---------------------------------------------------------------------------
 # Section helpers
@@ -107,14 +179,22 @@ def section_text(text, header):
         return None
     return "".join(text.splitlines(keepends=True)[s:e])
 
+TRAILING_SECTION = "## Related Notes"
+
 def replace_section(text, header, new_section_text):
-    """Replace an existing section (header through next header) with new_section_text."""
+    """Replace an existing section (header through next header) with new_section_text.
+
+    When the section is absent it is inserted immediately before ## Related Notes,
+    which is canonically last. Appending to end of file would strand managed
+    sections (Key Results, Milestones, Workstreams) below it.
+    """
     lines = text.splitlines(keepends=True)
     s, e = _section_bounds(text, header)
     if s is None:
-        # Append before the last section (## Related Notes) or at end
-        text += "\n" + new_section_text
-        return text
+        anchor, _ = _section_bounds(text, TRAILING_SECTION)
+        if anchor is None:
+            return text + "\n" + new_section_text
+        return "".join(lines[:anchor]) + new_section_text + "".join(lines[anchor:])
     return "".join(lines[:s]) + new_section_text + "".join(lines[e:])
 
 # ---------------------------------------------------------------------------
@@ -222,22 +302,8 @@ def _render_workstreams_section(rows):
 def cmd_list(_args):
     if not PORTFOLIO_INDEX.exists():
         die(f"portfolio index not found: {PORTFOLIO_INDEX}")
-    in_active = False
-    after_sep = False
-    for line in PORTFOLIO_INDEX.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## Active"):
-            in_active, after_sep = True, False
-            continue
-        if line.startswith("## "):
-            in_active = False
-            continue
-        if not in_active:
-            continue
-        if re.match(r"^\|[\s\-|]+\|$", line):
-            after_sep = True
-            continue
-        if after_sep and line.startswith("|") and "*(none yet)*" not in line:
-            print(line)
+    for row in parse_index_rows(PORTFOLIO_INDEX.read_text(encoding="utf-8")):
+        print(row)
 
 
 def cmd_status(args):
@@ -271,9 +337,11 @@ def cmd_status(args):
     # Workstreams
     workstreams = _parse_workstreams(text)
     if workstreams:
-        print(f"\nworkstreams ({len(workstreams)}):")
+        active = sum(1 for m in workstreams if m["status"] == "active")
+        summary = f"{len(workstreams)}" + (f", {active} active" if active else "")
+        print(f"\nworkstreams ({summary}):")
         for m in workstreams:
-            print(f"  {m['workstream']}")
+            print(f"  {m['workstream']:<58} {m['status']}")
     else:
         print("\nworkstreams:    (none)")
 
@@ -359,21 +427,96 @@ tags: [objective]
     ensure_portfolio_index()
     portfolio = PORTFOLIO_INDEX.read_text(encoding="utf-8")
     new_row = f"| [{name}]({name}/index.md) | *add description* | Active |"
-    out, in_active, inserted = [], False, False
-    for line in portfolio.splitlines():
-        if line.startswith("## Active"):
-            in_active = True
-        elif line.startswith("## "):
-            in_active = False
-        if in_active and "*(none yet)*" in line:
-            continue
-        out.append(line)
-        if in_active and not inserted and re.match(r"^\|[\s\-|]+\|$", line):
-            out.append(new_row)
-            inserted = True
-    portfolio = "\n".join(out) + "\n"
+    at = index_insert_point(portfolio, getattr(args, "group", None))
+    if at is None:
+        die(
+            f"could not find an Active table separator in {PORTFOLIO_INDEX}"
+            + (f" for subgroup '{args.group}'" if getattr(args, "group", None) else "")
+        )
+    lines = [ln for ln in portfolio.splitlines()
+             if "*(none yet)*" not in ln or not ln.startswith("|")]
+    # Re-resolve against the filtered list so the insert point stays correct.
+    at = index_insert_point("\n".join(lines), getattr(args, "group", None))
+    lines.insert(at, new_row)
+    portfolio = "\n".join(lines) + "\n"
     PORTFOLIO_INDEX.write_text(portfolio, encoding="utf-8")
     print(f"updated: {PORTFOLIO_INDEX}")
+
+
+def review_dir(name):
+    return obj_dir(name) / "reviews"
+
+def render_review(name, text, when):
+    """Build a review entry from the objective's current tracked state.
+
+    Read-only with respect to index.md — the review is a point-in-time snapshot,
+    written alongside the anchor rather than appended to it. This is what gives
+    KRs a history: `update-kr` overwrites `current` in place, so without a dated
+    snapshot the trajectory is lost on every update.
+    """
+    krs = _parse_kr_table(text)
+    milestones = _parse_milestones(text)
+    workstreams = _parse_workstreams(text)
+    health = fm_get(text, "health") or "—"
+    cadence = fm_get(text, "cadence") or "—"
+    done = sum(1 for m in milestones if m["done"])
+
+    out = [
+        "---",
+        "note_type: objective-review",
+        f"objective: {name}",
+        f"review_date: {when}",
+        f"health: {health}",
+        f"cadence: {cadence}",
+        f"tags: [objective/{name}, review]",
+        "---",
+        f"# {name} — Review {when}",
+        "",
+        f"Point-in-time snapshot. Health **{health}**, cadence **{cadence}**.",
+        "",
+        "## Key Results at Review",
+        "",
+    ]
+    if krs:
+        out += ["| Result | Current | Target | Last Updated |", "|---|---|---|---|"]
+        out += [f"| {r['result']} | {r['current']} | {r['target']} | {r['updated']} |"
+                for r in krs]
+    else:
+        out.append("*No Key Results set.* Record here why — a deliberately empty KR set "
+                   "is a finding, not an omission.")
+    out += ["", f"## Milestones — {done}/{len(milestones)} done", ""]
+    out += ([f"- [{'x' if m['done'] else ' '}] {m['text']}" for m in milestones]
+            or ["*(none)*"])
+    out += ["", "## Workstreams", ""]
+    out += ([f"- `{w['workstream']}` — {w['status']}" for w in workstreams]
+            or ["*(none linked)*"])
+    out += [
+        "", "## Health Assessment", "",
+        f"**{health}** — *state the evidence for this call; cite lines in `index.md` "
+        "or a linked workstream. A health value without evidence is an assertion.*",
+        "", "## Movement Since Last Review", "",
+        "*What changed, what did not, and why. Compare against the previous entry in "
+        "this folder.*",
+        "", "## Decisions Taken", "",
+        "*Anything decided at this review. Material decisions also belong in the "
+        "objective's append-only `## Key Decisions Log`.*",
+        "", "## Next Review", "",
+        f"*Per cadence `{cadence}`.*", "",
+    ]
+    return "\n".join(out)
+
+def cmd_review(args):
+    _, text = read_index(args.name)
+    when = args.date or today()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", when):
+        die(f"invalid date '{when}' — expected YYYY-MM-DD")
+    rdir = review_dir(args.name)
+    rdir.mkdir(parents=True, exist_ok=True)
+    dest = rdir / f"{when}.md"
+    if dest.exists() and not args.force:
+        die(f"review already exists: {dest} — pass --force to overwrite")
+    dest.write_text(render_review(args.name, text, when), encoding="utf-8")
+    print(f"review written: {dest}")
 
 
 def cmd_log_decision(args):
@@ -483,15 +626,23 @@ def cmd_check_milestone(args):
     print(f"checked milestone: {args.text}")
 
 
+VALID_LINK_STATUSES = ("active", "complete", "paused", "abandoned")
+
 def cmd_link_workstream(args):
     idx_path, idx_text = read_index(args.objective)
     rows = _parse_workstreams(idx_text)
-    # Normalise: bare name → workstreams/<name>
-    ref = args.workstream if "/" in args.workstream else f"workstreams/{args.workstream}"
+    ref = normalize_workstream_ref(args.workstream)
+    status = getattr(args, "status", None) or "active"
+    if status not in VALID_LINK_STATUSES:
+        die(f"invalid status '{status}' — must be one of: {', '.join(VALID_LINK_STATUSES)}")
+    if not workstream_ref_exists(ref):
+        die(f"workstream not found on disk: control-plane/{ref} — "
+            "check the name, or pass an explicit path such as "
+            "workstreams/_log/YYYY-MM-DD-name")
     if any(r["workstream"] == ref for r in rows):
         print(f"already linked: {ref}")
         return
-    rows.append({"workstream": ref, "status": "active",
+    rows.append({"workstream": ref, "status": status,
                  "linked": today()})
     idx_text = replace_section(idx_text, WORKSTREAMS_HEADER, _render_workstreams_section(rows))
     idx_path.write_text(idx_text, encoding="utf-8")
@@ -515,6 +666,16 @@ def main():
     s = sub.add_parser("create")
     s.add_argument("name")
     s.add_argument("--title")
+    s.add_argument("--group",
+                   help="### subgroup of the Active table to insert into "
+                        "(e.g. 'Infrastructure Builds'); defaults to the first")
+
+    s = sub.add_parser("review",
+                       help="scaffold a dated review entry in objectives/<name>/reviews/")
+    s.add_argument("name")
+    s.add_argument("--date", help="review date (YYYY-MM-DD); defaults to today")
+    s.add_argument("--force", action="store_true",
+                   help="overwrite an existing entry for that date")
 
     s = sub.add_parser("log-decision")
     s.add_argument("name")
@@ -549,7 +710,10 @@ def main():
 
     s = sub.add_parser("link-workstream")
     s.add_argument("objective")
-    s.add_argument("workstream")
+    s.add_argument("workstream",
+                   help="bare name, workstreams/<name>, or workstreams/_log/<entry>")
+    s.add_argument("--status", choices=VALID_LINK_STATUSES, default="active",
+                   help="link status (default: active)")
 
     args = p.parse_args()
     {
@@ -565,6 +729,7 @@ def main():
         "add-milestone":   cmd_add_milestone,
         "check-milestone": cmd_check_milestone,
         "link-workstream":    cmd_link_workstream,
+        "review":             cmd_review,
     }[args.cmd](args)
 
 
