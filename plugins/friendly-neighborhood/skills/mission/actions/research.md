@@ -84,7 +84,7 @@ Pass types and their scopes:
 
 **Do not use the Explore subagent for any pass.** Explore is read-only — it has no Write tool — so it cannot write its own pass file, which the protocol above requires. Having the orchestrator write the file on Explore's behalf is not a workaround: it would put raw pass output through main context, violating the rule that main context never reads raw pass output.
 
-Run passes **sequentially, one at a time**. Do not run distillation until **all** pass files exist on disk. Certainty of completion takes priority over speed — a stalled or half-written pass file leaves the patrol in an unrecoverable state.
+Run passes **sequentially, one at a time**. Do not run distillation until **all** pass files exist on disk. Certainty of completion takes priority over speed — a stalled or half-written pass file leaves the mission in an unrecoverable state.
 
 ### Distillation — Fresh Subagent, Clean Context
 
