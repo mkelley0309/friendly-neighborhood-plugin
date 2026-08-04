@@ -33,6 +33,7 @@ control-plane/
       YYYY-MM-DD-{name}.md  ← durable summary after cleanup
   patrols/                  ← lightweight units (often iterations against a mission)
     index.md              ← portfolio index of active patrols
+    _log.md               ← durable record of every completed patrol; never deleted
     {name}/
       index.md            ← patrol record (assignment, checklist, handoff, lessons, friction)
   _harness/                 ← the harness's own feedback loop; never deleted
@@ -53,7 +54,7 @@ control-plane/
 
 **Missions** (workstreams, middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A mission may be parented to a responsibility, or be standalone. Driven by `workstream.py`.
 
-**Patrols** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a mission. A patrol carries *proportional* admin only (assignment, checklist, handoff, lessons) — no phase machine, no progressive distillation. If a patrol grows (multiple sessions, real research, design decisions), **promote it to a mission**. Driven by `patrol.py`.
+**Patrols** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a mission. A patrol carries *proportional* admin only (assignment, checklist, handoff, lessons) — no phase machine, no progressive distillation. On completion the folder is deleted *after* a dated entry is written to `patrols/_log.md`, which is the durable record: rescue anything real to `outputs/`, the vault or a project first, since nothing else survives. If a patrol grows (multiple sessions, real research, design decisions), **promote it to a mission** — before completing, since completing deletes the folder. Driven by `patrol.py`.
 
 **Outputs** = durable artifacts produced during mission implementation. Written to `outputs/{mission-name}/` — never inside the mission folder. This guarantees cleanup (which deletes the mission folder) cannot destroy produced artifacts. The `outputs/` tree is permanent.
 

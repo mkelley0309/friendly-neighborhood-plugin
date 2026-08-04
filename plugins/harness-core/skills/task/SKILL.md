@@ -15,7 +15,8 @@ A task is the smallest tracked unit: a quick, often repeatable piece of work. *A
 2. **Do the work**, keeping the checklist current.
 3. **Validate — don't close on faith.** Run the gate (`python -B tools/gate.py run`) or otherwise confirm it actually worked, then `python -B tools/task.py validate <name>`. Claiming done without checking wastes the next person's time.
 4. **Capture handoff + lessons (one line each, if any).** If another task picks up from here, write a one-line **handoff**. If you learned something worth repeating or avoiding, write a one-line **lesson**. That's the entire ledger — skip what doesn't apply.
-5. **Complete.** `python -B tools/task.py complete <name>`.
+5. **Note any harness friction (usually none).** If the *framework* got in your way — a tool that misbehaved, an instruction that was wrong, an access scope too narrow — add one line under **Friction**. See *Friction vs. Lessons* below.
+6. **Rescue, log, complete, delete.** Move anything durable out of the folder (artifacts to `outputs/`, vault content to `knowledge/vault/`, sources to `intake/_archive/`), write a dated entry in `control-plane/tasks/_log.md` — *was / produced / carried forward / handoff* — then `python -B tools/task.py complete <name>` and `python -B tools/task.py delete <name>`. **The folder does not survive completion.** Verify the log entry before deleting.
 
 ## When to promote
 
@@ -23,4 +24,22 @@ If a task starts to grow — multiple sessions, real research, design decisions,
 
 ## The record (kept light)
 
-A task's `index.md` holds, *proportionally*: the **Assignment** (what it is), a **Checklist**, a **Handoff** line (for the next task), and **Lessons** (worth keeping). Any section a given task doesn't need, leave empty.
+While the task is open, its `index.md` holds, *proportionally*: the **Assignment** (what it is), a **Checklist**, a **Handoff** line (for the next task), **Lessons** (worth keeping), and **Friction** (how the harness performed). Any section a given task doesn't need, leave empty.
+
+**That file is working state, not the archive.** At completion it collapses into one dated entry in `control-plane/tasks/_log.md` and the folder is deleted. So the question at close is always *what would someone need six months from now* — usually the assignment, what came out, and the one lesson. Rarely the checklist. Anything that is a real artifact rather than a record belongs in `outputs/`, the vault, or a project **before** the folder goes.
+
+## Friction vs. Lessons
+
+Two different things, and conflating them is what bloats a record:
+
+- **Lessons** are about *this work* — "the API paginates at 100, not 50."
+- **Friction** is about *the harness* — "`task.py validate` gave no output on success, so I couldn't tell it had run." These are how the framework itself is performing.
+
+The test: **would this still be true and useful on a completely unrelated task?** If yes it is friction; if it names the subject matter it is a lesson.
+
+Both are too big for the task record alone, and both get carried out at completion for the same reason — a thing noticed once inside one folder will not be noticed twice:
+
+- Lessons → `control-plane/tasks/_log.md`, the running task log, one row per completed task.
+- Unresolved friction → `control-plane/_harness/friction.md`, the cross-run harness ledger. Record the rule, not the incident. Most tasks produce none.
+
+In both ledgers **recurrence is the signal**. An entry appearing twice has outgrown the log and belongs in a skill, a tool, or a checklist.
