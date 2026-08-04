@@ -69,9 +69,11 @@ def fm_get(text, field):
     return m.group(1).strip().strip('"') if m else None
 
 def fm_set(text, field, value):
+    # `\s*` would cross the newline, so setting an EMPTY field ("completed:") captured
+    # the following line into the match and overwrote it. Horizontal whitespace only.
     return re.sub(
-        rf"^({re.escape(field)}:\s*).*$",
-        f"\\g<1>{value}",
+        rf"^({re.escape(field)}:)[^\S\n]*[^\r\n]*$",
+        f"\\g<1> {value}",
         text, flags=re.MULTILINE, count=1
     )
 
