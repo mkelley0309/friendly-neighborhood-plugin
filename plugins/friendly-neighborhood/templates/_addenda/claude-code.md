@@ -22,8 +22,8 @@ Slash commands in `.claude/skills/`. Progressive disclosure — invoking a skill
 
 Key skills:
 - `responsibility` — manage a long-lived, review-cycle objective (Key Results, milestones, decisions log)
-- `mission` — run complex multi-session work through the heavy QRDPIV lifecycle (a workstream)
-- `patrol` — handle a lightweight unit or one iteration against a mission (proportional admin)
+- `campaign` — run complex multi-session work through the heavy QRDPIV lifecycle (a workstream)
+- `mission` — handle a lightweight unit or one iteration against a campaign (proportional admin)
 - `web-archive` — knowledge pipeline: scout, harvest, distill, cartograph
 - `creed` — operating doctrine for the workspace
 - `spider-sense` — situational awareness and signal monitoring
@@ -48,13 +48,13 @@ Three patterns, by where the work sits:
 
 | Where | Pattern | Shape |
 |---|---|---|
-| **Across phases** (Q→R→D→P→I→V→Cleanup) | Sequential, **fresh context**, artifact handoff | Each phase hands the next a *distilled artifact* (`research.md`, `design.md`, `plan.md`) — not a conversation. The next phase reads the artifact in a clean window. This is what keeps a multi-session mission coherent and cheap. |
+| **Across phases** (Q→R→D→P→I→V→Cleanup) | Sequential, **fresh context**, artifact handoff | Each phase hands the next a *distilled artifact* (`research.md`, `design.md`, `plan.md`) — not a conversation. The next phase reads the artifact in a clean window. This is what keeps a multi-session campaign coherent and cheap. |
 | **Within a phase** (research passes, multi-angle review, the dissent council) | **Bounded parallel fan-out** → independent return → main reconciles | Spawn only the *live* council, each on its own slice or angle, up to your concurrency budget. They run concurrently and **cannot see each other**. |
 | **Synthesis, decisions, cross-artifact reconciliation** | **Stays in main context — never delegated** | Only the brain holds the whole picture. |
 
 **Why not "agent teams sharing one context":** handing N agents the same large context in parallel pays that cost N times for N *independent* takes — that's just fan-out, and reconciliation still happens in one place. True debate is possible but expensive (rounds of fan-out → summarize → targeted rebuttal); reserve it for a genuinely contested fork, not as a default. One fan-out + reconcile, at most one targeted second round, captures nearly all the value.
 
-**The discipline that makes fan-out work:** raw subagent output goes to **disk** (`_working/`), then a **separate distillation subagent in fresh context** reads only those files and writes the artifact; the main context reads only the artifact, never the raw passes. (Full protocol in the `mission` skill.)
+**The discipline that makes fan-out work:** raw subagent output goes to **disk** (`_working/`), then a **separate distillation subagent in fresh context** reads only those files and writes the artifact; the main context reads only the artifact, never the raw passes. (Full protocol in the `campaign` skill.)
 
 **Special cases:**
 - **Dissent council** (the **villains**) — pure advisory fan-out: each critic considers a slice and returns "approval = the alarm"; the brain weighs it. Never a shared deliberation.
@@ -84,7 +84,7 @@ Default behavior is **sequential**: spawn one subagent, wait for it to return, t
 
 **Completion guarantee.** Every subagent spawned must be able to finish its task in one turn. If a task is too large to complete in a single turn, break it into smaller bounded tasks first — do not spawn it and hope it finishes. A subagent that stalls mid-task leaves the work in an unstable state requiring manual recovery.
 
-**Checkpoint before the budget bites.** No agent watches the live token/session budget — the runtime owns it and does not expose it mid-turn, so nothing can *warn* you that a turn is about to run out. Guard it **structurally** instead: keep turns bounded (above), and at clean phase/step boundaries write state to disk (`index.md` + `plan.md`) *before* continuing. A session-limit hit then degrades to a **resume**, never lost work — the same way `stakeout` carries state across sessions.
+**Checkpoint before the budget bites.** No agent watches the live token/session budget — the runtime owns it and does not expose it mid-turn, so nothing can *warn* you that a turn is about to run out. Guard it **structurally** instead: keep turns bounded (above), and at clean phase/step boundaries write state to disk (`index.md` + `plan.md`) *before* continuing. A session-limit hit then degrades to a **resume**, never lost work — the same way `patrol` carries state across sessions.
 
 **Token budget.** Every subagent prompt must include a return-size bound:
 - Haiku: `"Return in under 200 words."`

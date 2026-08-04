@@ -2,7 +2,7 @@
 
 Close out a responsibility. Load this file only.
 
-## Key Difference From Patrol Cleanup
+## Key Difference From Mission Cleanup
 
 **Responsibility folders are NEVER deleted.** Completion is a status change and a summary entry, not a cleanup. The folder, its `index.md`, and its decisions log persist indefinitely — they are the record for review.
 
@@ -12,7 +12,7 @@ Close out a responsibility. Load this file only.
 - All Definition of Done conditions satisfied
 - User confirms they are ready to close
 
-If any child mission or patrol is still active, do not close the responsibility — either complete or explicitly abandon those first.
+If any child campaign or mission is still active, do not close the responsibility — either complete or explicitly abandon those first.
 
 ## Steps
 
@@ -20,13 +20,13 @@ If any child mission or patrol is still active, do not close the responsibility 
 
 Read `control-plane/objectives/{name}/index.md`. For each item in Success Criteria, confirm it's actually met. If any are not: stop, report the gap, do not close.
 
-### 2. Check linked missions and patrols
+### 2. Check linked campaigns and missions
 
-Run `python -B tools/objective.py status {name}` — the Missions section lists linked workstreams. Any active workstream (mission or patrol) tied to this responsibility must be resolved first: completed, or explicitly abandoned with a decision logged.
+Run `python -B tools/objective.py status {name}` — the Campaigns section lists linked workstreams. Any active workstream (campaign or mission) tied to this responsibility must be resolved first: completed, or explicitly abandoned with a decision logged.
 
 ### 3. Write a Completion Summary section
 
-Use the Edit tool to append a new top-level section to the responsibility's `index.md`, immediately before the `## Related Notes` section (or at the end if no Related Notes). The structured sections (Key Results, Milestones, Missions) remain in place — they are the completion record.
+Use the Edit tool to append a new top-level section to the responsibility's `index.md`, immediately before the `## Related Notes` section (or at the end if no Related Notes). The structured sections (Key Results, Milestones, Campaigns) remain in place — they are the completion record.
 
 ```markdown
 ## Completion Summary
@@ -85,6 +85,6 @@ Tell the user:
 - Responsibility closed, folder retained at `control-plane/objectives/{name}/`
 - Decisions log preserved
 - Completion summary written
-- Any child mission or patrol logs that reference this responsibility remain valid
+- Any child campaign or mission logs that reference this responsibility remain valid
 
 Remind them: the folder is not deleted. It is referenced in future review cycles.

@@ -19,9 +19,9 @@ Make the smallest correct change. Prefer additive and reversible. Never delete o
 
 The opinions that make this harness what it is. Most are tuned for **serious, long-horizon, knowledge-heavy work** — on a quick throwaway task, some are overhead you should skip. Match the ceremony to the size of the work.
 
-1. **Three tiers of work.** *Responsibility* = the long-lived "why" — a role, a measured annual objective, a career goal — with structured tracking (Key Results, milestones, cadence) and an append-only decisions log. *Mission* = complex work spanning multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. *Patrol* = a lightweight unit or one iteration against a mission, carrying only *proportional* admin. Strategy, missions, and lightweight units each keep their own durable state — and you size the ceremony to the tier.
+1. **Three tiers of work.** *Responsibility* = the long-lived "why" — a role, a measured annual objective, a career goal — with structured tracking (Key Results, milestones, cadence) and an append-only decisions log. *Campaign* = complex work spanning multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. *Mission* = a lightweight unit or one iteration against a campaign, carrying only *proportional* admin. Strategy, campaigns, and lightweight units each keep their own durable state — and you size the ceremony to the tier.
 
-2. **Progressive distillation — proportional.** At every handoff, compress to a dense artifact and hand *that* to a fresh context, not the raw history. Keeps understanding high and tokens low across long work — but it's *overhead on short work*. A patrol carries proportional admin only; a multi-week mission distills hard at every phase boundary. Distillation is lossy, so distill *for the next phase's needs*, not to a generic summary.
+2. **Progressive distillation — proportional.** At every handoff, compress to a dense artifact and hand *that* to a fresh context, not the raw history. Keeps understanding high and tokens low across long work — but it's *overhead on short work*. A mission carries proportional admin only; a multi-week campaign distills hard at every phase boundary. Distillation is lossy, so distill *for the next phase's needs*, not to a generic summary.
 
 3. **Progressive disclosure — including the vault.** Load the minimum for the next decision: skills route to action-files on demand, rules load per subtree, and the **knowledge vault is navigated hub → note, never bulk-loaded.** Fetch detail when you need it, not before.
 
@@ -35,7 +35,7 @@ The opinions that make this harness what it is. Most are tuned for **serious, lo
 
 8. **Lean orchestration.** Cheapest capability that does the job; spawn only the agents whose concern is *live*, never the whole roster, never passively; concurrency is a budget you set, not a free-for-all.
 
-> **Foundations** — solid, expected, *not* claimed as novel: a workspace scaffolder, observational logging + recovery, an enforced safety deny-list + spider-sense, a verification/testing gate before a mission closes, and native autonomous looping (`/loop` + `schedule`) for long-running work.
+> **Foundations** — solid, expected, *not* claimed as novel: a workspace scaffolder, observational logging + recovery, an enforced safety deny-list + spider-sense, a verification/testing gate before a campaign closes, and native autonomous looping (`/loop` + `schedule`) for long-running work.
 
 ---
 
@@ -63,8 +63,8 @@ The three tiers are *defined* in Principle 1 — here's their machinery:
 | Tier (themed · internal) | CLI | Lifecycle |
 |---|---|---|
 | **Responsibility** · objective | `objective.py` | structured tracking (Key Results, milestones, cadence, health) + append-only decisions log; never deleted |
-| **Mission** · workstream | `workstream.py` | heavy **QRDPIV** (Q→R→D→P→I→V→Cleanup; **RPIV** if the spec's already clear); deleted at cleanup, its log survives; may link child patrols |
-| **Patrol** | `patrol.py` | proportional admin only (assignment / checklist / handoff / lessons); promote to a mission if it grows |
+| **Campaign** · workstream | `workstream.py` | heavy **QRDPIV** (Q→R→D→P→I→V→Cleanup; **RPIV** if the spec's already clear); deleted at cleanup, its log survives; may link child missions |
+| **Mission** | `mission.py` | proportional admin only (assignment / checklist / handoff / lessons); promote to a campaign if it grows |
 
 ---
 

@@ -12,7 +12,7 @@
 _now.md              current priorities
 constitution.md      this file
 .claude/rules/       path-scoped rules (auto-loaded per subtree)
-control-plane/       orchestration: objectives, workstreams (missions), patrols, logs
+control-plane/       orchestration: objectives, workstreams (campaigns), missions, logs
 projects/            execution workers
 knowledge/           sources/ (raw) · vault/ (curated) · distillers/
 prompts/             reusable prompt assets
@@ -28,7 +28,7 @@ Each subtree's contract auto-loads via a path-scoped rule in `.claude/rules/`; s
 
 1. Read `_now.md`
 2. Subtree contracts auto-load via `.claude/rules/` when you open files in that subtree — no manual step needed. If working outside Claude Code, read the subtree's `CLAUDE.md` pointer and follow it to `.claude/rules/<subtree>.md`.
-3. If an objective, workstream, or patrol is in scope, read its `index.md`
+3. If an objective, workstream, or mission is in scope, read its `index.md`
 4. **State scope and next action before proceeding**
 
 ---

@@ -5,14 +5,14 @@ scope: outputs
 
 # Outputs
 
-Durable artifacts produced by missions. Organized by mission name. This folder survives mission cleanup — the mission folder is deleted at cleanup; this folder is not.
+Durable artifacts produced by campaigns. Organized by campaign name. This folder survives campaign cleanup — the campaign folder is deleted at cleanup; this folder is not.
 
-**Rule:** Any file a mission produces for use beyond the mission itself (slides, documents, configs, reports, generated content) goes here, not in the mission folder. Working files (`_working/`), process artifacts (`plan.md`, `research.md`, `design.md`), and the mission log entry are the only things that belong inside the mission folder structure.
+**Rule:** Any file a campaign produces for use beyond the campaign itself (slides, documents, configs, reports, generated content) goes here, not in the campaign folder. Working files (`_working/`), process artifacts (`plan.md`, `research.md`, `design.md`), and the campaign log entry are the only things that belong inside the campaign folder structure.
 
 ---
 
 ## Index
 
-| Mission | Output Folder | Description | Date |
+| Campaign | Output Folder | Description | Date |
 |---|---|---|---|
 | *(none yet)* | | | |

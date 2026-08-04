@@ -1,47 +1,79 @@
 ---
 name: patrol
-description: A lightweight unit of work — a small, often repeatable task done under a mission or standalone (add a source, refresh data, lint an area, one iteration against a mission). Trigger for quick work that doesn't warrant the full mission lifecycle. A patrol tracks itself lightly — its assignment, a handoff to other patrols, lessons learned — just enough admin, no heavy distillation.
+description: Recurring work — scheduled or on demand. Refresh sources into the knowledge base, drain a cleanup queue, report status across the portfolio, auto-lint, watch a CI run. Use when the defining feature of the work is that it runs again, whether it is small like a mission or large enough to need campaign-style handoffs. Tracks its own runs, carries a self-improvement diary so each run makes the next one cheaper, and retires or is abandoned rather than completing.
 ---
 
-# Patrol — a lightweight work unit
+# Patrol — work that runs again
 
-A patrol is the smallest tracked unit: a quick, often repeatable task. *Add a source to the curation pipeline. Refresh one source's data. Lint a vault area. Run one iteration against a mission.* If the work is complex, multi-session, or needs handoffs across phases, it isn't a patrol — open a **mission** (`/friendly-neighborhood-lite:mission`) and run the full lifecycle.
+The third thing that can be spawned under an objective, beside a **mission** (bounded, single-session) and a **campaign** (multi-session, subagent handoffs).
 
-**Proportional admin — this is the whole point.** A patrol carries *just enough* tracking to be resumable, handed off, and learned from, and no more. Don't impose mission-grade progressive distillation on a one-shot task: at this size the overhead — and the lossy, sometimes-inaccurate nature of distillation — costs more than it's worth. A small unit that simply *understands its assignment* and records the few things worth keeping beats a heavyweight ceremony.
+**A patrol is defined by its recurrence, not its size.** Refreshing documentation into the vault, draining the knowledge cleanup queue, reporting status across objectives, auto-linting, watching a job. One patrol may be as small as a lint pass and another as large as a full research refresh. That difference does not matter. What matters is that it runs again.
 
-## Lifecycle (light)
+It does **not** reinvent scheduling — it wires Claude Code's built-ins:
 
-1. **Create + state the assignment.** `python -B tools/patrol.py create <name> [--parent workstreams/<mission>|objectives/<obj>] [--title]`. Write the **assignment** in its `index.md` — what you understand the job to be, in a sentence or two. That understanding is the patrol's real value.
-2. **Do the work**, keeping the checklist current. Pick a driver that fits: `peter` (general), `noir` (a debug or surgical pass).
-3. **Validate — don't close on faith.** Run the gate (`python -B tools/gate.py run`) or otherwise confirm it actually worked, then `python -B tools/patrol.py validate <name>`. Claiming done without checking is Mysterio.
-4. **Capture handoff + lessons + friction (one line each, if any).** If another patrol picks up from here, write a one-line **handoff**. If you learned something worth repeating or avoiding, write a one-line **lesson**. If the *harness* got in your way, write a one-line **friction**. Skip what doesn't apply.
-5. **Resolve every checkbox.** A completed patrol must contain no `- [ ]`. Frontmatter `status` is the *portfolio* signal, but an unchecked box is a *file-level* signal, and anything reading checkboxes rather than frontmatter keeps reporting a closed patrol as live work. Tick it, or delete it and state the outcome as prose — never tick something that did not happen.
-6. **Rescue anything durable.** The folder is deleted at step 8, so sweep it first: produced artifacts to `control-plane/outputs/{name}/`, vault content to `knowledge/vault/`, source material to `intake/_archive/`, code to `projects/{name}/`. Most patrols hold nothing but their own `index.md`, but the one that does is the one that loses primary evidence.
-7. **Write the log entry** in `control-plane/patrols/_log.md`, newest first, as a dated section — *Was / Produced / Carried forward / Handoff*. **This is the durable record**, since the folder does not survive. Keep it proportional, but not so thin the work becomes unreconstructable.
-8. **Complete, then delete.** `python -B tools/patrol.py complete <name>` then `python -B tools/patrol.py delete <name>`. Verify the log entry exists before deleting.
+- **`/loop [interval] <command>`** — recurring or self-paced repetition within a session.
+- **`schedule`** — cron-style routines for time-based autonomous runs.
+- **`/goal <condition>`** — keep taking turns until a stated condition holds, then stop. Requires Claude Code v2.1.139+. Use it for a run with a verifiable end state (drain the queue until it is empty, iterate until the gate reports GO) rather than for a run that repeats on a clock.
 
-## When to promote
+Those are *mechanisms*, and picking between them is the whole choice: **`/loop` repeats on a clock, `schedule` repeats on a calendar, `/goal` repeats until something is true.** The patrol is the *container* around whichever you pick: the folder that remembers what happened last time so the next run is better than the last.
 
-If a patrol starts to grow — multiple sessions, real research, design decisions, cross-phase handoffs — **stop and promote it to a mission**: open a mission and make this patrol its first iteration. Promote rather than bloat a patrol into a pseudo-mission. Promote *before* completing, since completing deletes the folder.
+> **`/goal` has a constraint worth designing around.** Its evaluator judges the condition against what Claude has *surfaced in the conversation* — it does not run commands or read files itself. So `"the gate passes"` is only a usable condition if the run actually prints the gate result. Write conditions the run's own output can demonstrate, and have each pass echo the evidence. It also needs an accepted trust dialog and is unavailable when `disableAllHooks` or `allowManagedHooksOnly` is set, so a patrol that depends on it should say so in its Guardrails.
 
-## The record (kept light)
+## Why it gets a folder
 
-While the patrol is open, its `index.md` holds, *proportionally*: the **Assignment** (what it is), a **Checklist**, a **Handoff** line (for the next patrol), **Lessons** (worth keeping), and **Friction** (how the harness performed). Any section a given patrol doesn't need, leave empty.
+Two things follow from recurrence, and neither fits in a mission or a campaign:
 
-**That file is working state, not the archive.** At completion it collapses into one dated entry in `control-plane/patrols/_log.md` and the folder is deleted. So the question at close is always *what would someone need six months from now* — usually the assignment, what came out, and the one lesson. Rarely the checklist.
+- **It does not complete.** A patrol is `active`, `paused`, `retired` (the job is done or automated away) or `abandoned` (it stopped mattering). "Complete" is not a state it reaches.
+- **Each run should make the next one cheaper**, which is what the self-improvement diary is for. A patrol that never improves is a subscription.
 
-## Friction vs. Lessons
+## Inline, or spawned
 
-Two different things, and conflating them is what bloats a record:
+A patrol does **not** have to contain the work it triggers. Each run picks its own shape:
 
-- **Lessons** are about *this work* — "the API paginates at 100, not 50."
-- **Friction** is about *the harness* — "`patrol.py validate` gave no output on success, so I couldn't tell it had run."
+- **Inline** — the run is small and self-contained (a lint pass, a status roll-up). Do it in place, using `_working/` for scratch if it needs any. Nothing else is created.
+- **Spawned** — the run is substantial enough to deserve its own record, so it launches a **mission** (bounded, single-session) or a **campaign** (multi-session, subagent handoffs) with `--parent patrols/{name}`. That child then runs its own lifecycle, closes into its own log, and deletes its own folder. Record it with `patrol.py run <name> --spawned missions/<child>` (or `campaigns/<child>`), which links it from the run log.
 
-The test: **would this still be true and useful on a completely unrelated patrol?** If yes it is friction; if it names the subject matter it is a lesson.
+This is what keeps a patrol from swelling into a parallel project system. **The patrol folder holds the recurrence — the trigger, the guardrails, the run log, the diary. It does not have to hold the work.** A quarterly refresh that turns into a real research effort should spawn a campaign, not grow a `research.md` inside the patrol.
 
-Both are too big for the patrol record alone, and both get carried out at completion for the same reason — a thing noticed once inside one folder will not be noticed twice:
+Spawning is also how a patrol stays honest about size. If run after run spawns a campaign, the recurring part is just a scheduler, and that is fine — that is exactly what a patrol is for.
 
-- Lessons → `control-plane/patrols/_log.md`, the running log, one entry per completed patrol.
-- Unresolved friction → `control-plane/_harness/friction.md`, the cross-run harness ledger. Record the rule, not the incident. Most patrols produce none.
+## Spawn is not promotion
 
-In both ledgers **recurrence is the signal**. An entry appearing twice has outgrown the log and belongs in a skill, a tool, or a checklist.
+Two different relationships, and conflating them produces a patrol that is really a campaign in disguise:
+
+- **Spawn — downward, many times.** The patrol is already running and delegates one run's work to a child. `patrol.py run <name> --spawned missions/<child>`.
+- **Promotion — upward, once.** An mission or campaign turns out to be worth repeating, so it *becomes* a patrol. `patrol.py create <name> --from missions/<origin>`. The originating work still closes normally into its own log, and the patrol is a new record pointing back at what proved the case, not a continuation of it.
+
+The test: **is the recurring thing already established, or is this the moment it became recurring?** The first is a spawn, the second is a promotion. A patrol created by promotion starts at zero runs like any other — the work that proved it does not count as run 1, because it closed under its own tier.
+
+## Lifecycle
+
+1. **Open it.** `python -B tools/patrol.py create <name> [--parent objectives/<name>] [--trigger "weekly"|"nightly 02:00"|"on-demand"]`. State the **purpose** and name the **trigger** — if it is scheduled, say the schedule; if on demand, say what makes someone reach for it.
+2. **Fill in the guardrails before the first run.** A patrol runs unattended, so say what should stop it and ask for a human. The template ships four: the gate is NO-GO and a run cannot clear it, the run would touch something outside its declared scope, two consecutive runs make no progress, input volume is far outside normal. Add the ones specific to this patrol and delete none.
+3. **Run it**, by hand, via `/loop`, or on a `schedule` routine.
+4. **Record every run.** `python -B tools/patrol.py run <name> --note "what it did" --gate GO|NO-GO --learned "what would make the next run better" [--spawned missions/<child>]`. `--learned` is the one that matters. If a run genuinely taught you nothing, that is worth noticing rather than papering over.
+5. **Pause when it is not needed** rather than abandoning it — `patrol.py pause` / `resume`. A paused patrol keeps its diary.
+
+## Closing
+
+A patrol ends **retired** or **abandoned**, and both get logged. Retirement because the patrol automated itself out of a job is a success, and the entry should say so.
+
+1. **Rescue anything durable** before the folder goes: artifacts to `control-plane/outputs/{name}/`, vault content to `knowledge/vault/`, code to `projects/{name}/`. `delete` refuses while `_working/` still holds files, so clear it deliberately.
+2. **Close it.** `patrol.py retire <name> --reason "..."` or `patrol.py abandon <name> --reason "..."`. Both require a reason.
+3. **Write the entry** in `control-plane/patrols/_log.md`: what recurred and on what trigger, how it ran, how it ended, and what is carried forward — most usefully whatever the diary accumulated that outlives the patrol.
+4. **Delete.** `patrol.py delete <name>`. Verify the log entry exists first.
+
+## The diary is the point
+
+Ordinary lessons go in the log at close. The **diary** is different: it is written *during* the patrol's life, addressed to the next run, and it is the only reason a recurring job gets cheaper instead of just repeating.
+
+**When a diary entry recurs, stop writing it down and go fix it** — promote it into the patrol's own procedure, a tool, or a skill. A diary that says the same thing three times is a backlog item, not a diary.
+
+## Safety in unattended runs
+
+The guardrails matter *more* here, because nobody is watching each run:
+
+- **The gate decides** — `tools/gate.py` is the deterministic go/no-go; never assume done.
+- **Hard safety still enforced** — the `.claude/settings.json` deny-list blocks destructive ops even unattended.
+- **Watch the cost** — cheap-per-run × many runs adds up. Keep each run lean, and pause a patrol that is not earning its tokens.
+- **Report friction** — where a run needed correction, or asked for approval repeatedly, append the rule to `control-plane/_harness/friction.md`. High approval rates on a recurring job are the clearest signal that setup needs fixing.

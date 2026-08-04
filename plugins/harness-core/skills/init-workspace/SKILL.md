@@ -1,12 +1,12 @@
 ---
 name: init-workspace
-description: Scaffold a fresh harness-core workspace into the current project — the constitution, the three-tier control-plane (objective/workstream/task), an empty knowledge vault, the portable CLIs, and the auto-loading .claude/rules contracts. Run this once on a new project after installing the plugin. Safe to re-run; never overwrites existing files.
+description: Scaffold a fresh harness-core workspace into the current project — the constitution, the three-tier control-plane (objective/workstream/assignment), an empty knowledge vault, the portable CLIs, and the auto-loading .claude/rules contracts. Run this once on a new project after installing the plugin. Safe to re-run; never overwrites existing files.
 disable-model-invocation: true
 ---
 
 # init-workspace — scaffold your workspace
 
-This sets up a working, domain-neutral harness in the current project so the other skills (workstream, objective, task, knowledge) have a home. It copies the plugin's bundled `templates/` into your project and **never overwrites anything that already exists**.
+This sets up a working, domain-neutral harness in the current project so the other skills (workstream, objective, assignment, knowledge) have a home. It copies the plugin's bundled `templates/` into your project and **never overwrites anything that already exists**.
 
 ## Steps
 
@@ -18,7 +18,7 @@ This sets up a working, domain-neutral harness in the current project so the oth
    - `py --version`
 
    If **none** works, stop and tell the user:
-   > harness-core needs Python 3 for its orchestration CLIs (workstream / objective / task). Install it, then re-run `/harness-core:init-workspace`:
+   > harness-core needs Python 3 for its orchestration CLIs (workstream / objective / assignment). Install it, then re-run `/harness-core:init-workspace`:
    > • macOS: `brew install python` (or python.org)
    > • Windows: `winget install Python.Python.3` (or python.org)
    > • Linux: your package manager, e.g. `sudo apt install python3`
@@ -35,7 +35,7 @@ This sets up a working, domain-neutral harness in the current project so the oth
 
 5. **Report** what it created vs. skipped, then point the user at next steps:
    - `constitution.md` is the base contract; subtree contracts auto-load via `.claude/rules/` as you work.
-   - Start work: `/harness-core:workstream` (a complex effort), `/harness-core:objective` (a long-lived goal), `/harness-core:task` (a lightweight unit), or `/harness-core:knowledge` (knowledge pipeline).
+   - Start work: `/harness-core:workstream` (a complex effort), `/harness-core:objective` (a long-lived goal), `/harness-core:assignment` (a lightweight unit), or `/harness-core:knowledge` (knowledge pipeline).
    - Optional UX: the knowledge vault is plain markdown; install the kepano Obsidian skills separately if you want graph/wikilink/Bases tooling (`npx skills add kepano/obsidian-skills -g -a claude-code`). Not required.
 
 ## Notes

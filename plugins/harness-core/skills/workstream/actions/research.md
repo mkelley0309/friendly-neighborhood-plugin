@@ -8,7 +8,7 @@ Research is **mandatory** for every formal workstream — QRDPIV and RPIV alike.
 
 **Progressive distillation.** Each pass produces raw findings saved to disk. Distillation is a separate, bounded step that reads only those saved files — never the main conversation, never the pass output held in memory.
 
-**Structured handoffs to clean context.** Each subagent gets a scoped task and a bounded return. Distillation runs in a fresh context that has never seen the original request, the conversation, or the pass instructions — only the `_working/` files. This is intentional: it forces semantic compression, not summarization of what was said.
+**Structured handoffs to clean context.** Each subagent gets a scoped assignment and a bounded return. Distillation runs in a fresh context that has never seen the original request, the conversation, or the pass instructions — only the `_working/` files. This is intentional: it forces semantic compression, not summarization of what was said.
 
 **Limited token usage.** Each pass subagent returns ≤2k tokens to main context — a confirmation that the file was written and the key themes found, nothing more. The main context never reads raw pass output. After all passes are complete, the main context reads only `research.md`.
 

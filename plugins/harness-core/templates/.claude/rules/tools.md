@@ -51,7 +51,7 @@ tools/
 
 The CLIs below use stdlib only (argparse, pathlib, datetime, re) — no third-party packages. They resolve their workspace root from `$WORKSPACE_ROOT` env var, falling back to `os.getcwd()`. Set `WORKSPACE_ROOT` to your repo root before running, or run them from the repo root. Run with `python -B` to skip `__pycache__` bytecode generation.
 
-These map to the **three tiers of work**: objectives (long-lived strategy), workstreams (the heavy QRDPIV lifecycle), and tasks (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
+These map to the **three tiers of work**: objectives (long-lived strategy), workstreams (the heavy QRDPIV lifecycle), and assignments (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
 
 ### workstream.py — the heavy (QRDPIV) tier
 
@@ -64,7 +64,7 @@ python -B tools/workstream.py status <name>
 python -B tools/workstream.py next <name>
 python -B tools/workstream.py advance <name> <phase>
 python -B tools/workstream.py check-step <name> "<step text>"
-python -B tools/workstream.py link <workstream> <task>     # register a child task
+python -B tools/workstream.py link <workstream> <assignment>     # register a child assignment
 python -B tools/workstream.py block <name> "<reason>"
 python -B tools/workstream.py unblock <name>
 python -B tools/workstream.py complete <name>
@@ -75,17 +75,17 @@ python -B tools/workstream.py delete <name>
 Valid phases: `questions research design plan implement validate complete cleanup`
 Frameworks: `qrdpiv` (default, all phases) · `rpiv` (clear-spec: research→plan→implement→validate→cleanup)
 
-### task.py — the lightweight tier
+### assignment.py — the lightweight tier
 
-Manages lightweight, often-repeatable units at `control-plane/tasks/{name}/index.md`. No phase machine — a task carries just enough admin (assignment, checklist, handoff, lessons) to be resumable and handed off.
+Manages lightweight, often-repeatable units at `control-plane/assignments/{name}/index.md`. No phase machine — an assignment carries just enough admin (assignment, checklist, handoff, lessons) to be resumable and handed off.
 
 ```
-python -B tools/task.py list
-python -B tools/task.py create <name> [--parent workstreams/<name>|objectives/<name>] [--title "Title"]
-python -B tools/task.py status <name>
-python -B tools/task.py validate <name>     # stamp validated: <today> after the work is confirmed
-python -B tools/task.py complete <name>
-python -B tools/task.py delete <name>
+python -B tools/assignment.py list
+python -B tools/assignment.py create <name> [--parent workstreams/<name>|objectives/<name>] [--title "Title"]
+python -B tools/assignment.py status <name>
+python -B tools/assignment.py validate <name>     # stamp validated: <today> after the work is confirmed
+python -B tools/assignment.py complete <name>
+python -B tools/assignment.py delete <name>
 ```
 
 ### objective.py — the strategy tier
@@ -109,7 +109,7 @@ python -B tools/objective.py complete <name>
 
 ### gate.py — the deterministic go/no-go gate
 
-Runs measurable checks (tests, lint, build) and returns a hard GO / NO-GO. Used at the workstream **validate** phase and to close a task.
+Runs measurable checks (tests, lint, build) and returns a hard GO / NO-GO. Used at the workstream **validate** phase and to close an assignment.
 
 ```
 python -B tools/gate.py init                 # write a gate.json template

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Workstream (mission) state management — QRDPIV phase machine, no LLM."""
+"""Workstream (campaign) state management — QRDPIV phase machine, no LLM."""
 
 import argparse
 import os
@@ -183,11 +183,11 @@ def cmd_status(args):
         val = fm_get(text, key) or "—"
         print(f"{field:<12} {val}")
 
-    m = re.search(r"## Child Patrols\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", text)
+    m = re.search(r"## Child Missions\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", text)
     if m:
         rows = [r for r in m.group(1).strip().splitlines() if r.strip()]
         if rows:
-            print(f"\nchild patrols ({len(rows)} total):")
+            print(f"\nchild missions ({len(rows)} total):")
             for row in rows:
                 print(f"  {row.strip()}")
 
@@ -290,9 +290,9 @@ tags: [workstream/{name}]
 
 *One paragraph: what this workstream is and what it will deliver.*
 {artifact_table}
-## Child Patrols
+## Child Missions
 
-| Patrol | Linked |
+| Mission | Linked |
 |---|---|
 
 ## Cross-links
@@ -332,25 +332,25 @@ tags: [workstream/{name}]
 
 def cmd_link(args):
     workstream = args.workstream
-    patrol     = args.patrol
+    mission     = args.mission
 
     idx_path, idx_text = read_index(workstream)
 
-    patrol_section = re.search(r"## Child Patrols\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
+    patrol_section = re.search(r"## Child Missions\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
     if patrol_section:
         existing = patrol_section.group(1)
-        if re.search(rf"\|\s*{re.escape(patrol)}\s*\|", existing):
-            print(f"already linked: {patrol} → {workstream}")
+        if re.search(rf"\|\s*{re.escape(mission)}\s*\|", existing):
+            print(f"already linked: {mission} → {workstream}")
             return
 
-    new_row = f"| {patrol} | {today()} |"
+    new_row = f"| {mission} | {today()} |"
     idx_text = re.sub(
-        r"(## Child Patrols\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
+        r"(## Child Missions\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
         f"\\g<1>{new_row}\n",
         idx_text
     )
     idx_path.write_text(idx_text, encoding="utf-8")
-    print(f"linked: {patrol} → {workstream}")
+    print(f"linked: {mission} → {workstream}")
 
 
 def cmd_check_step(args):
@@ -484,7 +484,7 @@ def cmd_delete(args):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    p = argparse.ArgumentParser(description="Workstream (mission) state management — QRDPIV")
+    p = argparse.ArgumentParser(description="Workstream (campaign) state management — QRDPIV")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("list", help="List active workstreams")
@@ -501,9 +501,9 @@ def main():
                    help="Parent path, e.g. objectives/my-objective")
     s.add_argument("--title", help="Human-readable title (defaults to title-cased name)")
 
-    s = sub.add_parser("link", help="Register a child patrol under this workstream")
+    s = sub.add_parser("link", help="Register a child mission under this workstream")
     s.add_argument("workstream", help="Workstream name")
-    s.add_argument("patrol", help="Patrol name to link")
+    s.add_argument("mission", help="Mission name to link")
 
     s = sub.add_parser("check-step", help="Tick a plan.md checkbox and advance current_step")
     s.add_argument("name")

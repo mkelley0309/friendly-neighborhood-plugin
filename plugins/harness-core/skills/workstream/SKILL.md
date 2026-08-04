@@ -4,7 +4,7 @@ description: >
   Manages the full lifecycle of a workstream in control-plane/workstreams/ —
   initiation, questions, research, design, plan, implement, validate, cleanup.
   A workstream is the heavy, formal lifecycle for complex multi-session, multi-handoff
-  work: open one when the work is too big for a task (too many sessions, too many
+  work: open one when the work is too big for an assignment (too many sessions, too many
   handoffs, or too much structural risk to leave untracked). Trigger whenever
   someone describes an undertaking with that level of complexity. Also trigger when
   asking about workstream status, continuing existing work, or signaling completion.
@@ -90,13 +90,13 @@ Progress tracking is **not** its job. `plan.md` checkboxes and `index.md` `curre
 
 ## What Is a Workstream
 
-Heavy, formal, multi-session work with a defined completion state and a cleanup step that deletes the folder. A workstream links child **tasks** when parallel tracks need independent execution. Not: long-lived measured objectives (those are `objectives/`), single-session quick work (those are tasks), generic utilities (those are `tools/`), or project code (those are `projects/`).
+Heavy, formal, multi-session work with a defined completion state and a cleanup step that deletes the folder. A workstream links child **assignments** when parallel tracks need independent execution. Not: long-lived measured objectives (those are `objectives/`), single-session quick work (those are assignments), generic utilities (those are `tools/`), or project code (those are `projects/`).
 
-## Child Tasks and Parent Objectives
+## Child Assignments and Parent Objectives
 
-Workstreams can link child tasks and have a parent at one tier:
+Workstreams can link child assignments and have a parent at one tier:
 
-- **Child Tasks** — the workstream's `index.md` maintains a roster of child task links.
+- **Child Assignments** — the workstream's `index.md` maintains a roster of child assignment links.
 - **Objective** (`parent: "objectives/{name}"`) — a review-cycle-measured strategic objective.
 
 If the user describes work that should be tied to an objective and none exists, suggest creating it first via the `objective` skill.

@@ -54,4 +54,4 @@ python -B tools/objective.py add-kr {name} "<result>" "<target>"
 
 Tell the user: objective created, Key Results table ready, decisions log is empty and append-only.
 
-If the user is ready to spin up work toward this objective: suggest the `workstream` skill with `parent: "objectives/{name}"`. For lightweight single-thread work, suggest the `task` skill.
+If the user is ready to spin up work toward this objective: suggest the `workstream` skill with `parent: "objectives/{name}"`. For lightweight single-thread work, suggest the `assignment` skill.

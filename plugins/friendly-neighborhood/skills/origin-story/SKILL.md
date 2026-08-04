@@ -1,12 +1,12 @@
 ---
 name: origin-story
-description: Scaffold a fresh Friendly Neighborhood workspace into the current project — the constitution, the three-tier control-plane (responsibility/mission/patrol), an empty knowledge vault, the portable CLIs, and the auto-loading .claude/rules contracts. Run this once on a new project after installing the plugin. Safe to re-run; never overwrites existing files.
+description: Scaffold a fresh Friendly Neighborhood workspace into the current project — the constitution, the three-tier control-plane (responsibility/campaign/mission), an empty knowledge vault, the portable CLIs, and the auto-loading .claude/rules contracts. Run this once on a new project after installing the plugin. Safe to re-run; never overwrites existing files.
 disable-model-invocation: true
 ---
 
 # Origin Story — scaffold your workspace
 
-Every web-slinger needs an origin. This sets up a working, domain-neutral harness in the current project so the other skills (patrol, responsibility, mission, web-archive) have a home. It copies the plugin's bundled `templates/` into your project and **never overwrites anything that already exists**.
+Every web-slinger needs an origin. This sets up a working, domain-neutral harness in the current project so the other skills (mission, responsibility, campaign, web-archive) have a home. It copies the plugin's bundled `templates/` into your project and **never overwrites anything that already exists**.
 
 ## Steps
 
@@ -18,7 +18,7 @@ Every web-slinger needs an origin. This sets up a working, domain-neutral harnes
    - `py --version`
 
    If **none** works, stop and tell the user:
-   > Friendly Neighborhood needs Python 3 for its orchestration CLIs (patrol / responsibility / mission). Install it, then re-run `/friendly-neighborhood:origin-story`:
+   > Friendly Neighborhood needs Python 3 for its orchestration CLIs (mission / responsibility / campaign). Install it, then re-run `/friendly-neighborhood:origin-story`:
    > • macOS: `brew install python` (or python.org)
    > • Windows: `winget install Python.Python.3` (or python.org)
    > • Linux: your package manager, e.g. `sudo apt install python3`
@@ -41,7 +41,7 @@ Every web-slinger needs an origin. This sets up a working, domain-neutral harnes
 5. **Report** what it created vs. skipped, then point the user at next steps:
    - `constitution.md` is the base contract; subtree contracts auto-load via `.claude/rules/` as you work.
    - `/friendly-neighborhood:creed` loads the operating doctrine.
-   - Start work: `/friendly-neighborhood:mission` (complex, multi-session QRDPIV work), `/friendly-neighborhood:patrol` (a lightweight unit or one iteration), `/friendly-neighborhood:responsibility` (a long-lived measured goal), or `/friendly-neighborhood:web-archive` (knowledge pipeline).
+   - Start work: `/friendly-neighborhood:campaign` (complex, multi-session QRDPIV work), `/friendly-neighborhood:mission` (a lightweight unit or one iteration), `/friendly-neighborhood:responsibility` (a long-lived measured goal), or `/friendly-neighborhood:web-archive` (knowledge pipeline).
    - **Observation deck (VS Code):** open Terminal → Run Task → **🕷 Observation Deck** to watch your agents work in three colored panes (spideys / support / villains). Each agent narrates as it goes; a spidey wearing the symbiote shows in the black suit. The scaffolded `.vscode/tasks.json` wires it up.
    - Optional UX: the knowledge vault is plain markdown; install the kepano Obsidian skills separately if you want graph/wikilink/Bases tooling (`npx skills add kepano/obsidian-skills -g -a claude-code`). Not required.
 

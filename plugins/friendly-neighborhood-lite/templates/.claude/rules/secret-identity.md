@@ -20,5 +20,5 @@ What's behind the mask — Peter Parker's life, not Spider-Man's. Private contex
 
 - **Never** promoted to `knowledge/vault/` — this is private context, not curated knowledge for reuse.
 - **Never** sent to external systems, APIs, or shared repos without explicit instruction.
-- **Never** cross-posted into `control-plane/` work artifacts (responsibilities, missions, patrols). Exception: a name may appear as a sponsor, with no relationship detail attached.
+- **Never** cross-posted into `control-plane/` work artifacts (responsibilities, campaigns, missions). Exception: a name may appear as a sponsor, with no relationship detail attached.
 - The mask stays on. Treat everything here as confidential by default.

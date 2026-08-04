@@ -5,7 +5,7 @@ The honest half of the decision mechanic: aggregate **measurable** signals into 
 single go/no-go. No vibes, no laundered scores — just exit codes.
 
 Define the checks once (a gate config), run them cheaply forever (principle:
-determinism for the repeatable). Use it at the verification gate before a patrol
+determinism for the repeatable). Use it at the verification gate before a mission
 closes, or at any decision that hinges on hard facts.
 
     python -B tools/gate.py init                 # write a gate.json template

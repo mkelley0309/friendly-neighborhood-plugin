@@ -3,11 +3,11 @@ name: responsibility
 description: >
   Manages the lifecycle of a responsibility in control-plane/objectives/ — a long-lived,
   review-cycle-measured objective with structured progress tracking: Key Results (with
-  targets), milestones, linked missions (workstreams), a review cadence, a health signal,
+  targets), milestones, linked campaigns (workstreams), a review cadence, a health signal,
   and an append-only decisions log. With great power comes great responsibility: this is
-  the strategic container that outlasts any individual patrol or mission beneath it.
+  the strategic container that outlasts any individual mission or campaign beneath it.
   Trigger when the user references a formal responsibility, a review-cycle goal, or wants
-  to capture a strategic objective that will span multiple missions or patrols. Also
+  to capture a strategic objective that will span multiple campaigns or missions. Also
   trigger when asked about responsibility status, when KRs or milestones need updating,
   when decisions should be logged against a responsibility, or when a responsibility is
   closing out.
@@ -19,22 +19,22 @@ description: >
 
 A long-lived objective measured in the formal review cycle. Distinguishing traits:
 
-- **Spans multiple missions and patrols** — the responsibility is the strategic container; missions are mid-horizon coordinators; patrols are the tactical executions
-- **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked workstreams (child missions), a review cadence, and a health signal make progress legible at any review
+- **Spans multiple campaigns and missions** — the responsibility is the strategic container; campaigns are mid-horizon coordinators; missions are the tactical executions
+- **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked workstreams (child campaigns), a review cadence, and a health signal make progress legible at any review
 - **Retained after completion** — the decisions log is often more valuable than the outcome
 - **One folder per responsibility**, never deleted, lives at `control-plane/objectives/{name}/`
 
-Not a mission (those coordinate a cluster of patrols under a bounded goal). Not a patrol (those have defined completion states and are deleted on cleanup).
+Not a campaign (those coordinate a cluster of missions under a bounded goal). Not a mission (those have defined completion states and are deleted on cleanup).
 
 ## Three-Tier Awareness
 
 ```
 responsibility  (control-plane/objectives/)
-  └── mission   (control-plane/workstreams/)   ← child missions are workstreams
-        └── patrol  (control-plane/patrols/)
+  └── campaign   (control-plane/workstreams/)   ← child campaigns are workstreams
+        └── mission  (control-plane/missions/)
 ```
 
-A responsibility may own child missions directly, child patrols directly, or both. When creating related work, choose the right tier: missions for multi-patrol efforts; patrols for single-thread execution. Child missions are linked via `link-mission` (which takes a workstream name).
+A responsibility may own child campaigns directly, child missions directly, or both. When creating related work, choose the right tier: campaigns for multi-mission efforts; missions for single-thread execution. Child campaigns are linked via `link-campaign` (which takes a workstream name).
 
 ## Session Entry — Always Run First
 
@@ -74,7 +74,7 @@ Canonical order — this is what `create` generates and what backfilled responsi
 2. **Success Criteria** — how we'll know this is done; prose, the fuller narrative
 3. **Key Results** — table of measurable results with targets and current values (managed via `add-kr` / `update-kr`)
 4. **Milestones** — checklist of concrete checkpoints (managed via `add-milestone` / `check-milestone`)
-5. **Missions** — linked missions advancing this responsibility (managed via `link-mission`)
+5. **Campaigns** — linked campaigns advancing this responsibility (managed via `link-campaign`)
 6. *responsibility-specific sections* — Content Scope, Sequencing, Stakeholders, etc. Keep their own relative order.
 7. **Dependencies** — what this responsibility requires from elsewhere
 8. **Key Decisions Log** — append-only table (Decision | Rationale | Date). **Never truncated, never reordered.**
@@ -103,9 +103,9 @@ objectives/{name}/
 python -B tools/objective.py review <name> [--date YYYY-MM-DD] [--force]
 ```
 
-Snapshots current KRs, milestones, missions, and health into a new entry. It does not write to `index.md`. This is what gives Key Results a history — `update-kr` overwrites `current` in place, so without a dated snapshot the trajectory is lost on every update, and `health` can only ever be asserted rather than derived.
+Snapshots current KRs, milestones, campaigns, and health into a new entry. It does not write to `index.md`. This is what gives Key Results a history — `update-kr` overwrites `current` in place, so without a dated snapshot the trajectory is lost on every update, and `health` can only ever be asserted rather than derived.
 
-When filling a review, the health call must cite its evidence — a line in `index.md`, a linked mission, a decision entry. A health value without evidence is an assertion.
+When filling a review, the health call must cite its evidence — a line in `index.md`, a linked campaign, a decision entry. A health value without evidence is an assertion.
 
 ## CLI Reference
 
@@ -119,22 +119,22 @@ python -B tools/objective.py add-kr <name> "<result>" "<target>"
 python -B tools/objective.py update-kr <name> "<result>" "<current>"
 python -B tools/objective.py add-milestone <name> "<text>"
 python -B tools/objective.py check-milestone <name> "<text>"
-python -B tools/objective.py link-mission <name> <mission> [--status active|complete|paused|abandoned]
+python -B tools/objective.py link-campaign <name> <campaign> [--status active|complete|paused|abandoned]
 python -B tools/objective.py log-decision <name> "<decision>" "<rationale>"
 python -B tools/objective.py complete <name>
 ```
 
-## Relationship to Missions and Patrols
+## Relationship to Campaigns and Missions
 
-Missions that execute toward a responsibility are linked via `link-mission <responsibility> <mission>` (idempotent — a duplicate link is a silent no-op). The target must resolve on disk; the command rejects a name that does not exist rather than recording a dangling link.
+Campaigns that execute toward a responsibility are linked via `link-campaign <responsibility> <campaign>` (idempotent — a duplicate link is a silent no-op). The target must resolve on disk; the command rejects a name that does not exist rather than recording a dangling link.
 
-Completed missions are linked too, by their log path and with an explicit status:
+Completed campaigns are linked too, by their log path and with an explicit status:
 
 ```
-python -B tools/objective.py link-mission field-enablement \n    workstreams/_log/2026-05-22-example --status complete
+python -B tools/objective.py link-campaign field-enablement \n    workstreams/_log/2026-05-22-example --status complete
 ```
 
-A responsibility whose `## Missions` reads "(none yet)" despite delivered work misreports its own state, and `health` is judged partly on that.
+A responsibility whose `## Campaigns` reads "(none yet)" despite delivered work misreports its own state, and `health` is judged partly on that.
 
 ## Guiding Principle
 

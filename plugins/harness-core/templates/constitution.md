@@ -12,7 +12,7 @@
 _now.md              current priorities
 constitution.md      this file
 .claude/rules/       path-scoped rules (auto-loaded per subtree)
-control-plane/       orchestration: objectives, workstreams, tasks, logs
+control-plane/       orchestration: objectives, workstreams, assignments, logs
 projects/            execution workers
 knowledge/           sources/ (raw) · vault/ (curated) · distillers/
 prompts/             reusable prompt assets
@@ -28,7 +28,7 @@ Each subtree's contract auto-loads via a path-scoped rule in `.claude/rules/`; s
 
 1. Read `_now.md`
 2. Subtree contracts auto-load via `.claude/rules/` when you open files in that subtree — no manual step needed. If working outside Claude Code, read the subtree's `CLAUDE.md` pointer and follow it to `.claude/rules/<subtree>.md`.
-3. If a workstream, objective, or task is in scope, read its `index.md`
+3. If a workstream, objective, or assignment is in scope, read its `index.md`
 4. **State scope and next action before proceeding**
 
 ---
@@ -103,9 +103,9 @@ Subagent spawning is tool-dependent. See tool addendum for capability.
 
 ## Operating Principles
 
-The opinions that make this harness what it is. Most are tuned for serious, long-horizon, knowledge-heavy work — on a quick throwaway task, some are overhead you should skip. Match the ceremony to the size of the work.
+The opinions that make this harness what it is. Most are tuned for serious, long-horizon, knowledge-heavy work — on a quick throwaway assignment, some are overhead you should skip. Match the ceremony to the size of the work.
 
-1. **Three tiers of work.** *Objective* = the long-lived "why" — a role, a measured annual objective, a career goal — with structured progress tracking (Key Results, milestones, decisions log). *Workstream* = complex multi-session work with a defined completion state, run through the QRDPIV/RPIV lifecycle. *Task* = a lightweight, often-repeatable unit with proportional admin only (assignment, checklist, handoff, lessons). Strategy, execution, and lightweight iteration each keep their own durable state.
+1. **Three tiers of work.** *Objective* = the long-lived "why" — a role, a measured annual objective, a career goal — with structured progress tracking (Key Results, milestones, decisions log). *Workstream* = complex multi-session work with a defined completion state, run through the QRDPIV/RPIV lifecycle. *Assignment* = a lightweight, often-repeatable unit with proportional admin only (assignment, checklist, handoff, lessons). Strategy, execution, and lightweight iteration each keep their own durable state.
 
 2. **Progressive distillation — proportional.** At every handoff, compress to a dense artifact and hand that to a fresh context, not the raw history. Keeps understanding high and tokens low across long work — but it's overhead on short work. A one-session workstream distills lightly; a multi-week workstream distills hard. Distillation is lossy, so distill for the next phase's needs, not to a generic summary.
 
@@ -113,7 +113,7 @@ The opinions that make this harness what it is. Most are tuned for serious, long
 
 4. **Curated self-learning — gated, not auto.** Harness friction lands in `friction-log.md` every phase and is reviewed at cleanup, with anything still unresolved carried to the cross-run ledger at `control-plane/_harness/friction.md`; research with lasting value is staged for the vault and admitted only by peer review. The harness gets smarter over time, but nothing rewrites itself unsupervised — silent drift is the failure we design against.
 
-5. **Determinism for the repeatable.** If you'll do a task more than once, turn it into a script or tool the first or second time. Don't re-spend tokens reasoning out what a deterministic CLI can do for free forever. The control-plane CLIs embody this principle.
+5. **Determinism for the repeatable.** If you'll do an assignment more than once, turn it into a script or tool the first or second time. Don't re-spend tokens reasoning out what a deterministic CLI can do for free forever. The control-plane CLIs embody this principle.
 
 6. **Honest gates.** Hard, measurable concerns — tests pass/fail, lint/type errors, token spend vs. budget, deny-list hits — go through the deterministic gate (`tools/gate.py`), which exits GO or NO-GO. Soft, contextual judgments stay qualitative and are recorded in friction-log. There are few blanket "don't" rules: cost is computed from live signals, not a pre-listed catalog of prohibitions.
 
