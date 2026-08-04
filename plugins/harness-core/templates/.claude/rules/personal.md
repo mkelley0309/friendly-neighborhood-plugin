@@ -20,5 +20,5 @@ Private context that is yours alone and **never leaves**.
 
 - **Never** promoted to `knowledge/vault/` — this is private context, not curated knowledge for reuse.
 - **Never** sent to external systems, APIs, or shared repos without explicit instruction.
-- **Never** cross-posted into `control-plane/` work artifacts (objectives, workstreams, tasks). Exception: a name may appear as a sponsor, with no relationship detail attached.
+- **Never** cross-posted into `control-plane/` work artifacts (objectives, workstreams, assignments). Exception: a name may appear as a sponsor, with no relationship detail attached.
 - Treat everything here as confidential by default.

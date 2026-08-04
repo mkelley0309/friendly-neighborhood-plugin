@@ -408,6 +408,14 @@ def cmd_create(args):
 
     title   = args.title or name.replace("-", " ").title()
     today_s = today()
+    origin  = getattr(args, "origin", None) or ""
+    origin_line = ""
+    if origin:
+        origin_line = (
+            f"*Promoted from* [{origin}](../../{origin}/index.md)*, which outgrew its tier. "
+            "That work keeps its original scope and closes itself out under this objective "
+            "rather than being rewritten — the promotion gives it a parent, it does not "
+            "change what it was for.*\n\n")
 
     index_md = f"""---
 objective: {name}
@@ -415,6 +423,7 @@ status: active
 health: on-track
 cadence: quarterly
 created: {today_s}
+promoted_from: "{origin}"
 tags: [objective]
 ---
 
@@ -422,7 +431,7 @@ tags: [objective]
 
 ## Objective
 
-*What this is and why it matters. Tie to strategy where relevant.*
+{origin_line}*What this is and why it matters. Tie to strategy where relevant.*
 
 ## Success Criteria
 
@@ -716,6 +725,9 @@ def main():
     s = sub.add_parser("create")
     s.add_argument("name")
     s.add_argument("--title")
+    s.add_argument("--from", dest="origin", metavar="PATH",
+                   help="the workstream or cadence that outgrew its tier, e.g. "
+                        "workstreams/vault-reindex. Records the promotion.")
     s.add_argument("--group",
                    help="### subgroup of the Active table to insert into "
                         "(e.g. 'Infrastructure Builds'); defaults to the first")

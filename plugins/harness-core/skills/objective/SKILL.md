@@ -5,9 +5,9 @@ description: >
   review-cycle-measured objective with structured progress tracking: Key Results (with
   targets), milestones, linked workstreams, a review cadence, a health signal,
   and an append-only decisions log. This is the strategic container that outlasts
-  any individual task or workstream beneath it.
+  any individual assignment or workstream beneath it.
   Trigger when the user references a formal objective, a review-cycle goal, or wants
-  to capture a strategic objective that will span multiple workstreams or tasks. Also
+  to capture a strategic objective that will span multiple workstreams or assignments. Also
   trigger when asked about objective status, when KRs or milestones need updating,
   when decisions should be logged against an objective, or when an objective is
   closing out.
@@ -19,22 +19,22 @@ description: >
 
 A long-lived goal measured in the formal review cycle. Distinguishing traits:
 
-- **Spans multiple workstreams and tasks** — the objective is the strategic container; workstreams are the heavy lifecycle units; tasks are the lightweight executions
+- **Spans multiple workstreams and assignments** — the objective is the strategic container; workstreams are the heavy lifecycle units; assignments are the lightweight executions
 - **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked workstreams, a review cadence, and a health signal make progress legible at any review
 - **Retained after completion** — the decisions log is often more valuable than the outcome
 - **One folder per objective**, never deleted, lives at `control-plane/objectives/{name}/`
 
-Not a workstream (those have defined completion states and are deleted on cleanup). Not a task (those are lightweight single-thread executions).
+Not a workstream (those have defined completion states and are deleted on cleanup). Not an assignment (those are lightweight single-thread executions).
 
 ## Three-Tier Awareness
 
 ```
 objective   (control-plane/objectives/)
   └── workstream  (control-plane/workstreams/)   ← heavy QRDPIV lifecycle
-        └── task  (control-plane/tasks/)          ← lightweight unit
+        └── assignment  (control-plane/assignments/)          ← lightweight unit
 ```
 
-An objective may own child workstreams directly, child tasks directly, or both. When creating related work, choose the right tier: workstreams for multi-phase efforts; tasks for single-thread execution. Child workstreams are linked via `link-workstream` (which takes a workstream name).
+An objective may own child workstreams directly, child assignments directly, or both. When creating related work, choose the right tier: workstreams for multi-phase efforts; assignments for single-thread execution. Child workstreams are linked via `link-workstream` (which takes a workstream name).
 
 ## Session Entry — Always Run First
 
@@ -123,7 +123,7 @@ python -B tools/objective.py log-decision <name> "<decision>" "<rationale>"
 python -B tools/objective.py complete <name>
 ```
 
-## Relationship to Workstreams and Tasks
+## Relationship to Workstreams and Assignments
 
 Workstreams that execute toward an objective are linked via `link-workstream <objective> <workstream>` (idempotent — a duplicate link is a silent no-op). The target must resolve on disk; the command rejects a name that does not exist rather than recording a dangling link.
 
@@ -134,7 +134,7 @@ python -B tools/objective.py link-workstream field-enablement \
     workstreams/_log/2026-05-22-fynapse-buy-v-build-insurance --status complete
 ```
 
-An objective whose `## Workstreams` reads "(none yet)" despite delivered work misreports its own state, and `health` is judged partly on that. When a workstream or task closes, link it, and reflect any strategy-relevant lessons in the objective's decisions log.
+An objective whose `## Workstreams` reads "(none yet)" despite delivered work misreports its own state, and `health` is judged partly on that. When a workstream or assignment closes, link it, and reflect any strategy-relevant lessons in the objective's decisions log.
 
 ## Guiding Principle
 

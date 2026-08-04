@@ -35,9 +35,9 @@ Fill-in templates for workstream artifacts. Load this file only when creating a 
 | Worktrees | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 
-## Child Tasks
+## Child Assignments
 
-| Task | Linked |
+| Assignment | Linked |
 |---|---|
 
 ## Cross-links
@@ -256,7 +256,7 @@ Often empty — a run with no friction is a good run, not a gap to fill.
 
 ## Harness Friction Ledger (`control-plane/_harness/friction.md`)
 
-The cross-run aggregation point. Workstream cleanup, task complete, and objective review each
+The cross-run aggregation point. Workstream cleanup, assignment complete, and objective review each
 append unresolved, generalizable friction here. **Permanent** — the workstream folder that
 produced an entry is deleted, so this is the only thing that survives to inform the next
 run. Create it on first use.
@@ -280,7 +280,7 @@ one annoyance is noise, the same annoyance three times is a defect.
 
 | Date | Tier | Source | Friction | Recurred |
 |---|---|---|---|---|
-| YYYY-MM-DD | workstream \| task \| objective | {name} | {the rule, one line} | 1 |
+| YYYY-MM-DD | workstream \| assignment \| objective | {name} | {the rule, one line} | 1 |
 
 ## Resolved
 

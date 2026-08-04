@@ -70,7 +70,7 @@ def main() -> int:
         "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\n"
         "    3. Start work: /harness-core:workstream (a complex effort), "
         "/harness-core:objective (a long-lived goal), "
-        "/harness-core:task (a lightweight unit), "
+        "/harness-core:assignment (a lightweight unit), "
         "or /harness-core:knowledge (knowledge pipeline).\n"
     )
     return 0

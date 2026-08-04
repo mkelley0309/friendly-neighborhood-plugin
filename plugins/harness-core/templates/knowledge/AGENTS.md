@@ -5,7 +5,7 @@ tags: [knowledge, agents]
 
 # Knowledge Agent Roles
 
-Defines the five roles that operate in the `knowledge/` pipeline. Each role has a single responsibility, explicit allowed reads and writes, and a briefing template. Role enforcement is by task briefing (file-path gating in prompts), not by permissions infrastructure.
+Defines the five roles that operate in the `knowledge/` pipeline. Each role has a single responsibility, explicit allowed reads and writes, and a briefing template. Role enforcement is by assignment briefing (file-path gating in prompts), not by permissions infrastructure.
 
 ---
 

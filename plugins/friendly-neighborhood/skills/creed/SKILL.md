@@ -19,9 +19,9 @@ Make the smallest correct change. Prefer additive and reversible. Never delete o
 
 The opinions that make this harness what it is. Most are tuned for **serious, long-horizon, knowledge-heavy work** — on a quick throwaway task, some are overhead you should skip. Match the ceremony to the size of the work.
 
-1. **Three tiers of work.** *Responsibility* = the long-lived "why" — a role, a measured annual objective, a career goal — with structured tracking (Key Results, milestones, cadence) and an append-only decisions log. *Mission* = complex work spanning multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. *Patrol* = a lightweight unit or one iteration against a mission, carrying only *proportional* admin. Strategy, missions, and lightweight units each keep their own durable state — and you size the ceremony to the tier.
+1. **Three tiers of work.** *Responsibility* = the long-lived "why" — a role, a measured annual objective, a career goal — with structured tracking (Key Results, milestones, cadence) and an append-only decisions log. *Campaign* = complex work spanning multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. *Mission* = a lightweight unit or one iteration against a campaign, carrying only *proportional* admin. Strategy, campaigns, and lightweight units each keep their own durable state — and you size the ceremony to the tier.
 
-2. **Progressive distillation — proportional.** At every handoff, compress to a dense artifact and hand *that* to a fresh context, not the raw history. Keeps understanding high and tokens low across long work — but it's *overhead on short work*. A patrol carries proportional admin only; a multi-week mission distills hard at every phase boundary. Distillation is lossy, so distill *for the next phase's needs*, not to a generic summary.
+2. **Progressive distillation — proportional.** At every handoff, compress to a dense artifact and hand *that* to a fresh context, not the raw history. Keeps understanding high and tokens low across long work — but it's *overhead on short work*. A mission carries proportional admin only; a multi-week campaign distills hard at every phase boundary. Distillation is lossy, so distill *for the next phase's needs*, not to a generic summary.
 
 3. **Progressive disclosure — including the vault.** Load the minimum for the next decision: skills route to action-files on demand, rules load per subtree, and the **knowledge vault is navigated hub → note, never bulk-loaded.** Fetch detail when you need it, not before.
 
@@ -35,7 +35,7 @@ The opinions that make this harness what it is. Most are tuned for **serious, lo
 
 8. **Lean orchestration.** Cheapest capability that does the job; spawn only the agents whose concern is *live* (the phase council), never the whole roster, never passively; concurrency is a budget you set, not a free-for-all.
 
-> **Foundations** — solid, expected, *not* claimed as novel: a workspace scaffolder, observational logging + recovery, an enforced safety deny-list + spider-sense, a verification/testing gate before a mission closes, and native autonomous looping (`/loop` + `schedule`) for long-running work.
+> **Foundations** — solid, expected, *not* claimed as novel: a workspace scaffolder, observational logging + recovery, an enforced safety deny-list + spider-sense, a verification/testing gate before a campaign closes, and native autonomous looping (`/loop` + `schedule`) for long-running work.
 
 ---
 
@@ -65,12 +65,12 @@ Counsel and dissent are **targeted, not broad**. Each kind of work has a small, 
 | Tier | Drivers (spideys) | Standing counsel (support) | Standing watch (villains) |
 |---|---|---|---|
 | **Responsibility** (objective) | main context | uncle-ben (morality), madame-web (evidence), mj (real need) | osborn (corner-cut the goal to mark it done) |
-| **Mission** (QRDPIV) | per-phase council below | aunt-may (scope), ned (systems) | per-phase council below |
-| **Patrol** (light) | **default `peter`** (home base); route to the specialist the unit's *nature* calls for — `miles` (surgical), `noir` (debug), `silk` (lookup), `ben-reilly` (small refactor), `peni` (build) | ned (repeatability) | mysterio (claiming done unverified) |
+| **Campaign** (QRDPIV) | per-phase council below | aunt-may (scope), ned (systems) | per-phase council below |
+| **Mission** (light) | **default `peter`** (home base); route to the specialist the unit's *nature* calls for — `miles` (surgical), `noir` (debug), `silk` (lookup), `ben-reilly` (small refactor), `peni` (build) | ned (repeatability) | mysterio (claiming done unverified) |
 
-**Drivers follow the *nature* of the work, not the tier:** a patrol takes the one driver its task calls for (default `peter` when nothing more specific fits); a mission routes per phase; a responsibility is stewarded from main context. A patrol keeps the council *small on purpose* — pick the fitting driver, run the gate, watch Mysterio. Don't convene a mission's full council around a one-shot task.
+**Drivers follow the *nature* of the work, not the tier:** a mission takes the one driver its task calls for (default `peter` when nothing more specific fits); a campaign routes per phase; a responsibility is stewarded from main context. A mission keeps the council *small on purpose* — pick the fitting driver, run the gate, watch Mysterio. Don't convene a campaign's full council around a one-shot task.
 
-### The QRDPIV phase council (missions)
+### The QRDPIV phase council (campaigns)
 
 | Phase | Driver (spideys) | Counsel (support) | Watch for (villains) |
 |---|---|---|---|
@@ -83,11 +83,11 @@ Counsel and dissent are **targeted, not broad**. Each kind of work has a small, 
 | **Cleanup** | peter | ned, jameson | carnage, mysterio |
 | Escalation (symbiote) | the escalating spidey | uncle-ben | venom, kingpin |
 
-**Each advisor guards a concern:** robbie → **shaping** (constructive questions that move fuzzy work forward — interviews at origin-story, then questions/design); jameson → **framing** (devil's-advocate grilling of poorly-shaped work *before* effort is spent); gwen → **validation** (runs it and proves functionality at validate — the spidey who's also a trusted advisor); uncle-ben → **responsibilities** (morality — don't corner-cut the objective just to mark it done, which Osborn would applaud); aunt-may → **missions** (scope creep); mj → the **end user**; ned → **patrols & systems** (repeatability); madame-web → **updating on evidence**.
+**Each advisor guards a concern:** robbie → **shaping** (constructive questions that move fuzzy work forward — interviews at origin-story, then questions/design); jameson → **framing** (devil's-advocate grilling of poorly-shaped work *before* effort is spent); gwen → **validation** (runs it and proves functionality at validate — the spidey who's also a trusted advisor); uncle-ben → **responsibilities** (morality — don't corner-cut the objective just to mark it done, which Osborn would applaud); aunt-may → **campaigns** (scope creep); mj → the **end user**; ned → **missions & systems** (repeatability); madame-web → **updating on evidence**.
 
 **Cross-cutting** — summon at the trigger, not per phase: **uncle-ben + osborn** before any big or irreversible move; **kingpin** whenever you reach for more model/effort/tokens; **carnage** on any destructive action (also hard-guarded by spider-sense + the deny-list); **cat** whenever work touches auth, secrets, input handling, or any external surface (her delight means a window's open); **jessica** whenever something *fails* and the cause isn't obvious — she traces it to root before a fix is written (distinct from `noir`, who debugs a known break, and the loop's diagnosis of mere weakness); **punk** whenever the *process* feels heavier than the problem — premature abstraction, ritual, needless centralization (his rant is the alarm; he's the spidey counterpart to Octavius's over-built *solutions*). `scorpion` (spite / bad faith) and `electro` (fragile/cascading change) live at validate.
 
-**Auto-improvement loops** — refining a component against its *own* intent + this creed: **`noir`** diagnoses what's actually weak and **`ben-reilly`** refines it *without over-rewriting* (his standing guardrail). The **gate** is the go/no-go each pass. Watch **`lizard`** (diminishing returns — when another pass is just over-polishing, stop) and **`kraven`** (the loop drifting off the component's real intent onto the wrong target); **`mysterio`** guards any "improved" claim you didn't actually verify. See `/friendly-neighborhood:stakeout`.
+**Auto-improvement loops** — refining a component against its *own* intent + this creed: **`noir`** diagnoses what's actually weak and **`ben-reilly`** refines it *without over-rewriting* (his standing guardrail). The **gate** is the go/no-go each pass. Watch **`lizard`** (diminishing returns — when another pass is just over-polishing, stop) and **`kraven`** (the loop drifting off the component's real intent onto the wrong target); **`mysterio`** guards any "improved" claim you didn't actually verify. See `/friendly-neighborhood:patrol`.
 
 **Angel and devil** — each advisor is the constructive answer to a failure mode:
 
@@ -110,8 +110,8 @@ The three tiers are *defined* in Principle 1 — here's their machinery:
 | Tier (themed · internal) | CLI | Lifecycle |
 |---|---|---|
 | **Responsibility** · objective | `objective.py` | structured tracking (Key Results, milestones, cadence, health) + append-only decisions log; never deleted |
-| **Mission** · workstream | `workstream.py` | heavy **QRDPIV** (Q→R→D→P→I→V→Cleanup; **RPIV** if the spec's already clear); deleted at cleanup, its log survives; may link child patrols |
-| **Patrol** | `patrol.py` | proportional admin only (assignment / checklist / handoff / lessons); promote to a mission if it grows |
+| **Campaign** · workstream | `workstream.py` | heavy **QRDPIV** (Q→R→D→P→I→V→Cleanup; **RPIV** if the spec's already clear); deleted at cleanup, its log survives; may link child missions |
+| **Mission** | `mission.py` | proportional admin only (assignment / checklist / handoff / lessons); promote to a campaign if it grows |
 
 ---
 

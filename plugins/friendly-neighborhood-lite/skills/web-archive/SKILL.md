@@ -18,14 +18,14 @@ The vault is **the Web** — a growing network of linked notes that is uniquely 
 - User says "cartograph the vault", "add cross-links", "run Cartographer"
 - User says "audit the vault", "lint the vault", "check vault health/consistency", "run vault-lint"
 - User says "sync sources", "refresh docs", "run docs-sync"
-- After a mission's research phase completes and a queue signal has been written
+- After a campaign's research phase completes and a queue signal has been written
 - Content surfaces that is the user's own opinion/view/experience — auto-route it to `perspective/{domain}/` (it becomes pipeline input)
 
 ## When NOT to use
 
 - Reading sources for a one-off research pass (read directly — no pipeline needed)
 - Hand-writing original vault notes not derived from any source or perspective (write via Obsidian directly)
-- Mission planning, design, or implementation (those are mission skill concerns)
+- Campaign planning, design, or implementation (those are campaign skill concerns)
 
 ## Action routing
 

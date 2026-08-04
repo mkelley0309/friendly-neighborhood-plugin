@@ -14,13 +14,13 @@
 
 ---
 
-## Active Missions
+## Active Campaigns
 
 *(none)*
 
 ---
 
-## Active Patrols
+## Active Missions
 
 *(none)*
 

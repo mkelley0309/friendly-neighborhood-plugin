@@ -1,127 +1,47 @@
 ---
 name: mission
-description: >
-  Manages the full lifecycle of a mission in control-plane/workstreams/ —
-  initiation, questions, research, design, plan, implement, validate, cleanup.
-  A mission is the heavy, formal lifecycle for complex multi-session, multi-handoff
-  work: open one when the work is too big for a patrol (too many sessions, too many
-  handoffs, or too much structural risk to leave untracked). Trigger whenever
-  someone describes an undertaking with that level of complexity. Also trigger when
-  asking about mission status, continuing existing work, or signaling completion.
-  When in doubt, trigger — the Questions step is cheap; under-shaped work is expensive.
+description: A lightweight unit of work — a small, often repeatable task done under a campaign or standalone (add a source, refresh data, lint an area, one iteration against a campaign). Trigger for quick work that doesn't warrant the full campaign lifecycle. A mission tracks itself lightly — its assignment, a handoff to other missions, lessons learned — just enough admin, no heavy distillation.
 ---
 
-# Mission Skill
+# Mission — a lightweight work unit
 
-## Session Entry — Always Run First
+A mission is the smallest tracked unit: a quick, often repeatable task. *Add a source to the curation pipeline. Refresh one source's data. Lint a vault area. Run one iteration against a campaign.* If the work is complex, multi-session, or needs handoffs across phases, it isn't a mission — open a **campaign** (`/friendly-neighborhood:campaign`) and run the full lifecycle.
 
-1. Read `control-plane/CLAUDE.md`
-2. Read `control-plane/workstreams/index.md`
-3. If a specific mission is in scope, read its `index.md`
-4. Identify the current phase and health
-5. Identify the current action from the table below
-6. Load **only** that action file — nothing else
-7. State phase, health, and intended action to the user before proceeding
+**Proportional admin — this is the whole point.** A mission carries *just enough* tracking to be resumable, handed off, and learned from, and no more. Don't impose campaign-grade progressive distillation on a one-shot task: at this size the overhead — and the lossy, sometimes-inaccurate nature of distillation — costs more than it's worth. A small unit that simply *understands its assignment* and records the few things worth keeping beats a heavyweight ceremony.
 
-**What NOT to load at session entry:** Do not read research files, design.md, plan.md, or any `_working/` files during session entry. These are loaded only when the action explicitly requires them (e.g., implement loads plan.md to check step status; a research step loads its source files). Assess and cleanup never need research files.
+## Lifecycle (light)
 
-## Action Routing
+1. **Create + state the assignment.** `python -B tools/mission.py create <name> [--parent workstreams/<campaign>|objectives/<obj>] [--title]`. Write the **assignment** in its `index.md` — what you understand the job to be, in a sentence or two. That understanding is the mission's real value.
+2. **Do the work**, keeping the checklist current. Pick a driver that fits: `peter` (general), `miles` (a surgical change), `noir` (a debug pass), `silk` (a lookup), `ben-reilly` (a small refactor).
+3. **Validate — don't close on faith.** Run the gate (`python -B tools/gate.py run`) or otherwise confirm it actually worked, then `python -B tools/mission.py validate <name>`. Claiming done without checking is Mysterio.
+4. **Capture handoff + lessons + friction (one line each, if any).** If another mission picks up from here, write a one-line **handoff**. If you learned something worth repeating or avoiding, write a one-line **lesson**. If the *harness* got in your way, write a one-line **friction**. Skip what doesn't apply.
+5. **Resolve every checkbox.** A completed mission must contain no `- [ ]`. Frontmatter `status` is the *portfolio* signal, but an unchecked box is a *file-level* signal, and anything reading checkboxes rather than frontmatter keeps reporting a closed mission as live work. Tick it, or delete it and state the outcome as prose — never tick something that did not happen.
+6. **Rescue anything durable.** The folder is deleted at step 8, so sweep it first: produced artifacts to `control-plane/outputs/{name}/`, vault content to `knowledge/vault/`, source material to `intake/_archive/`, code to `projects/{name}/`. Most missions hold nothing but their own `index.md`, but the one that does is the one that loses primary evidence.
+7. **Write the log entry** in `control-plane/missions/_log.md`, newest first, as a dated section — *Was / Produced / Carried forward / Handoff*. **This is the durable record**, since the folder does not survive. Keep it proportional, but not so thin the work becomes unreconstructable.
+8. **Complete, then delete.** `python -B tools/mission.py complete <name>` then `python -B tools/mission.py delete <name>`. Verify the log entry exists before deleting.
 
-| Situation | Load |
-|---|---|
-| New mission — nothing exists yet | `actions/initiate.md` |
-| Existing mission — need to understand state or advise | `actions/assess.md` |
-| QRDPIV Questions step — refining an ambiguous request | `actions/questions.md` |
-| Research step — running distillation passes | `actions/research.md` |
-| Design step — architectural decisions | `actions/design.md` |
-| Plan step — producing `plan.md` | `actions/plan.md` |
-| Implement step — executing against `plan.md` or worktrees | `actions/implement.md` |
-| Validate step — gate run + adversarial QA before closing | `actions/validate.md` |
-| Mission complete — writing log, deleting files | `actions/cleanup.md` |
+## When to promote
 
-## Framework at a Glance
+If a mission starts to grow — multiple sessions, real research, design decisions, cross-phase handoffs — **stop and promote it to a campaign**: open a campaign and make this mission its first iteration. Promote rather than bloat a mission into a pseudo-campaign. Promote *before* completing, since completing deletes the folder.
 
-**QRDPIV** (default): Questions → Research → Design? → Plan → Implement → Validate → Cleanup
-**RPIV** (clear-spec): Research → Plan → Implement → Validate → Cleanup
+## The record (kept light)
 
-Default to QRDPIV. Questions are cheap; under-shaped plans are expensive.
+While the mission is open, its `index.md` holds, *proportionally*: the **Assignment** (what it is), a **Checklist**, a **Handoff** line (for the next mission), **Lessons** (worth keeping), and **Friction** (how the harness performed). Any section a given mission doesn't need, leave empty.
 
-**Research is mandatory.** There is no shortcut from Questions or Initiate to Design or Plan without a `research.md`. Even when the user provides source material directly, that material must be written to `_working/` and distilled through the research protocol before proceeding.
+**That file is working state, not the archive.** At completion it collapses into one dated entry in `control-plane/missions/_log.md` and the folder is deleted. So the question at close is always *what would someone need six months from now* — usually the assignment, what came out, and the one lesson. Rarely the checklist.
 
-## Agent triggers
+## Friction vs. Lessons
 
-Each phase routes to a **driver** Spider-variant (named in that phase's action-file Phase council; full map in `/friendly-neighborhood:creed`): questions → `peter`, research → `silk`/`noir`, design & plan → `miguel`, implement → `peter`/`miles` (per step), validate → `gwen` (run it; `jameson` adversarial alongside), cleanup → `peter`. **Implement advances to validate** — the validate phase runs the deterministic gate and adversarial QA before the mission can close. Spawn drivers as subagents (`subagent_type` = the agent); consult support/villains only when their concern is live.
+Two different things, and conflating them is what bloats a record:
 
-## Research Protocol (Non-Negotiable)
+- **Lessons** are about *this work* — "the API paginates at 100, not 50."
+- **Friction** is about *the harness* — "`mission.py validate` gave no output on success, so I couldn't tell it had run."
 
-Every research phase follows these rules — no exceptions:
+The test: **would this still be true and useful on a completely unrelated mission?** If yes it is friction; if it names the subject matter it is a lesson.
 
-1. **Each pass writes to disk first.** Subagent pass findings go to `_working/research-{type}-{n}.md` before anything else. Raw pass output is never consumed by main context.
-2. **Distillation runs in a fresh context.** A separate distillation subagent reads only `_working/` files and writes `research.md`. It has no access to the conversation or pass instructions.
-3. **Main context reads only `research.md`.** Not `_working/` files, not pass summaries — only the distilled output.
-4. **Passes run before distillation.** Run passes **sequentially, one at a time** — a stalled or half-written pass file leaves the mission in an unrecoverable state, and certainty of completion outranks speed. All pass files must exist on disk before distillation begins, and distillation is itself a single sequential step.
+Both are too big for the mission record alone, and both get carried out at completion for the same reason — a thing noticed once inside one folder will not be noticed twice:
 
-These rules enforce progressive distillation, structured handoffs to clean context windows, limited token usage, and semantic density — the properties that make a mission coherent across multiple sessions.
+- Lessons → `control-plane/missions/_log.md`, the running log, one entry per completed mission.
+- Unresolved friction → `control-plane/_harness/friction.md`, the cross-run harness ledger. Record the rule, not the incident. Most missions produce none.
 
-## Friction Log — Every Phase
-
-Each mission keeps one `friction-log.md` in its folder. It records **how well the harness performed**, never what the work found.
-
-- **Created at initiate** from the template in `framework-templates.md`.
-- **Appended by every phase**, prefixed `[questions]` `[research]` `[design]` `[plan]` `[implement]` `[validate]` `[cleanup]`.
-- **Reviewed at cleanup** — surfaced to the user, distilled into the log entry, and any unresolved generalizable entry appended to `control-plane/_harness/friction.md`.
-
-### The inclusion test
-
-> **Would this note still be true and useful on a completely unrelated mission?**
-
-If yes, it belongs here. If it names the subject matter, it belongs in the work artifact instead.
-
-| Belongs in `friction-log.md` | Belongs elsewhere |
-|---|---|
-| "Vault read scope was too narrow for the research pass" | A finding *from* that pass → `research.md` |
-| "`actions/research.md` names an agent that has no Write tool" | A defect in the code under study → `research.md` |
-| "`SKILL.md` and the action file contradict each other" | A design decision taken → `design.md` |
-| "The CLI resolves the wrong root when run from a subfolder" | Step 1.4 is done → `plan.md` (via `check-step`) |
-
-**Record the rule, not the incident.** "Diff before you copy — the plugin can be ahead" is the entry; the file you clobbered is a clause of evidence, not a paragraph.
-
-### Why the scope is narrow
-
-This is the only artifact that legitimately crosses every phase boundary. That privilege is affordable *only* because its scope is small and fixed. Let it also carry what the work found and it becomes the cross-phase accumulator that progressive distillation exists to prevent — every phase then reads every prior phase's findings, which is exactly the context pollution the handoff model is built to stop.
-
-Progress tracking is **not** its job. `plan.md` checkboxes and `index.md` `current_step` are maintained together by `workstream.py check-step`; a third hand-maintained tracker rots and then lies.
-
-## What Is a Mission
-
-Heavy, formal, multi-session work with a defined completion state and a cleanup step that deletes the folder. A mission links child **patrols** when parallel tracks need independent execution. Not: long-lived measured objectives (those are `objectives/`), single-session quick work (those are patrols), generic utilities (those are `tools/`), or project code (those are `projects/`).
-
-## Child Patrols and Parent Responsibilities
-
-Missions can link child patrols and have a parent at one tier:
-
-- **Child Patrols** — the mission's `index.md` maintains a roster of child patrol links (`control-plane/patrols/{patrol-name}/index.md`).
-- **Responsibility** (`parent: "objectives/{name}"`) — a review-cycle-measured strategic objective.
-
-If the user describes work that should be tied to a responsibility and none exists, suggest creating it first via the `responsibility` skill.
-
-## Framework Reference
-
-Operational schemas and state transitions live in `framework.md`. Load it when creating or updating any mission file.
-
-Templates (index.md, request.md, research.md, design.md, plan.md, log entry) live in `framework-templates.md`. Load it **only** when you are about to fill in a new artifact — not during session entry, assess, or implement continuation.
-
-## Subagent Delegation
-
-Per workspace `CLAUDE.md`:
-- **Sonnet subagents** for research passes, plan drafting, design analysis
-- **Haiku subagents** for template filling, bounded lookups, file moves
-- Never delegate synthesis, decisions, or cross-artifact reconciliation — those stay in main context
-
-## Guiding Principles
-
-Orient → shape → execute → validate → distill → log → delete. At every transition, something becomes smaller and more useful.
-
-**Progressive distillation:** Raw findings compress to pass files. Pass files compress to `research.md`. Research compresses to design decisions. Design compresses to plan steps. Plan compresses to a log entry. Nothing flows forward at full density.
-
-**Structured handoffs:** Each phase transition hands off an artifact, not a conversation. The next phase reads the artifact, not what was said. Clean context windows are a feature — they enforce that the artifact carries all necessary information.
+In both ledgers **recurrence is the signal**. An entry appearing twice has outgrown the log and belongs in a skill, a tool, or a checklist.

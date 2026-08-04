@@ -4,7 +4,7 @@ Append an entry to a responsibility's Key Decisions Log. Load this file only.
 
 ## When to Run
 
-A decision has been made — by the user, in conversation, or via a mission or patrol outcome — that:
+A decision has been made — by the user, in conversation, or via a campaign or mission outcome — that:
 - Affects how this responsibility will be pursued
 - Closes off an alternative path
 - Would be useful context for future-you at review time
@@ -33,7 +33,7 @@ Format:
 | {Decision in 1 sentence} | {Rationale — what it enables or trades off} | {YYYY-MM-DD} |
 ```
 
-Keep each cell short. Decision ≤ 15 words; rationale ≤ 25 words. If more context is needed, reference a mission log entry, patrol log entry, or related note.
+Keep each cell short. Decision ≤ 15 words; rationale ≤ 25 words. If more context is needed, reference a campaign log entry, mission log entry, or related note.
 
 You may also run:
 
@@ -47,11 +47,11 @@ If the decision introduces a new concept worth surfacing (new domain, new tool, 
 
 ### 5. Cross-link (optional)
 
-If the decision came from a mission or patrol (workstream), reference that entry in the Related Notes section:
+If the decision came from a campaign or mission (workstream), reference that entry in the Related Notes section:
 
 ```markdown
-- [Mission — {name}](../../workstreams/{name}/index.md) — decision surfaced here
-- [Patrol log — {date}-{name}](../../workstreams/_log/{date}-{name}.md) — decision surfaced here
+- [Campaign — {name}](../../workstreams/{name}/index.md) — decision surfaced here
+- [Mission log — {date}-{name}](../../workstreams/_log/{date}-{name}.md) — decision surfaced here
 ```
 
 ### 6. Confirm to user

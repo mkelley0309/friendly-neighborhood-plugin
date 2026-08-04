@@ -54,7 +54,7 @@ Create when:
 Do not create for:
 - One-off workstream deliverables (those are workstream artifacts)
 - Generic utilities with no stable contract (those are `tools/`)
-- Pure knowledge tasks (those are `knowledge/` work)
+- Pure knowledge assignments (those are `knowledge/` work)
 
 ---
 

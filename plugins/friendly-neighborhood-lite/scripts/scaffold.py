@@ -69,7 +69,7 @@ def main() -> int:
         "    1. Open constitution.md - the base contract.\n"
         "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\n"
         "    3. Run /friendly-neighborhood-lite:creed to load the operating doctrine.\n"
-        "    4. Start work: /friendly-neighborhood-lite:patrol (a mission), "
+        "    4. Start work: /friendly-neighborhood-lite:mission (a campaign), "
         "/friendly-neighborhood-lite:responsibility (a goal), or /friendly-neighborhood-lite:web-archive (knowledge).\n"
     )
     return 0

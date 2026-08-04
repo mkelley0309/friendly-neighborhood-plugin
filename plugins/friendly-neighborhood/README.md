@@ -10,17 +10,17 @@ Friendly Neighborhood packages a real, working harness as a Claude Code plugin �
 
 The defensible opinions — not "it has agents," which everyone has:
 
-- **Progressive distillation, proportional.** At every handoff, work is compressed to a dense artifact and handed to a *fresh context window* — keeping understanding high and tokens low across long, multi-session work. (Light on a quick task; hard on a multi-week mission. It's lossy, so you distill for the next phase's needs.)
+- **Progressive distillation, proportional.** At every handoff, work is compressed to a dense artifact and handed to a *fresh context window* — keeping understanding high and tokens low across long, multi-session work. (Light on a quick task; hard on a multi-week campaign. It's lossy, so you distill for the next phase's needs.)
 - **A real knowledge architecture** — `sources/` (external truth) and `perspective/` (your first-party views) as *peers*, distilled into a curated `vault/` only by **peer-reviewed admission**, navigated progressively (hub → note). Not a dump-and-retrieve store; a curated, auditable, navigable knowledge base.
 - **A decision mechanic that doesn't fake precision** — *hard, measurable* concerns (tests, lint, budget, deny-list hits) go through a **deterministic gate** (`tools/gate.py`, exit-code GO/NO-GO); *soft* ones (over-engineering, scope creep, wrong target) are flagged by **villains who affirmatively detect failure modes** and weighed as an honest, *recorded* judgment. Few "don't" rules — cost is computed from live signals, not a catalog of prohibitions.
-- **Three tiers of work** — `responsibility` (the long-lived why: a role, an annual objective, a career goal), `mission` (complex, multi-session, multi-handoff), `patrol` (a single work unit) — each with durable, auditable state.
+- **Three tiers of work** — `responsibility` (the long-lived why: a role, an annual objective, a career goal), `campaign` (complex, multi-session, multi-handoff), `mission` (a single work unit) — each with durable, auditable state.
 - **Curated self-learning** — lessons captured every phase, knowledge grown from research, but **gated** (peer review + human sign-off) so it gets smarter without drifting.
 - **The symbiote** — disciplined, turn-limited model escalation that always returns to baseline.
 
 ## The cast & the foundations
 
 - **A Spider-cast of agents** — 11 drivers, 7 advisors ("angels on your shoulder"), and a 14-villain dissent council ("devils") whose *approval is the alarm* — spawned **contextually per phase**, never all at once.
-- **Foundations** (solid and expected — not claimed as novel): a workspace scaffolder, observational logging + recovery, an enforced safety deny-list + spider-sense (`PreToolUse`), a verification gate before a mission closes, **native autonomous looping** (`/loop` + `schedule`, via `stakeout`), a live per-character observation deck (VS Code), a warm accountable output style, and a statusline.
+- **Foundations** (solid and expected — not claimed as novel): a workspace scaffolder, observational logging + recovery, an enforced safety deny-list + spider-sense (`PreToolUse`), a verification gate before a campaign closes, **native autonomous looping** (`/loop` + `schedule`, via `patrol`), a live per-character observation deck (VS Code), a warm accountable output style, and a statusline.
 
 ---
 
@@ -29,7 +29,7 @@ The defensible opinions — not "it has agents," which everyone has:
 | Requirement | For | Notes |
 |---|---|---|
 | **Claude Code** | everything | the host. |
-| **Python 3.8+** | the orchestration CLIs (patrol/responsibility/mission) | **stdlib only** — no `pip install`. Use whatever launcher you have (`python3`, `python`, or `py`). `origin-story` checks for it and tells you how to install if missing. |
+| **Python 3.8+** | the orchestration CLIs (mission/responsibility/campaign) | **stdlib only** — no `pip install`. Use whatever launcher you have (`python3`, `python`, or `py`). `origin-story` checks for it and tells you how to install if missing. |
 | **bash** | hooks + statusline | built-in on macOS/Linux; on Windows use Git Bash. If absent, hooks/statusline simply no-op — the enforced safety (deny-list) still works. |
 | **Obsidian** *(optional)* | nicer vault UX | the vault is plain markdown; Obsidian only adds graph/wikilink/Bases tooling. Install the kepano skills separately if you want it: `npx skills add kepano/obsidian-skills -g -a claude-code`. |
 
@@ -62,9 +62,9 @@ Invoke as `/friendly-neighborhood:<name>`.
 |---|---|
 | `creed` | Loads the operating doctrine (great power / great responsibility, the Everyman budget, the three mechanics, the powers vocabulary). |
 | `origin-story` | Scaffolds a fresh workspace from the bundled templates. Run this first. |
-| `responsibility` | A long-lived, review-cycle objective with structured tracking — Key Results, milestones, linked missions, cadence, health, and an append-only decisions log. |
-| `mission` | Complex, multi-session work run through the heavy **QRDPIV** lifecycle (questions → research → design → plan → implement → validate → cleanup; or **RPIV** when the spec is clear). May link child patrols. |
-| `patrol` | A lightweight unit or one iteration against a mission — proportional admin only (assignment, checklist, handoff, lessons). Promote to a mission if it grows. |
+| `responsibility` | A long-lived, review-cycle objective with structured tracking — Key Results, milestones, linked campaigns, cadence, health, and an append-only decisions log. |
+| `campaign` | Complex, multi-session work run through the heavy **QRDPIV** lifecycle (questions → research → design → plan → implement → validate → cleanup; or **RPIV** when the spec is clear). May link child missions. |
+| `mission` | A lightweight unit or one iteration against a campaign — proportional admin only (assignment, checklist, handoff, lessons). Promote to a campaign if it grows. |
 | `web-archive` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → audit → sync. |
 | `spider-sense` | A manual pre-flight danger check before a risky operation (companion to the automatic hook). |
 | `symbiote` | Borrowed power — a **spidey** spawns a higher-powered clone of *itself* for a hard sub-task, hard-capped by turns. |

@@ -5,7 +5,7 @@ Add **intra-subtree** wiki-links to existing notes' Related sections (with `rela
 ## When to run
 
 - User-invoked only. Never runs automatically.
-- Typical triggers: mission cleanup, finishing a distillation batch, user says "cross-link these notes", "run Cartographer", "map relationships in X subtree"
+- Typical triggers: campaign cleanup, finishing a distillation batch, user says "cross-link these notes", "run Cartographer", "map relationships in X subtree"
 - Never triggered by Scout, Harvester, or Peer Reviewer
 
 ---

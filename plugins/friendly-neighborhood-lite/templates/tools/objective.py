@@ -229,7 +229,7 @@ def replace_section(text, header, new_section_text):
 
     When the section is absent it is inserted immediately before ## Related Notes,
     which is canonically last. Appending to end of file would strand managed
-    sections (Key Results, Milestones, Missions) below it.
+    sections (Key Results, Milestones, Campaigns) below it.
     """
     lines = text.splitlines(keepends=True)
     s, e = _section_bounds(text, header)
@@ -305,9 +305,9 @@ def _render_milestone_section(items):
     return "".join(lines)
 
 # ---------------------------------------------------------------------------
-# Missions helpers
+# Campaigns helpers
 # ---------------------------------------------------------------------------
-MISSIONS_HEADER = "## Missions"
+MISSIONS_HEADER = "## Campaigns"
 MISSIONS_SEP    = "|---|---|---|"
 
 def _parse_missions(text):
@@ -323,18 +323,18 @@ def _parse_missions(text):
         if in_table and ln.startswith("|"):
             parts = [c.strip() for c in ln.strip("|").split("|")]
             if len(parts) >= 3 and "*(none yet)*" not in parts[0]:
-                rows.append({"mission": parts[0], "status": parts[1], "linked": parts[2]})
+                rows.append({"campaign": parts[0], "status": parts[1], "linked": parts[2]})
     return rows
 
 def _render_missions_section(rows):
     lines = [f"{MISSIONS_HEADER}\n", "\n",
-             "| Mission | Status | Linked |\n",
+             "| Campaign | Status | Linked |\n",
              "|---|---|---|\n"]
     if not rows:
         lines.append("| *(none yet)* | | |\n")
     else:
         for r in rows:
-            lines.append(f"| {r['mission']} | {r['status']} | {r['linked']} |\n")
+            lines.append(f"| {r['campaign']} | {r['status']} | {r['linked']} |\n")
     lines.append("\n")
     return "".join(lines)
 
@@ -377,14 +377,14 @@ def cmd_status(args):
         mark = "x" if m["done"] else " "
         print(f"  [{mark}] {m['text']}")
 
-    # Missions
-    missions = _parse_missions(text)
-    if missions:
-        active = sum(1 for m in missions if m["status"] == "active")
-        summary = f"{len(missions)}" + (f", {active} active" if active else "")
+    # Campaigns
+    campaigns = _parse_missions(text)
+    if campaigns:
+        active = sum(1 for m in campaigns if m["status"] == "active")
+        summary = f"{len(campaigns)}" + (f", {active} active" if active else "")
         print(f"\nworkstreams ({summary}):")
-        for m in missions:
-            print(f"  {m['mission']:<58} {m['status']}")
+        for m in campaigns:
+            print(f"  {m['campaign']:<58} {m['status']}")
     else:
         print("\nworkstreams:    (none)")
 
@@ -438,9 +438,9 @@ tags: [objective]
 
 *(none yet)*
 
-## Missions
+## Campaigns
 
-| Mission | Status | Linked |
+| Campaign | Status | Linked |
 |---|---|---|
 | *(none yet)* | | |
 
@@ -499,7 +499,7 @@ def render_review(name, text, when):
     """
     krs = _parse_kr_table(text)
     milestones = _parse_milestones(text)
-    missions = _parse_missions(text)
+    campaigns = _parse_missions(text)
     health = fm_get(text, "health") or "—"
     cadence = fm_get(text, "cadence") or "—"
     done = sum(1 for m in milestones if m["done"])
@@ -530,8 +530,8 @@ def render_review(name, text, when):
     out += ["", f"## Milestones — {done}/{len(milestones)} done", ""]
     out += ([f"- [{'x' if m['done'] else ' '}] {m['text']}" for m in milestones]
             or ["*(none)*"])
-    out += ["", "## Missions", ""]
-    out += ([f"- `{w['mission']}` — {w['status']}" for w in workstreams]
+    out += ["", "## Campaigns", ""]
+    out += ([f"- `{w['campaign']}` — {w['status']}" for w in workstreams]
             or ["*(none linked)*"])
     out += [
         "", "## Health Assessment", "",
@@ -689,14 +689,14 @@ def cmd_link_mission(args):
         die(f"workstream not found on disk: control-plane/{ref} — "
             "check the name, or pass an explicit path such as "
             "workstreams/_log/YYYY-MM-DD-name")
-    if any(r["mission"] == ref for r in rows):
+    if any(r["campaign"] == ref for r in rows):
         print(f"already linked: {ref}")
         return
-    rows.append({"mission": ref, "status": status,
+    rows.append({"campaign": ref, "status": status,
                  "linked": today()})
     idx_text = replace_section(idx_text, MISSIONS_HEADER, _render_missions_section(rows))
     idx_path.write_text(idx_text, encoding="utf-8")
-    print(f"linked mission: {ref}")
+    print(f"linked campaign: {ref}")
 
 
 # ---------------------------------------------------------------------------
@@ -758,7 +758,7 @@ def main():
     s.add_argument("name")
     s.add_argument("text")
 
-    s = sub.add_parser("link-mission")
+    s = sub.add_parser("link-campaign")
     s.add_argument("objective")
     s.add_argument("workstream",
                    help="bare name, workstreams/<name>, or workstreams/_log/<entry>")
@@ -778,7 +778,7 @@ def main():
         "update-kr":       cmd_update_kr,
         "add-milestone":   cmd_add_milestone,
         "check-milestone": cmd_check_milestone,
-        "link-mission":    cmd_link_mission,
+        "link-campaign":    cmd_link_mission,
         "review":             cmd_review,
     }[args.cmd](args)
 

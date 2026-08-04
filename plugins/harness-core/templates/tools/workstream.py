@@ -183,11 +183,11 @@ def cmd_status(args):
         val = fm_get(text, key) or "—"
         print(f"{field:<12} {val}")
 
-    m = re.search(r"## Child Tasks\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", text)
+    m = re.search(r"## Child Assignments\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", text)
     if m:
         rows = [r for r in m.group(1).strip().splitlines() if r.strip()]
         if rows:
-            print(f"\nchild tasks ({len(rows)} total):")
+            print(f"\nchild assignments ({len(rows)} total):")
             for row in rows:
                 print(f"  {row.strip()}")
 
@@ -290,9 +290,9 @@ tags: [workstream/{name}]
 
 *One paragraph: what this workstream is and what it will deliver.*
 {artifact_table}
-## Child Tasks
+## Child Assignments
 
-| Task | Linked |
+| Assignment | Linked |
 |---|---|
 
 ## Cross-links
@@ -332,25 +332,25 @@ tags: [workstream/{name}]
 
 def cmd_link(args):
     workstream = args.workstream
-    task       = args.task
+    assignment       = args.assignment
 
     idx_path, idx_text = read_index(workstream)
 
-    task_section = re.search(r"## Child Tasks\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
+    task_section = re.search(r"## Child Assignments\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
     if task_section:
         existing = task_section.group(1)
-        if re.search(rf"\|\s*{re.escape(task)}\s*\|", existing):
-            print(f"already linked: {task} → {workstream}")
+        if re.search(rf"\|\s*{re.escape(assignment)}\s*\|", existing):
+            print(f"already linked: {assignment} → {workstream}")
             return
 
-    new_row = f"| {task} | {today()} |"
+    new_row = f"| {assignment} | {today()} |"
     idx_text = re.sub(
-        r"(## Child Tasks\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
+        r"(## Child Assignments\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
         f"\\g<1>{new_row}\n",
         idx_text
     )
     idx_path.write_text(idx_text, encoding="utf-8")
-    print(f"linked: {task} → {workstream}")
+    print(f"linked: {assignment} → {workstream}")
 
 
 def cmd_check_step(args):
@@ -501,9 +501,9 @@ def main():
                    help="Parent path, e.g. objectives/my-objective")
     s.add_argument("--title", help="Human-readable title (defaults to title-cased name)")
 
-    s = sub.add_parser("link", help="Register a child task under this workstream")
+    s = sub.add_parser("link", help="Register a child assignment under this workstream")
     s.add_argument("workstream", help="Workstream name")
-    s.add_argument("task", help="Task name to link")
+    s.add_argument("assignment", help="Assignment name to link")
 
     s = sub.add_parser("check-step", help="Tick a plan.md checkbox and advance current_step")
     s.add_argument("name")

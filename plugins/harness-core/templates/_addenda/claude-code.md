@@ -23,7 +23,7 @@ Slash commands in `.claude/skills/`. Progressive disclosure — invoking a skill
 Key skills:
 - `workstream` — manage complex multi-session work through the heavy QRDPIV lifecycle
 - `objective` — manage a long-lived, review-cycle objective (Key Results, milestones, decisions log)
-- `task` — handle a lightweight unit or one iteration against a workstream (proportional admin)
+- `assignment` — handle a lightweight unit or one iteration against a workstream (proportional admin)
 - `knowledge` — knowledge pipeline: scout, harvest, distill, cartograph
 - `loop` — native autonomous looping for recurring or polling work
 - `init-workspace` — workspace initialization and onboarding
@@ -62,17 +62,17 @@ Replace model IDs below with the current Sonnet and current Haiku identifiers as
 | Simple, bounded | current Haiku | status checks, file moves, format conversion, lookups |
 | Decisions / synthesis | Main context | never delegate |
 
-Sonnet may spawn Haiku for sub-tasks. Main context may spawn Haiku directly.
+Sonnet may spawn Haiku for sub-assignments. Main context may spawn Haiku directly.
 
 ### Concurrency Budget
 
 **Concurrency budget — up to 2 subagents in flight at once by default.** This is a *soft budget* you set during `init-workspace` (raise it if your machine and quota allow) — a cost/coordination guideline, not a safety cap. Main context tracks how many are running.
 
 Default behavior is **sequential**: spawn one subagent, wait for it to return, then spawn the next. Run several in parallel only when both conditions are met, and only up to your budget:
-1. Tasks are truly independent — no shared file writes, no ordering dependency.
+1. Assignments are truly independent — no shared file writes, no ordering dependency.
 2. Each completes in a single turn given its scope.
 
-**Completion guarantee.** Every subagent spawned must be able to finish its task in one turn. If a task is too large to complete in a single turn, break it into smaller bounded tasks first — do not spawn it and hope it finishes. A subagent that stalls mid-task leaves the workstream in an unstable state requiring manual recovery.
+**Completion guarantee.** Every subagent spawned must be able to finish its assignment in one turn. If an assignment is too large to complete in a single turn, break it into smaller bounded assignments first — do not spawn it and hope it finishes. A subagent that stalls mid-assignment leaves the workstream in an unstable state requiring manual recovery.
 
 **Checkpoint before the budget bites.** No agent watches the live token/session budget — the runtime owns it and does not expose it mid-turn, so nothing can *warn* you that a turn is about to run out. Guard it **structurally** instead: keep turns bounded (above), and at clean phase/step boundaries write state to disk (`index.md` + `plan.md`) *before* continuing. A session-limit hit then degrades to a **resume**, never lost work — the same way the `loop` skill carries state across sessions.
 
@@ -88,7 +88,7 @@ Scope every subagent to a subtree. In the agent prompt, always include:
 2. **Contract**: `Read \`.claude/rules/<subtree>.md\` before acting.` (This is the source of truth; the subtree's `CLAUDE.md` is a thin pointer to it.)
 3. **Boundary**: `Do not read or write outside \`<subtree>/\`.`
 
-| Task type | Scope to |
+| Assignment type | Scope to |
 |---|---|
 | Execution work | `projects/<name>/` |
 | Planning / coordination | `control-plane/` |
@@ -97,9 +97,9 @@ Scope every subagent to a subtree. In the agent prompt, always include:
 | Prompt asset work | `prompts/` |
 | Tool / script work | `tools/` |
 
-Cross-subtree work (e.g., planning + execution) stays in main context — never delegate cross-boundary tasks to a single subagent.
+Cross-subtree work (e.g., planning + execution) stays in main context — never delegate cross-boundary assignments to a single subagent.
 
-**Cross-boundary work is the orchestrator's job, never the agent's.** A scoped agent stays entirely within its subtree (reads *and* writes). When a task spans subtrees, `control-plane` (main context) coordinates by deploying the **right agent per subtree** and passing distilled artifacts between them — it does not send one agent across the boundary:
+**Cross-boundary work is the orchestrator's job, never the agent's.** A scoped agent stays entirely within its subtree (reads *and* writes). When an assignment spans subtrees, `control-plane` (main context) coordinates by deploying the **right agent per subtree** and passing distilled artifacts between them — it does not send one agent across the boundary:
 
 - Need vault knowledge for a build? → deploy a **knowledge agent** scoped to `knowledge/vault/` to read/curate; brief the next agent with its distilled result.
 - Need to shape a project's architecture? → deploy a **design/planning agent** scoped to `projects/<name>/`.

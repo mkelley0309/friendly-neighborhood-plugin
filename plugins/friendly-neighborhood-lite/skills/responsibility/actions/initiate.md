@@ -4,10 +4,10 @@ Create a new responsibility. Load this file only.
 
 ## When to Run
 
-User is starting a formal, review-cycle-measured objective — not a tactical patrol or mid-tier mission. Signals:
+User is starting a formal, review-cycle-measured objective — not a tactical mission or mid-tier campaign. Signals:
 - "This is one of my responsibilities this cycle"
 - "I'm being measured on this"
-- Work that will span multiple missions or patrols and multiple months
+- Work that will span multiple campaigns or missions and multiple months
 - Strategic objective that warrants a persistent decisions log
 
 ## Steps
@@ -71,9 +71,9 @@ note_type: objective
 
 - [ ] *(populated via add-milestone)*
 
-## Missions
+## Campaigns
 
-*(linked workstreams advance this responsibility — populated via link-mission)*
+*(linked workstreams advance this responsibility — populated via link-campaign)*
 
 ## Success Criteria
 
@@ -121,7 +121,7 @@ python -B tools/objective.py add-milestone {name} "{concrete checkpoint text}"
 
 **Link any already-known workstreams advancing this responsibility:**
 ```
-python -B tools/objective.py link-mission {name} {workstream-name}
+python -B tools/objective.py link-campaign {name} {workstream-name}
 ```
 
 These are all idempotent and safe to run in sequence.
@@ -138,4 +138,4 @@ Add a row to the Active table in `control-plane/objectives/index.md`:
 
 Tell the user: responsibility created, Key Results defined, milestones seeded, cadence set, decisions log is empty and append-only.
 
-If the user is ready to spin up coordinated work toward this responsibility: suggest the `/friendly-neighborhood-lite:mission` skill to open a mission, then link it with `link-mission`. For lightweight tactical work that doesn't warrant a mission, suggest `/friendly-neighborhood-lite:patrol` instead.
+If the user is ready to spin up coordinated work toward this responsibility: suggest the `/friendly-neighborhood-lite:campaign` skill to open a campaign, then link it with `link-campaign`. For lightweight tactical work that doesn't warrant a campaign, suggest `/friendly-neighborhood-lite:mission` instead.
