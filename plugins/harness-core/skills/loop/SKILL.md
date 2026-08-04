@@ -12,7 +12,7 @@ It does **not** reinvent looping — it wires Claude Code's built-ins:
 - **`/loop [interval] <command>`** — recurring or self-paced repetition. Omit the interval to let the model pace itself; give one (e.g. `/loop 5m …`) to poll on a clock.
 - **`schedule`** — cron-style routines for time-based autonomous runs (nightly, hourly).
 
-The **workstream** is the unit of work; its `index.md` + `workstream-notes.md` carry state across iterations, so each pass resumes where the last left off.
+The **workstream** is the unit of work; its `index.md` + `plan.md` carry state across iterations, so each pass resumes where the last left off.
 
 ## Protocol
 
@@ -20,7 +20,7 @@ The **workstream** is the unit of work; its `index.md` + `workstream-notes.md` c
 2. **Define hard stop-conditions up front.** Autonomous is not infinite. Stop when: the gate passes, a max-iteration count is hit, no progress is made twice in a row, or a blocker appears. Write them into the workstream's `index.md`.
 3. **Make the gate the go/no-go.** Each pass ends with `python -B tools/gate.py run` — if it's GO and the stop-condition is met, end the loop; if NO-GO, do the next bounded unit (or stop if stuck).
 4. **Run it.** `/loop <interval?> /harness-core:workstream` (or the specific step), or set a `schedule` routine for time-based runs.
-5. **Log every pass** to `workstream-notes` so the trail survives across iterations and sessions.
+5. **Record every pass** with `workstream.py check-step`, so the trail survives across iterations and sessions. `friction-log.md` is *not* an iteration log — write there only when the harness itself got in the way.
 
 ## Auto-improvement loops
 

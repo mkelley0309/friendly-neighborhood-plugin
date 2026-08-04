@@ -117,7 +117,7 @@ Watch your agents work in real time, each in their character colors. The main wi
 The harness's memory is **explicit and auditable**, not implicit:
 
 - **Knowledge vault** (`web-archive`) = long-term **semantic** memory.
-- **Control-plane logs + the decisions log + workstream-notes** = **episodic** memory.
+- **Control-plane logs + the decisions log + friction logs** = **episodic** memory.
 - **constitution + `.claude/rules/`** = **procedural** memory.
 
 It also uses Claude Code's native **agent memory** (`memory: project` on the stateful drivers `peter` and `silk`). Claude Code's **auto-memory** is complementary and optional — leave it on for lightweight personal preferences if you like; the harness doesn't depend on it.

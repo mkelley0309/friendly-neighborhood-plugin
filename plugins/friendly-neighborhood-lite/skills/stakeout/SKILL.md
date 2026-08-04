@@ -12,7 +12,7 @@ This skill does **not** reinvent looping — it wires Claude Code's built-ins:
 - **`/loop [interval] <command>`** — recurring or self-paced repetition. Omit the interval to let the model pace itself; give one (e.g. `/loop 5m …`) to poll on a clock.
 - **`schedule`** — cron-style routines for time-based autonomous runs (nightly, hourly).
 
-The **patrol** is the unit of work; its `index.md` + `workstream-notes.md` carry state across iterations, so each pass picks up where the last left off.
+The **patrol** is the unit of work; its `index.md` checklist carries state across iterations, so each pass picks up where the last left off.
 
 ## Protocol
 
@@ -20,7 +20,7 @@ The **patrol** is the unit of work; its `index.md` + `workstream-notes.md` carry
 2. **Define hard stop-conditions up front.** Autonomous is not infinite. Stop when: the gate passes, a max-iteration count is hit, no progress is made twice in a row, or a blocker appears. Write them into the patrol's `index.md`.
 3. **Make the gate the go/no-go.** Each pass ends by running `python -B tools/gate.py run` — if it's GO and the stop-condition is met, end the loop; if NO-GO, do the next bounded unit (or stop if stuck).
 4. **Run it.** `/loop <interval?> /friendly-neighborhood-lite:patrol` (or the specific step), or set a `schedule` routine for time-based runs.
-5. **Log every pass** to `workstream-notes` so the trail survives across iterations and sessions.
+5. **Keep the checklist current** so the trail survives across iterations and sessions. The `## Friction` section is *not* an iteration log — write there only when the harness itself got in the way.
 
 ## Auto-improvement loops
 
