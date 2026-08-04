@@ -1,7 +1,7 @@
 ---
 name: campaign
 description: >
-  Manages the full lifecycle of a campaign in control-plane/workstreams/ —
+  Manages the full lifecycle of a campaign in control-plane/campaigns/ —
   initiation, questions, research, design, plan, implement, validate, cleanup.
   A campaign is the heavy, formal lifecycle for complex multi-session, multi-handoff
   work: open one when the work is too big for a mission (too many sessions, too many
@@ -16,7 +16,7 @@ description: >
 ## Session Entry — Always Run First
 
 1. Read `control-plane/CLAUDE.md`
-2. Read `control-plane/workstreams/index.md`
+2. Read `control-plane/campaigns/index.md`
 3. If a specific campaign is in scope, read its `index.md`
 4. Identify the current phase and health
 5. Identify the current action from the table below
@@ -47,10 +47,6 @@ description: >
 Default to QRDPIV. Questions are cheap; under-shaped plans are expensive.
 
 **Research is mandatory.** There is no shortcut from Questions or Initiate to Design or Plan without a `research.md`. Even when the user provides source material directly, that material must be written to `_working/` and distilled through the research protocol before proceeding.
-
-## Agent triggers
-
-Each phase routes to a **driver** Spider-variant (named in that phase's action-file Phase council; full map in `/friendly-neighborhood:creed`): questions → `peter`, research → `silk`/`noir`, design & plan → `miguel`, implement → `peter`/`miles` (per step), validate → `gwen` (run it; `jameson` adversarial alongside), cleanup → `peter`. **Implement advances to validate** — the validate phase runs the deterministic gate and adversarial QA before the campaign can close. Spawn drivers as subagents (`subagent_type` = the agent); consult support/villains only when their concern is live.
 
 ## Research Protocol (Non-Negotiable)
 
@@ -90,20 +86,42 @@ If yes, it belongs here. If it names the subject matter, it belongs in the work 
 
 This is the only artifact that legitimately crosses every phase boundary. That privilege is affordable *only* because its scope is small and fixed. Let it also carry what the work found and it becomes the cross-phase accumulator that progressive distillation exists to prevent — every phase then reads every prior phase's findings, which is exactly the context pollution the handoff model is built to stop.
 
-Progress tracking is **not** its job. `plan.md` checkboxes and `index.md` `current_step` are maintained together by `workstream.py check-step`; a third hand-maintained tracker rots and then lies.
+Progress tracking is **not** its job. `plan.md` checkboxes and `index.md` `current_step` are maintained together by `campaign.py check-step`; a third hand-maintained tracker rots and then lies.
 
 ## What Is a Campaign
 
-Heavy, formal, multi-session work with a defined completion state and a cleanup step that deletes the folder. A campaign links child **missions** when parallel tracks need independent execution. Not: long-lived measured objectives (those are `objectives/`), single-session quick work (those are missions), generic utilities (those are `tools/`), or project code (those are `projects/`).
+Heavy, formal, multi-session work with a defined completion state and a cleanup step that deletes the folder. A campaign links child **missions** when parallel tracks need independent execution. Not: long-lived measured responsibilities (those are `responsibilities/`), single-session quick work (those are missions), generic utilities (those are `tools/`), or project code (those are `projects/`).
 
-## Child Missions and Parent Responsibilities
+## Child Missions and Parent Objectives
 
 Campaigns can link child missions and have a parent at one tier:
 
-- **Child Missions** — the campaign's `index.md` maintains a roster of child mission links (`control-plane/missions/{mission-name}/index.md`).
-- **Responsibility** (`parent: "objectives/{name}"`) — a review-cycle-measured strategic objective.
+- **Child Missions** — the campaign's `index.md` maintains a roster of child mission links.
+- **Objective** (`parent: "responsibilities/{name}"`) — a review-cycle-measured strategic responsibility.
 
-If the user describes work that should be tied to a responsibility and none exists, suggest creating it first via the `responsibility` skill.
+If the user describes work that should be tied to an responsibility and none exists, suggest creating it first via the `responsibility` skill.
+
+## Asides — work that comes up mid-campaign
+
+Something always comes up mid-phase: a dependency needs unblocking, a harness defect needs correcting, the cartograph needs a run, or related work surfaces that should happen later. **Doing it inline is the expensive mistake.** The remediation drags its own research, its own dead ends and its own errors into a context window that progressive distillation exists to keep clean, and the campaign never fully recovers that space.
+
+Spawn it instead:
+
+```bash
+python -B tools/campaign.py aside <campaign> <mission-name> \
+    --reason "what came up" \
+    --kind dependency|harness|knowledge|followup \
+    [--blocking]
+```
+
+This creates the mission parented to the campaign, writes its own context into it (why it exists, which phase it came from, whether the campaign is waiting on it), adds a roster row, and — with `--blocking` — sets the campaign to `blocked` with the mission named as the blocker.
+
+**Then run it in a separate session.** That is the entire point. The aside gets its own context window, does its work, and closes into `missions/_log.md` under its own tier.
+
+- **`--blocking`** — the campaign cannot proceed. Come back and run `campaign.py unblock <name> --by <mission>`. **Resume from the campaign's own artifacts.** Do not re-read the aside's record on the way back in, or you have re-imported exactly what you paid a session to keep out.
+- **without `--blocking`** — the campaign continues in parallel. The roster row is a promise to do it, not a dependency.
+
+The test for whether something is an aside: **would working on it now put material in this context that the rest of this campaign does not need?** If yes, spawn it. A one-line fix is not an aside. A dependency chase is.
 
 ## Framework Reference
 
@@ -117,6 +135,12 @@ Per workspace `CLAUDE.md`:
 - **Sonnet subagents** for research passes, plan drafting, design analysis
 - **Haiku subagents** for template filling, bounded lookups, file moves
 - Never delegate synthesis, decisions, or cross-artifact reconciliation — those stay in main context
+
+**Agent scoping (default).** Every subagent is **scoped to a single subtree** — it reads and writes within that subtree only. Cross-boundary work is the orchestrator's job: `control-plane` (main context) coordinates by deploying the **right agent per subtree** and passing distilled artifacts between them — never sending one agent across the boundary. (See `_addenda/claude-code.md` → Directory Scoping.)
+
+- **Scope + absolute path.** Open each brief with `Work within <absolute-subtree-path>/ only`, using the absolute path of the agent's own subtree (agents don't resolve sibling top-level subtrees by glob).
+- **Isolation by scope:** directory-scoped prompts for non-git subtrees (`control-plane/`, `knowledge/`); **worktree isolation** for code work inside a git-repo project. Never `isolation: "worktree"` from `control-plane/` (not a git repo).
+- **Orchestrate from `control-plane/`** — don't relocate the session into a project. A build that needs vault knowledge → deploy a **knowledge agent** scoped to `knowledge/vault/`, then brief the project agent with its distilled result; code work → an **implementation agent** in a **worktree** of the project repo.
 
 ## Guiding Principles
 

@@ -101,6 +101,28 @@ Workstreams can link child assignments and have a parent at one tier:
 
 If the user describes work that should be tied to an objective and none exists, suggest creating it first via the `objective` skill.
 
+## Asides — work that comes up mid-workstream
+
+Something always comes up mid-phase: a dependency needs unblocking, a harness defect needs correcting, the cartograph needs a run, or related work surfaces that should happen later. **Doing it inline is the expensive mistake.** The remediation drags its own research, its own dead ends and its own errors into a context window that progressive distillation exists to keep clean, and the workstream never fully recovers that space.
+
+Spawn it instead:
+
+```bash
+python -B tools/workstream.py aside <workstream> <assignment-name> \
+    --reason "what came up" \
+    --kind dependency|harness|knowledge|followup \
+    [--blocking]
+```
+
+This creates the assignment parented to the workstream, writes its own context into it (why it exists, which phase it came from, whether the workstream is waiting on it), adds a roster row, and — with `--blocking` — sets the workstream to `blocked` with the assignment named as the blocker.
+
+**Then run it in a separate session.** That is the entire point. The aside gets its own context window, does its work, and closes into `assignments/_log.md` under its own tier.
+
+- **`--blocking`** — the workstream cannot proceed. Come back and run `workstream.py unblock <name> --by <assignment>`. **Resume from the workstream's own artifacts.** Do not re-read the aside's record on the way back in, or you have re-imported exactly what you paid a session to keep out.
+- **without `--blocking`** — the workstream continues in parallel. The roster row is a promise to do it, not a dependency.
+
+The test for whether something is an aside: **would working on it now put material in this context that the rest of this workstream does not need?** If yes, spawn it. A one-line fix is not an aside. A dependency chase is.
+
 ## Framework Reference
 
 Operational schemas and state transitions live in `framework.md`. Load it when creating or updating any workstream file.

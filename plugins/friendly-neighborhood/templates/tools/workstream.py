@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Workstream (campaign) state management — QRDPIV phase machine, no LLM."""
+"""Workstream state management — QRDPIV phase machine, no LLM."""
 
 import argparse
 import os
@@ -183,11 +183,11 @@ def cmd_status(args):
         val = fm_get(text, key) or "—"
         print(f"{field:<12} {val}")
 
-    m = re.search(r"## Child Missions\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", text)
+    m = re.search(r"## Child Tasks\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", text)
     if m:
         rows = [r for r in m.group(1).strip().splitlines() if r.strip()]
         if rows:
-            print(f"\nchild missions ({len(rows)} total):")
+            print(f"\nchild tasks ({len(rows)} total):")
             for row in rows:
                 print(f"  {row.strip()}")
 
@@ -290,9 +290,9 @@ tags: [workstream/{name}]
 
 *One paragraph: what this workstream is and what it will deliver.*
 {artifact_table}
-## Child Missions
+## Child Tasks
 
-| Mission | Linked |
+| Task | Linked |
 |---|---|
 
 ## Cross-links
@@ -332,25 +332,107 @@ tags: [workstream/{name}]
 
 def cmd_link(args):
     workstream = args.workstream
-    mission     = args.mission
+    task       = args.task
 
     idx_path, idx_text = read_index(workstream)
 
-    patrol_section = re.search(r"## Child Missions\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
-    if patrol_section:
-        existing = patrol_section.group(1)
-        if re.search(rf"\|\s*{re.escape(mission)}\s*\|", existing):
-            print(f"already linked: {mission} → {workstream}")
+    task_section = re.search(r"## Child Tasks\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
+    if task_section:
+        existing = task_section.group(1)
+        if re.search(rf"\|\s*{re.escape(task)}\s*\|", existing):
+            print(f"already linked: {task} → {workstream}")
             return
 
-    new_row = f"| {mission} | {today()} |"
+    new_row = f"| {task} | {today()} |"
     idx_text = re.sub(
-        r"(## Child Missions\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
+        r"(## Child Tasks\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
         f"\\g<1>{new_row}\n",
         idx_text
     )
     idx_path.write_text(idx_text, encoding="utf-8")
-    print(f"linked: {mission} → {workstream}")
+    print(f"linked: {task} → {workstream}")
+
+
+ASIDE_KINDS = {
+    "dependency": "an external dependency that must be unblocked before this workstream can proceed",
+    "harness":    "a harness or tooling defect that got in the way",
+    "knowledge":  "a knowledge-pipeline action (cartograph, distill, refresh)",
+    "followup":   "related work worth doing, but not now and not here",
+}
+
+
+def cmd_aside(args):
+    """Spawn an mission for something that came up mid-workstream.
+
+    The point is context hygiene: the remediation runs in its own session against
+    its own record, so it never intermingles with the workstream's context. The
+    workstream keeps only a roster line and, if it cannot proceed, a blocker.
+    """
+    import subprocess
+    ws = args.workstream
+    name = args.name
+    idx_path, idx_text = read_index(ws)          # fails fast if the workstream is absent
+    phase = fm_get(idx_text, "workstream_phase") or "unknown"
+
+    created = subprocess.run(
+        [sys.executable, "-B", str(Path(__file__).with_name("mission.py")),
+         "create", name, "--parent", f"workstreams/{ws}"],
+        capture_output=True, text=True)
+    if created.returncode != 0:
+        die(f"could not create mission '{name}':\n{created.stdout}{created.stderr}")
+    print(created.stdout.strip())
+
+    # Give the mission its context, so the other session needs no briefing.
+    a_idx = WORKSPACE / "control-plane" / "missions" / name / "index.md"
+    if a_idx.exists():
+        t = a_idx.read_text(encoding="utf-8")
+        blocking_line = (
+            f"**{ws} is BLOCKED on this.** When it is done, tell that session so it can "
+            "continue — report what changed and nothing else, so the fix does not leak "
+            "into the workstream's context."
+            if args.blocking else
+            f"**{ws} is NOT blocked on this.** It continues in parallel. Nothing needs to "
+            "be reported back unless the outcome changes that workstream's plan.")
+        body = (f"Spawned as an aside from [workstreams/{ws}](../../workstreams/{ws}/index.md) "
+                f"at the **{phase}** phase, so the work below stays out of that session's context.\n\n"
+                f"**What came up:** {args.reason}\n\n"
+                f"**Kind:** {args.kind} — {ASIDE_KINDS[args.kind]}\n\n"
+                f"{blocking_line}\n")
+        t = re.sub(
+            r"(## Mission\n\n)\*What this mission is[^*]*\*",
+            lambda m: m.group(1) + body, t, count=1)
+        a_idx.write_text(t, encoding="utf-8")
+
+    # Roster line on the workstream (supports both the old and new section heading).
+    heading = "Child Missions" if "## Child Missions" in idx_text else "Child Tasks"
+    if re.search(rf"\|\s*{re.escape(name)}\s*\|", idx_text):
+        print(f"already linked: {name} → {ws}")
+    else:
+        flag = "blocking" if args.blocking else "parallel"
+        row = f"| {name} | {today()} | {args.kind} / {flag} |"
+        idx_text, n = re.subn(
+            rf"(## {heading}\n\n\|[^\n]+\n\|[-|]+\n(?:\|[^\n]+\n)*)",
+            f"\\g<1>{row}\n", idx_text, count=1)
+        if not n:
+            idx_text = idx_text.rstrip("\n") + (
+                f"\n\n## {heading}\n\n| Mission | Spawned | Kind |\n|---|---|---|\n{row}\n")
+        idx_path.write_text(idx_text, encoding="utf-8")
+        print(f"linked: {name} → {ws} ({args.kind}, {'blocking' if args.blocking else 'parallel'})")
+
+    if args.blocking:
+        idx_path2, t2 = read_index(ws)
+        t2 = fm_set(t2, "workstream_health", "blocked")
+        t2 = status_row_set(t2, "Health", "blocked")
+        t2 = status_row_set(t2, "Blocker", f"missions/{name} — {args.reason}")
+        t2 = status_row_set(t2, "Last Active", today())
+        idx_path2.write_text(t2, encoding="utf-8")
+        print(f"blocked: {ws} on missions/{name}")
+
+    print("\n--- run this in a SEPARATE session, so the aside stays out of this context ---")
+    print(f"/mission {name}")
+    if args.blocking:
+        print(f"\n--- then come back here and run ---")
+        print(f"python -B tools/workstream.py unblock {ws} --by {name}")
 
 
 def cmd_check_step(args):
@@ -438,7 +520,11 @@ def cmd_unblock(args):
     idx_text = status_row_set(idx_text, "Blocker", "—")
     idx_text = status_row_set(idx_text, "Last Active", today())
     idx_path.write_text(idx_text, encoding="utf-8")
-    print(f"unblocked: {args.name}")
+    by = getattr(args, "by", None)
+    print(f"unblocked: {args.name}" + (f"  (cleared by missions/{by})" if by else ""))
+    if by:
+        print("resume from the workstream's own artifacts. Do not re-read the aside's "
+              "record — the point of spawning it was to keep that out of this context.")
 
 
 def cmd_complete(args):
@@ -484,14 +570,19 @@ def cmd_delete(args):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    p = argparse.ArgumentParser(description="Workstream (campaign) state management — QRDPIV")
+    p = argparse.ArgumentParser(description="Workstream state management — QRDPIV")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("list", help="List active workstreams")
 
-    for name_cmd in ("status", "next", "complete", "unblock", "delete"):
+    for name_cmd in ("status", "next", "complete", "delete"):
         s = sub.add_parser(name_cmd)
         s.add_argument("name")
+
+    s = sub.add_parser("unblock", help="Clear a blocker and resume")
+    s.add_argument("name")
+    s.add_argument("--by", metavar="ASSIGNMENT",
+                   help="the mission that cleared it, if one did")
 
     s = sub.add_parser("create", help="Create a new workstream")
     s.add_argument("name", help="Workstream name (kebab-case)")
@@ -503,7 +594,16 @@ def main():
 
     s = sub.add_parser("link", help="Register a child mission under this workstream")
     s.add_argument("workstream", help="Workstream name")
-    s.add_argument("mission", help="Mission name to link")
+    s.add_argument("task", metavar="mission", help="Mission name to link")
+
+    s = sub.add_parser("aside", help="Spawn an mission for something that came up mid-workstream")
+    s.add_argument("workstream", help="Workstream the aside came up in")
+    s.add_argument("name", help="Mission name (kebab-case)")
+    s.add_argument("--reason", required=True, help="what came up")
+    s.add_argument("--kind", choices=sorted(ASIDE_KINDS), default="followup",
+                   help="dependency | harness | knowledge | followup (default)")
+    s.add_argument("--blocking", action="store_true",
+                   help="the workstream cannot proceed until this is done")
 
     s = sub.add_parser("check-step", help="Tick a plan.md checkbox and advance current_step")
     s.add_argument("name")
@@ -533,6 +633,7 @@ def main():
         "advance":    cmd_advance,
         "block":      cmd_block,
         "unblock":    cmd_unblock,
+        "aside":      cmd_aside,
         "complete":   cmd_complete,
         "archive":    cmd_archive,
         "delete":     cmd_delete,
