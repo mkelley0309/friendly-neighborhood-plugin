@@ -94,6 +94,20 @@ so the parent holds the coordination, not the work.
 - A patrol's `parent` may be `objectives/{name}` or `null`.
 - Responsibilities are the top tier; they are never children of another artifact.
 
+### Autonomy mechanisms (`/goal`, `/loop`, `schedule`)
+
+These are **mechanisms, not tiers** — they say *how* a unit of work keeps going, and any tier can use them. Pick by what ends the work:
+
+| Mechanism | Repeats until | Use at |
+|---|---|---|
+| `/goal <condition>` | a stated condition holds, then self-clears | mission · a campaign phase · one patrol run |
+| `/loop [interval]` | you stop it | a patrol run that polls |
+| `schedule` | its cron says otherwise | a patrol trigger |
+
+**`/goal` applies wherever the work has a verifiable end state inside a session.** That is an mission ("the checklist is complete and the gate reported GO"), a campaign *phase* ("every plan step is checked"), or a *single* patrol run ("the queue is drained"). It does **not** apply to an responsibility, which is measured in review cycles against Key Results and deliberately outlives any session, nor to a patrol itself, which by definition never completes.
+
+The evaluator judges the condition against **what has been surfaced in the conversation** — it does not run commands or read files — so a run must *print* its gate result for `"the gate passes"` to be usable. `/goal` also needs an accepted trust dialog and is unavailable under `disableAllHooks` or `allowManagedHooksOnly`, so anything depending on it should say so in its guardrails.
+
 ---
 
 ## Session Entry
