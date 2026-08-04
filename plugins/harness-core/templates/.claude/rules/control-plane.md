@@ -33,7 +33,8 @@ control-plane/
       YYYY-MM-DD-{name}.md  ← durable summary after cleanup
   tasks/                    ← lightweight units (often iterations against a workstream)
     index.md              ← portfolio index of active tasks
-    {name}/
+    _log.md               ← durable record of every completed task; never deleted
+    {name}/                 ← deleted at completion, once logged
       index.md            ← task record (assignment, checklist, handoff, lessons, friction)
   _harness/                 ← the harness's own feedback loop; never deleted
     friction.md           ← cross-run ledger of unresolved framework friction

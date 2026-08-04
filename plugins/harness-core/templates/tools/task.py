@@ -240,13 +240,31 @@ def cmd_complete(args):
     row_match = re.search(rf"(\|\s*\[{re.escape(args.name)}\][^\n]+\n)", portfolio)
     if row_match:
         row = row_match.group(1)
-        portfolio = portfolio.replace(row, "", 1)
-        completed_row = re.sub(r"\|\s*[\d-]+\s*\|$", f"| {today_s} |", row.rstrip())
-        portfolio = re.sub(
+        # Active is (task, description, parent, started); Complete is (task,
+        # description, completed). Rebuild rather than patch the trailing cell,
+        # otherwise the parent column rides along and the row has one cell too many.
+        cells = [c.strip() for c in re.split(r"(?<!\\)\|", row.strip().strip("|"))]
+        # The task folder is deleted once its log entry is written, so a completed
+        # row must not keep pointing at it. Repoint to the running log.
+        name_cell = re.sub(
+            rf"\[{re.escape(args.name)}\]\([^)]*\)",
+            f"[{args.name}](_log.md)",
+            cells[0], count=1
+        )
+        desc_cell = cells[1] if len(cells) > 1 else ""
+        completed_row = f"| {name_cell} | {desc_cell} | {today_s} |"
+        moved, n = re.subn(
             r"(## Complete\n\n\|[^\n]+\n\|[-|]+\n)",
             f"\\g<1>{completed_row}\n",
             portfolio, count=1
         )
+        # Only drop the Active row once the Complete row is actually placed.
+        # Removing first meant a missing "## Complete" section silently lost the task.
+        if n:
+            portfolio = moved.replace(row, "", 1)
+        else:
+            print("warning: no '## Complete' section in the portfolio index; "
+                  "left the row under Active rather than dropping it")
     PORTFOLIO_INDEX.write_text(portfolio, encoding="utf-8")
     print(f"completed: {args.name}")
 
