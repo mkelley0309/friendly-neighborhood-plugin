@@ -75,13 +75,43 @@ def fm_set(text, field, value):
         text, flags=re.MULTILINE, count=1
     )
 
+def md_cell(value):
+    """Make a value safe to sit in a | Field | Value | cell.
+
+    An unescaped pipe splits the row into extra cells, and the orphaned
+    fragment survives every later write. Plan step text routinely contains
+    pipes.
+    """
+    return value.replace("|", "\\|").replace("\n", " ").strip()
+
+def yaml_dq(value):
+    """Escape a value for a YAML double-quoted scalar."""
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
 def status_row_set(text, field, value):
-    """Update a value cell in | Field | Value | table rows."""
+    """Update a value cell in | Field | Value | table rows.
+
+    Consumes to end of line rather than to the first pipe, so a row already
+    corrupted by an unescaped pipe is repaired rather than partially rewritten.
+    """
     return re.sub(
-        rf"\|\s*{re.escape(field)}\s*\|\s*[^|]*\|",
-        f"| {field} | {value} |",
-        text, count=1
+        rf"\|[ \t]*{re.escape(field)}[ \t]*\|.*?\|[ \t]*$",
+        f"| {field} | {md_cell(value)} |",
+        text, count=1, flags=re.MULTILINE
     )
+
+STEP_NUM_RE = re.compile(r"^\d+(?:\.\d+)*$")
+
+def step_matches(line, query):
+    """Match a plan step by number token, falling back to substring.
+
+    A bare substring test makes '1.1' match '1.10' — silently ticking the
+    wrong step. When the query looks like a step number, match it as a whole
+    token instead.
+    """
+    if STEP_NUM_RE.match(query):
+        return re.search(rf"(?<![\d.]){re.escape(query)}(?![\d.])", line) is not None
+    return query in line
 
 def ensure_portfolio_index():
     if not PORTFOLIO_INDEX.exists():
@@ -322,33 +352,37 @@ def cmd_link(args):
 
 
 def cmd_check_step(args):
-    mission   = init_dir(args.name)
-    plan_path = mission / "plan.md"
+    ws        = init_dir(args.name)
+    plan_path = ws / "plan.md"
     if not plan_path.exists():
         die("plan.md not found")
 
-    lines = plan_path.read_text(encoding="utf-8").splitlines()
+    # keepends: rebuilding with "\n".join() drops the trailing newline, and
+    # write_text re-translates every LF to CRLF on Windows — a one-line tick
+    # would rewrite the whole file.
+    lines = plan_path.read_text(encoding="utf-8").splitlines(keepends=True)
     query = args.step
 
-    match_idx = next(
-        (i for i, l in enumerate(lines) if "[ ]" in l and query in l),
-        None
-    )
-    if match_idx is None:
+    matches = [i for i, l in enumerate(lines) if "[ ]" in l and step_matches(l, query)]
+    if not matches:
         die(f"unchecked step not found: '{query}'")
+    if len(matches) > 1:
+        listing = "\n  ".join(lines[i].strip() for i in matches)
+        die(f"'{query}' matches {len(matches)} unchecked steps — be more specific:\n  {listing}")
+    match_idx = matches[0]
 
     print(f"checked: {lines[match_idx].strip()}")
     lines[match_idx] = lines[match_idx].replace("[ ]", "[x]", 1)
-    plan_path.write_text("\n".join(lines), encoding="utf-8")
+    plan_path.write_bytes("".join(lines).encode("utf-8"))
 
     next_steps = [l for l in lines[match_idx + 1:] if "[ ]" in l]
     next_step = re.sub(r"^[-*]\s*\[\s*\]\s*", "", next_steps[0].strip()) if next_steps else "—"
 
     idx_path, idx_text = read_index(args.name)
-    idx_text = fm_set(idx_text, "current_step", f'"{next_step}"')
+    idx_text = fm_set(idx_text, "current_step", f'"{yaml_dq(next_step)}"')
     idx_text = status_row_set(idx_text, "Current Step", next_step)
     idx_text = status_row_set(idx_text, "Last Active", today())
-    idx_path.write_text(idx_text, encoding="utf-8")
+    idx_path.write_bytes(idx_text.encode("utf-8"))
     print(f"next step: {next_step}")
 
 
