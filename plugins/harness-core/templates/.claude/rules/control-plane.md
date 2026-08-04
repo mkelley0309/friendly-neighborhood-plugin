@@ -36,6 +36,12 @@ control-plane/
     _log.md               ← durable record of every completed task; never deleted
     {name}/                 ← deleted at completion, once logged
       index.md            ← task record (assignment, checklist, handoff, lessons, friction)
+  rotations/                ← recurring work, scheduled or on demand
+    index.md              ← portfolio index of active rotations
+    _log.md               ← durable record of every retired/abandoned rotation
+    {name}/                 ← deleted at close, once logged
+      index.md            ← purpose, trigger, guardrails, run log, self-improvement diary
+      _working/             ← scratch, for runs needing workstream-style handoffs
   _harness/                 ← the harness's own feedback loop; never deleted
     friction.md           ← cross-run ledger of unresolved framework friction
   outputs/                  ← durable artifacts produced by workstreams (never deleted)
@@ -46,7 +52,7 @@ control-plane/
 
 ---
 
-## The Three Tiers
+## The Tiers
 
 **Intake** = unstructured capture. Ideas, notes, partial thoughts land here before triage. Lifecycle: `capture → triage → promote or discard`. Promoted items become objectives, workstreams, or tasks; discarded leave no trace.
 
@@ -56,20 +62,36 @@ control-plane/
 
 **Tasks** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a workstream. A task carries *proportional* admin only (assignment, checklist, handoff, lessons) — no phase machine, no progressive distillation. If a task grows (multiple sessions, real research, design decisions), **promote it to a workstream**. Driven by `task.py`.
 
+**Rotations** = work defined by its **recurrence**, not its size — refresh sources into the vault, drain a cleanup queue, report portfolio status, auto-lint. May be task-sized or workstream-sized; what makes it a rotation is that it runs again, scheduled or on demand. Carries a **self-improvement diary** so each run makes the next cheaper, and `_working/` for runs needing handoffs. Lifecycle: `active` → `paused` → `retired` (done or automated away) or `abandoned`; folder deleted once logged. Driven by `rotation.py`.
+
 **Outputs** = durable artifacts produced during workstream implementation. Written to `outputs/{workstream-name}/` — never inside the workstream folder. This guarantees cleanup (which deletes the workstream folder) cannot destroy produced artifacts. The `outputs/` tree is permanent.
 
 ---
 
-## Three-Tier Hierarchy
+## Hierarchy
 
 ```
-objective                     ← long-lived strategy, measured
-    └── workstream            ← heavy QRDPIV lifecycle, multi-session
-            └── task             ← lightweight unit / iteration
+objective                     <- long-lived strategy, measured
+    |-- workstream            <- heavy QRDPIV lifecycle, multi-session
+    |       \-- task           <- spawned child unit
+    |-- task                  <- lightweight unit, standalone
+    \-- rotation              <- recurring; runs again, scheduled or on demand
+            |-- task          <- spawned by a run
+            \-- workstream    <- spawned by a bigger run
 ```
 
-- A task's `parent` may be `workstreams/{name}`, `objectives/{name}`, or `null`.
-- A workstream's `parent` may be `objectives/{name}` or `null`.
+**This is a spawn graph, not a strict tree.** Tier is chosen by *shape*, not size:
+**bounded and single-session** -> task, **multi-session with handoffs** -> workstream,
+**it runs again** -> rotation.
+
+A workstream spawns child tasks for parallel or repeatable sub-units. A rotation spawns whatever a
+given run deserves: nothing at all for a small inline run, a task for a bounded one, a workstream for
+one that needs real handoffs. **A spawned child runs its own lifecycle and closes into its own log**,
+so the parent holds the coordination, not the work.
+
+- A task's `parent` may be `workstreams/{name}`, `rotations/{name}`, `objectives/{name}`, or `null`.
+- A workstream's `parent` may be `objectives/{name}`, `rotations/{name}`, or `null`.
+- A rotation's `parent` may be `objectives/{name}` or `null`.
 - Objectives are the top tier; they are never children of another artifact.
 
 ---
@@ -77,7 +99,7 @@ objective                     ← long-lived strategy, measured
 ## Session Entry
 
 1. Read this rule (auto-loaded when working on control-plane files)
-2. Read `objectives/index.md`, `workstreams/index.md`, and `tasks/index.md`
+2. Read `objectives/index.md`, `workstreams/index.md`, `tasks/index.md`, and `rotations/index.md`
 3. If unstructured input needs triage, read `intake/index.md` first
 4. If a specific item is in scope, read its `index.md`
 5. Identify current phase (workstreams), review state (objectives), or assignment (tasks)
@@ -93,6 +115,7 @@ objective                     ← long-lived strategy, measured
 | New or in-progress objective | `objective` |
 | Complex multi-session work | `workstream` |
 | Lightweight unit or iteration against a workstream | `task` |
+| Work that runs again — scheduled or on demand | `rotation` |
 | Read/write/search the Obsidian vault | `obsidian-cli` (primary) |
 | Author Obsidian-flavored markdown (wikilinks, callouts, frontmatter) | `obsidian-markdown` |
 | `.base` files (views, filters, formulas) | `obsidian-bases` |

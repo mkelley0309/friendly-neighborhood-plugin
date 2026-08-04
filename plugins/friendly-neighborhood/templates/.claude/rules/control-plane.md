@@ -36,6 +36,12 @@ control-plane/
     _log.md               ← durable record of every completed patrol; never deleted
     {name}/
       index.md            ← patrol record (assignment, checklist, handoff, lessons, friction)
+  stakeouts/                ← recurring work, scheduled or on demand
+    index.md              ← portfolio index of active stakeouts
+    _log.md               ← durable record of every retired/abandoned stakeout
+    {name}/                 ← deleted at close, once logged
+      index.md            ← purpose, trigger, guardrails, run log, self-improvement diary
+      _working/             ← scratch, for runs needing mission-style handoffs
   _harness/                 ← the harness's own feedback loop; never deleted
     friction.md           ← cross-run ledger of unresolved framework friction
   outputs/                  ← durable artifacts produced by missions (never deleted)
@@ -46,7 +52,7 @@ control-plane/
 
 ---
 
-## The Three Tiers
+## The Tiers
 
 **Intake** = unstructured capture. Ideas, notes, partial thoughts land here before triage. Lifecycle: `capture → triage → promote or discard`. Promoted items become responsibilities, missions, or patrols; discarded leave no trace.
 
@@ -56,20 +62,36 @@ control-plane/
 
 **Patrols** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a mission. A patrol carries *proportional* admin only (assignment, checklist, handoff, lessons) — no phase machine, no progressive distillation. On completion the folder is deleted *after* a dated entry is written to `patrols/_log.md`, which is the durable record: rescue anything real to `outputs/`, the vault or a project first, since nothing else survives. If a patrol grows (multiple sessions, real research, design decisions), **promote it to a mission** — before completing, since completing deletes the folder. Driven by `patrol.py`.
 
+**Stakeouts** = work defined by its **recurrence**, not its size — refresh sources into the vault, drain a cleanup queue, report portfolio status, auto-lint. May be patrol-sized or mission-sized; what makes it a stakeout is that it runs again, scheduled or on demand. Carries a **self-improvement diary** so each run makes the next cheaper, and `_working/` for runs needing handoffs. Lifecycle: `active` → `paused` → `retired` (done or automated away) or `abandoned`; folder deleted once logged. Driven by `stakeout.py`.
+
 **Outputs** = durable artifacts produced during mission implementation. Written to `outputs/{mission-name}/` — never inside the mission folder. This guarantees cleanup (which deletes the mission folder) cannot destroy produced artifacts. The `outputs/` tree is permanent.
 
 ---
 
-## Three-Tier Hierarchy
+## Hierarchy
 
 ```
-responsibility (objective)        ← long-lived strategy, measured
-    └── mission (workstream)      ← heavy QRDPIV lifecycle, multi-session
-            └── patrol               ← lightweight unit / iteration
+responsibility                <- long-lived strategy, measured
+    |-- mission               <- heavy QRDPIV lifecycle, multi-session
+    |       \-- patrol        <- spawned child unit
+    |-- patrol                <- lightweight unit, standalone
+    \-- stakeout              <- recurring; runs again, scheduled or on demand
+            |-- patrol        <- spawned by a run
+            \-- mission       <- spawned by a bigger run
 ```
 
-- A patrol's `parent` may be `workstreams/{name}`, `objectives/{name}`, or `null`.
-- A mission's `parent` may be `objectives/{name}` or `null`.
+**This is a spawn graph, not a strict tree.** Tier is chosen by *shape*, not size:
+**bounded and single-session** -> patrol, **multi-session with handoffs** -> mission,
+**it runs again** -> stakeout.
+
+A mission spawns child patrols for parallel or repeatable sub-units. A stakeout spawns whatever a
+given run deserves: nothing at all for a small inline run, a patrol for a bounded one, a mission for
+one that needs real handoffs. **A spawned child runs its own lifecycle and closes into its own log**,
+so the parent holds the coordination, not the work.
+
+- A patrol's `parent` may be `missions/{name}`, `stakeouts/{name}`, `objectives/{name}`, or `null`.
+- A mission's `parent` may be `objectives/{name}`, `stakeouts/{name}`, or `null`.
+- A stakeout's `parent` may be `objectives/{name}` or `null`.
 - Responsibilities are the top tier; they are never children of another artifact.
 
 ---
@@ -77,7 +99,7 @@ responsibility (objective)        ← long-lived strategy, measured
 ## Session Entry
 
 1. Read this rule (auto-loaded when working on control-plane files)
-2. Read `objectives/index.md`, `workstreams/index.md`, and `patrols/index.md`
+2. Read `objectives/index.md`, `workstreams/index.md`, `patrols/index.md`, and `stakeouts/index.md`
 3. If unstructured input needs triage, read `intake/index.md` first
 4. If a specific item is in scope, read its `index.md`
 5. Identify current phase (missions), review state (responsibilities), or assignment (patrols)
@@ -93,6 +115,7 @@ responsibility (objective)        ← long-lived strategy, measured
 | New or in-progress responsibility | `responsibility` |
 | Complex multi-session work | `mission` |
 | Lightweight unit or iteration against a mission | `patrol` |
+| Work that runs again — scheduled or on demand | `stakeout` |
 | Read/write/search the Obsidian vault | `obsidian-cli` (primary) |
 | Author Obsidian-flavored markdown (wikilinks, callouts, frontmatter) | `obsidian-markdown` |
 | `.base` files (views, filters, formulas) | `obsidian-bases` |

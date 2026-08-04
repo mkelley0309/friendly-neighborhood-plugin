@@ -6,12 +6,15 @@
 # CLI topology after the corrected tier model (objective -> workstream/mission -> task/patrol):
 #
 #   Shared, byte-identical in ALL THREE editions : gate.py, setup-keys.ps1
-#   Themed pair, byte-identical FULL <-> LITE     : workstream.py, patrol.py, objective.py
+#   Themed pair, byte-identical FULL <-> LITE     : workstream.py, patrol.py, stakeout.py,
+#                                                   objective.py
 #   Core variants (un-themed, NOT overwritten)    : workstream.py (un-themed prose),
 #                                                   objective.py (links child "workstream", not
 #                                                   "mission" — un-themed child-tier vocabulary),
 #                                                   task.py (un-themed + RENAMED counterpart
-#                                                   of full/patrol.py — different filename)
+#                                                   of full/patrol.py — different filename),
+#                                                   rotation.py (un-themed counterpart of
+#                                                   full/stakeout.py — different filename)
 #
 # Run from anywhere:  bash build/sync-clis.sh
 set -euo pipefail
@@ -21,7 +24,7 @@ FULL="$ROOT/plugins/friendly-neighborhood/templates/tools"
 LITE="$ROOT/plugins/friendly-neighborhood-lite/templates/tools"
 CORE="$ROOT/plugins/harness-core/templates/tools"
 
-THEMED_CLIS="workstream.py patrol.py objective.py gate.py setup-keys.ps1"  # full -> lite (identical)
+THEMED_CLIS="workstream.py patrol.py stakeout.py objective.py gate.py setup-keys.ps1"  # full -> lite (identical)
 CORE_SHARED="gate.py setup-keys.ps1"                                       # full -> core (identical)
 
 echo "Syncing FULL -> LITE (all themed CLIs)…"
@@ -46,6 +49,8 @@ done
 if [ -f "$CORE/task.py" ]; then
   echo "  NOTE core/task.py is the un-themed, RENAMED counterpart of full/patrol.py."
   echo "       If you changed patrol.py LOGIC in full, hand-apply it to core/task.py."
+  echo "  NOTE core/rotation.py is the un-themed counterpart of full/stakeout.py."
+  echo "       If you changed stakeout.py LOGIC in full, hand-apply it to core/rotation.py."
 fi
 
 if [ "$fail" = 0 ]; then echo "Shared CLIs in sync."; else echo "Sync check FAILED — investigate drift above."; exit 1; fi

@@ -54,7 +54,7 @@ Invoke as `/harness-core:<name>`.
 | `task` | Lightweight unit with proportional admin (assignment/checklist/handoff/lessons). Promote to a workstream if it grows. |
 | `objective` | Long-lived, review-cycle goal with Key Results, milestones, linked workstreams, and an append-only decisions log. |
 | `knowledge` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → audit → sync. |
-| `loop` | Run a prompt or skill on a recurring interval; native autonomous looping for long-running or polling work. |
+| `rotation` | Recurring work, scheduled or on demand. Tracks its runs, carries a self-improvement diary so each run makes the next cheaper, and retires rather than completes. Wires `/loop` + `schedule` rather than replacing them. |
 
 `tools/gate.py` — the deterministic verification gate; run with `python -B tools/gate.py run`. Exits GO (0) or NO-GO (1) based on hard measurable checks (tests, lint, budget, deny-list). Called by the workstream lifecycle at the validate phase before close.
 
