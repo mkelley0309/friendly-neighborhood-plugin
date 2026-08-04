@@ -111,11 +111,11 @@ The opinions that make this harness what it is. Most are tuned for serious, long
 
 3. **Progressive disclosure — including the vault.** Load the minimum for the next decision: skills route to action-files on demand, rules load per subtree, and the knowledge vault is navigated hub → note, never bulk-loaded. Fetch detail when you need it, not before.
 
-4. **Curated self-learning — gated, not auto.** Lessons land in workstream-notes every phase and are reviewed at cleanup; research with lasting value is staged for the vault and admitted only by peer review. The harness gets smarter over time, but nothing rewrites itself unsupervised — silent drift is the failure we design against.
+4. **Curated self-learning — gated, not auto.** Harness friction lands in `friction-log.md` every phase and is reviewed at cleanup, with anything still unresolved carried to the cross-run ledger at `control-plane/_harness/friction.md`; research with lasting value is staged for the vault and admitted only by peer review. The harness gets smarter over time, but nothing rewrites itself unsupervised — silent drift is the failure we design against.
 
 5. **Determinism for the repeatable.** If you'll do a task more than once, turn it into a script or tool the first or second time. Don't re-spend tokens reasoning out what a deterministic CLI can do for free forever. The control-plane CLIs embody this principle.
 
-6. **Honest gates.** Hard, measurable concerns — tests pass/fail, lint/type errors, token spend vs. budget, deny-list hits — go through the deterministic gate (`tools/gate.py`), which exits GO or NO-GO. Soft, contextual judgments stay qualitative and are recorded in workstream-notes. There are few blanket "don't" rules: cost is computed from live signals, not a pre-listed catalog of prohibitions.
+6. **Honest gates.** Hard, measurable concerns — tests pass/fail, lint/type errors, token spend vs. budget, deny-list hits — go through the deterministic gate (`tools/gate.py`), which exits GO or NO-GO. Soft, contextual judgments stay qualitative and are recorded in friction-log. There are few blanket "don't" rules: cost is computed from live signals, not a pre-listed catalog of prohibitions.
 
 7. **Lean orchestration.** Cheapest capability that does the job; spawn only the agents whose concern is live; concurrency is a budget you set, not a free-for-all.
 

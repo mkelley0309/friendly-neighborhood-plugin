@@ -84,7 +84,7 @@ Default behavior is **sequential**: spawn one subagent, wait for it to return, t
 
 **Completion guarantee.** Every subagent spawned must be able to finish its task in one turn. If a task is too large to complete in a single turn, break it into smaller bounded tasks first — do not spawn it and hope it finishes. A subagent that stalls mid-task leaves the work in an unstable state requiring manual recovery.
 
-**Checkpoint before the budget bites.** No agent watches the live token/session budget — the runtime owns it and does not expose it mid-turn, so nothing can *warn* you that a turn is about to run out. Guard it **structurally** instead: keep turns bounded (above), and at clean phase/step boundaries write state to disk (`index.md` + `workstream-notes.md`) *before* continuing. A session-limit hit then degrades to a **resume**, never lost work — the same way `stakeout` carries state across sessions.
+**Checkpoint before the budget bites.** No agent watches the live token/session budget — the runtime owns it and does not expose it mid-turn, so nothing can *warn* you that a turn is about to run out. Guard it **structurally** instead: keep turns bounded (above), and at clean phase/step boundaries write state to disk (`index.md` + `plan.md`) *before* continuing. A session-limit hit then degrades to a **resume**, never lost work — the same way `stakeout` carries state across sessions.
 
 **Token budget.** Every subagent prompt must include a return-size bound:
 - Haiku: `"Return in under 200 words."`

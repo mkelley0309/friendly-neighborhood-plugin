@@ -27,14 +27,16 @@ control-plane/
     {name}/
       index.md            ← mission status anchor (phase, health)
       request.md | research.md | design.md | plan.md | worktree-{nn}.md
-      workstream-notes.md   ← self-learning ledger (every phase appends)
+      friction-log.md       ← how the *harness* performed; never what the work found
       _working/             ← throwaway scratch
     _log/
       YYYY-MM-DD-{name}.md  ← durable summary after cleanup
   patrols/                  ← lightweight units (often iterations against a mission)
     index.md              ← portfolio index of active patrols
     {name}/
-      index.md            ← patrol record (assignment, checklist, handoff, lessons)
+      index.md            ← patrol record (assignment, checklist, handoff, lessons, friction)
+  _harness/                 ← the harness's own feedback loop; never deleted
+    friction.md           ← cross-run ledger of unresolved framework friction
   outputs/                  ← durable artifacts produced by missions (never deleted)
     index.md              ← index of all outputs, organized by mission
     {mission-name}/       ← one folder per mission that produced artifacts

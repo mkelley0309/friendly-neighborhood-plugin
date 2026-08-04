@@ -25,7 +25,7 @@ The opinions that make this harness what it is. Most are tuned for **serious, lo
 
 3. **Progressive disclosure — including the vault.** Load the minimum for the next decision: skills route to action-files on demand, rules load per subtree, and the **knowledge vault is navigated hub → note, never bulk-loaded.** Fetch detail when you need it, not before.
 
-4. **Curated self-learning — gated, not auto.** Lessons land in `workstream-notes` every phase and are reviewed at cleanup; research with lasting value is staged for the vault and **admitted only by peer review.** The harness gets smarter over time, but nothing rewrites itself unsupervised — silent drift is the failure we design against.
+4. **Curated self-learning — gated, not auto.** Harness friction lands in `friction-log.md` every phase and is reviewed at cleanup, with anything still unresolved carried to the cross-run ledger at `control-plane/_harness/friction.md`; research with lasting value is staged for the vault and **admitted only by peer review.** The harness gets smarter over time, but nothing rewrites itself unsupervised — silent drift is the failure we design against.
 
 5. **Determinism for the repeatable.** If you'll do a task more than once, turn it into a script or tool the first or second time. Don't re-spend tokens reasoning out what a deterministic CLI can do for free forever.
 
@@ -44,7 +44,7 @@ The opinions that make this harness what it is. Most are tuned for **serious, lo
 When a villain flags something, don't treat it as a vibe and don't fake a precise number. **Split the signal by how measurable it is:**
 
 - **Hard, measurable concerns → a deterministic gate.** Tests pass/fail, lint/type errors, token spend vs. budget, deny-list hits, "is it actually verified?" — these are scored by a tool (`tools/gate.py`), not judgment. If the gate fails, stop. This is where *real* determinism lives.
-- **Soft, contextual concerns → qualitative judgment.** Over-engineering, scope creep, wrong target — a villain flags it (`carnage`, `mysterio`, or `kingpin` for the lite roster), the driver weighs it against this creed and any support endorsement, and **records the rationale in `workstream-notes`.** An honest call, not a laundered score.
+- **Soft, contextual concerns → qualitative judgment.** Over-engineering, scope creep, wrong target — a villain flags it (`carnage`, `mysterio`, or `kingpin` for the lite roster), the driver weighs it against this creed and any support endorsement, and **records the rationale in `friction-log`.** An honest call, not a laundered score.
 
 Hard rules stay hard (deny-list + spider-sense hook enforce them for free). Soft judgments stay honest. Nothing pretends to be more precise than it is.
 
@@ -97,4 +97,4 @@ Orchestration CLIs require Python 3 (stdlib only) — invoke with whichever laun
 
 ## Memory Note
 
-Memory here is **explicit and auditable**, not implicit: the **vault** is semantic memory, the **control-plane logs / decisions log / workstream-notes** are episodic, the **constitution + rules** are procedural. Recall is deliberate; nothing is silently retained.
+Memory here is **explicit and auditable**, not implicit: the **vault** is semantic memory, the **control-plane logs / decisions log / friction-log** are episodic, the **constitution + rules** are procedural. Recall is deliberate; nothing is silently retained.
