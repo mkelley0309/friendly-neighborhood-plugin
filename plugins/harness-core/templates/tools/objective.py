@@ -543,6 +543,12 @@ def render_review(name, text, when):
         "", "## Decisions Taken", "",
         "*Anything decided at this review. Material decisions also belong in the "
         "objective's append-only `## Key Decisions Log`.*",
+        "", "## Harness Friction", "",
+        "*Only how the objective machinery performed this cycle — a command that "
+        "misbehaved, an instruction that was wrong, a review step that could not be "
+        "carried out. Not progress, not blockers on the work itself. Would it still "
+        "be true for an unrelated objective? If not, it belongs above. Usually empty; "
+        "carry anything unresolved to `control-plane/_harness/friction.md`.*",
         "", "## Next Review", "",
         f"*Per cadence `{cadence}`.*", "",
     ]

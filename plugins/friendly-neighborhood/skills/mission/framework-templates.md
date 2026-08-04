@@ -209,9 +209,11 @@ Structure of the deliverable, agreed before planning. Authoritative over `resear
 
 ---
 
-## `workstream-notes.md` Template
+## `friction-log.md` Template
 
-Created at initiate, appended by **every** phase, reviewed at cleanup. The self-learning ledger of the mission — not implement-only.
+Created at initiate, appended by **every** phase, reviewed at cleanup. Records how well
+the *harness* performed — never what the work found. See SKILL.md → *Friction Log* for
+the inclusion test.
 
 ```markdown
 ---
@@ -220,38 +222,68 @@ workstream: {name}
 tags: [workstream/{name}]
 ---
 
-# Mission Notes — {name}
+# Friction Log — {name}
 
-Running self-learning log across all phases. Each entry is tagged with the phase
-that produced it (`[questions]`, `[research]`, `[design]`, `[plan]`, `[implement]`,
-`[validate]`, `[cleanup]`). Reviewed at cleanup to surface durable lessons and any
-permission / settings changes worth making permanent.
+How well the harness supported this mission. **Not** a record of the work itself:
+findings go to `research.md`, decisions to `design.md`, progress to `plan.md`.
 
----
+Inclusion test: *would this note still be true and useful on a completely unrelated
+mission?* If it names the subject matter, it belongs elsewhere. Record the rule,
+not the incident. Prefix every entry with its phase.
 
-## Challenges & Discrepancies
-
-*(append throughout — prefix each with its phase)*
+Often empty — a run with no friction is a good run, not a gap to fill.
 
 ---
 
-## Process Observations & Self-Learning
+## Friction & Discrepancies
 
-*(what worked, what to repeat or avoid, friction in the workflow itself — prefix with phase)*
+*(where the harness got in the way, was wrong, or contradicted itself)*
+
+---
+
+## Process Observations
+
+*(what to repeat or avoid in how the framework is run)*
 
 ---
 
 ## Permission / Settings Suggestions
 
-*(append throughout — prefix with phase)*
+*(concrete harness changes worth making permanent)*
+```
 
+## Harness Friction Ledger (`control-plane/_harness/friction.md`)
+
+The cross-run aggregation point. Mission cleanup, task complete, and objective review each
+append unresolved, generalizable friction here. **Permanent** — the mission folder that
+produced an entry is deleted, so this is the only thing that survives to inform the next
+run. Create it on first use.
+
+```markdown
+---
+note_type: harness-ledger
+tags: [harness, friction]
 ---
 
-## Step Status Log   ← implement phase only
+# Harness Friction Ledger
 
-| Step | Status | Notes |
+Unresolved friction in the harness itself, aggregated across runs. Entries are about the
+*framework*, never about the work that surfaced them.
+
+Resolve an entry by fixing the harness, then move its row to Resolved with the date and
+what changed. Recurrence across several runs is the signal that something needs fixing —
+one annoyance is noise, the same annoyance three times is a defect.
+
+## Open
+
+| Date | Tier | Source | Friction | Recurred |
+|---|---|---|---|---|
+| YYYY-MM-DD | mission \| task \| objective | {name} | {the rule, one line} | 1 |
+
+## Resolved
+
+| Date | Friction | Resolution |
 |---|---|---|
-| {step} | — | |
 ```
 
 ---

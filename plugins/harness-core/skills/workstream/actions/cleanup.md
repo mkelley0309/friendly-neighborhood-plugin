@@ -4,11 +4,15 @@ Write the log entry, delete all working files, remove the folder.
 
 ## Steps
 
-1. **Review `workstream-notes.md`** — read the workstream's `workstream-notes.md` if it exists. This is the self-learning ledger accumulated across **all** phases, not just implement. Surface to the user:
-   - Challenges, discrepancies, and process observations from any phase worth remembering — these feed the log entry's "What Worked / Lessons Learned" section
+1. **Review `friction-log.md`** — read it if it exists. It records how the *harness* performed across all phases. Surface to the user:
+   - Friction and process observations worth remembering — these feed the log entry's "What Worked / Lessons Learned" section
    - Any suggestions recorded in the Permission / Settings Suggestions section
 
-   **Always ask before acting on suggestions.** Present each suggestion to the user and wait for explicit confirmation before making any changes to settings, permissions, or skill files. Do not implement suggestions silently as part of cleanup.
+   **Always ask before acting on suggestions.** Present each suggestion and wait for explicit confirmation before changing settings, permissions, or skill files. Do not implement suggestions silently as part of cleanup.
+
+   **Then close the loop.** The workstream folder is about to be deleted, so any friction not carried out of it dies here — and the next workstream hits the same wall. Append every entry that is **generalizable and still unresolved** to `control-plane/_harness/friction.md` (create it from the template in `framework-templates.md` if absent), one row per entry. Skip anything already fixed during this workstream, and anything specific to this subject matter — that was never friction to begin with.
+
+   If `friction-log.md` is empty, say so and move on. An empty log is a clean run, not a missing artifact.
 
 2. **Verify outputs are safe** before deleting anything:
    - Produced artifacts (slides, documents, configs, generated content) should already be in `control-plane/outputs/{name}/` — confirm they are there before proceeding. If they are still in the workstream folder, move them now.

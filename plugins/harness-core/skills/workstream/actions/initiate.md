@@ -18,7 +18,7 @@ Fill in the one-paragraph description in the created `index.md`.
 
 ## Self-learning ledger
 
-Create `workstream-notes.md` in the new workstream folder from the template in `framework-templates.md`. Every phase appends to it (see SKILL.md → *Workstream Notes (Self-Learning)*).
+Create `friction-log.md` in the new workstream folder from the template in `framework-templates.md`. Every phase appends to it — but only about how the *harness* performed, never about the work itself (see SKILL.md → *Friction Log*). Expect it to stay empty on a clean run.
 
 ## Intake provenance
 

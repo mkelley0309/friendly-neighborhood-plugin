@@ -149,7 +149,13 @@ tags: [task/{name}]
 
 ## Lessons
 
-*One line worth repeating or avoiding, if you learned something.*
+*One line worth repeating or avoiding about this work, if you learned something.*
+
+## Friction
+
+*One line only if the harness got in the way — a tool that misbehaved, an instruction that
+was wrong, an access scope too narrow. Would it still be true on an unrelated task? If it
+names the subject matter it is a Lesson, not Friction. Usually empty.*
 
 ## Cross-links
 

@@ -14,15 +14,15 @@ python -B tools/gate.py run
 
 This executes your defined checks (tests, lint, types — set them once with `gate.py init`) and returns a hard GO / NO-GO by exit code. Also acceptable: the `/verify` or `/run` skill, or the project's test command from its `CLAUDE.md`. If the project genuinely has no automated checks, say so explicitly and verify behavior by an observable alternative — never skip silently.
 
-Record the result (command run, exit code, what passed or failed) in `workstream-notes.md` prefixed `[validate]`.
+Record the result (command run, exit code, what passed or failed) in `validate.md` — that is the work record. Only record it in `friction-log.md` if the *gate itself* misbehaved (no checks configured, the skill gave no usable instruction, the runner failed for reasons unrelated to the deliverables).
 
-**If NO-GO:** stop. Document the failures in `workstream-notes.md` and surface them to the user. Return to `actions/implement.md` to remediate, then re-run the gate.
+**If NO-GO:** stop. Document the failures in `validate.md` and surface them to the user. Return to `actions/implement.md` to remediate, then re-run the gate.
 
 ### 2. Adversarial QA — spawn `jameson`
 
 Hand the gate result and the mission's completion criteria (from `plan.md`) to `jameson` ("this is a menace, prove me wrong"). `jameson`'s job: red-team the deliverables against every completion criterion — find anything claimed done but not actually verified.
 
-`jameson` returns findings to main context (≤400 words). Record sign-off or objections in `workstream-notes.md` prefixed `[validate]`.
+`jameson` returns findings to main context (≤400 words). Record sign-off or objections in `validate.md`.
 
 **If jameson raises objections:** resolve them before proceeding. Unresolved objections block advance to cleanup.
 

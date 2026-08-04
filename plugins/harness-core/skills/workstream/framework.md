@@ -50,7 +50,8 @@ tags: [workstream/{name}]
 | Artifact type | Destination |
 |---|---|
 | Working scratch | `workstreams/{name}/_working/` — deleted at cleanup |
-| Process artifacts | `workstreams/{name}/` — `plan.md`, `research.md`, `design.md`, `workstream-notes.md`, `index.md` — deleted at cleanup |
+| Process artifacts | `workstreams/{name}/` — `plan.md`, `research.md`, `design.md`, `validate.md`, `friction-log.md`, `index.md` — deleted at cleanup |
+| Harness friction | `control-plane/_harness/friction.md` — cross-run ledger, appended at cleanup; **permanent** |
 | Promoting intake item | leave in `intake/` during the workstream; cleanup moves it to `intake/_archive/` |
 | **Produced outputs** | **`outputs/{name}/` — permanent, never deleted by cleanup** |
 | Vault additions | `knowledge/vault/` |

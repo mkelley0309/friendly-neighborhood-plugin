@@ -14,9 +14,9 @@ After writing output files: update `control-plane/outputs/index.md` to add a row
 
 Read `index.md` and `plan.md`. Confirm `workstream_health: healthy`. If not, load `actions/assess.md`.
 
-`workstream-notes.md` already exists (created at initiate; see SKILL.md → *Workstream Notes (Self-Learning)*). If it doesn't, create it from the template in `framework-templates.md`.
+`friction-log.md` already exists (created at initiate; see SKILL.md → *Friction Log*). If it doesn't, create it from the template in `framework-templates.md`.
 
-Populate the **Step Status Log** table in `workstream-notes.md` with one row per plan step before beginning execution.
+Do **not** build a step-status table anywhere. `plan.md` checkboxes and `index.md` `current_step` are the progress record, and `check-step` maintains both together.
 
 ## Execution loop
 
@@ -26,11 +26,16 @@ For each step:
 
 1. Brief a subagent with only the context needed for that step (plan step text, relevant file paths, expected output). Do not pass the full plan or prior step outputs unless the step explicitly requires them.
 2. Subagent reports status only — confirmation that output exists and key observations. It does not return full file contents to main context.
-3. Update `workstream-notes.md` after each step:
-   - Mark the step row in the Step Status Log (✓ / ✗ / blocked)
-   - Append any challenge, discrepancy, or unexpected finding to the Challenges & Discrepancies section, prefixed `[implement]`
-   - Append any permission or settings suggestion to the Permission / Settings Suggestions section
-4. If blocked: stop immediately. Document the blocker in `workstream-notes.md` and surface it to the user.
+3. Tick the step — this is the only progress write:
+
+   ```bash
+   python -B tools/workstream.py check-step <name> "<step number>"
+   ```
+
+   Accepts a step number (`1.4`) or a distinctive substring. It ticks the `plan.md` checkbox and advances `index.md` `current_step` in one operation, so the two cannot drift. An ambiguous query is rejected rather than guessed at.
+
+4. Append to `friction-log.md` **only** if the harness itself got in the way — a tool that misbehaved, an instruction that was wrong or contradictory, an access scope that was too narrow. Prefix `[implement]`. A finding about the subject matter is not friction; it belongs in the work artifact. Most steps produce no entry.
+5. If blocked: stop immediately. Record the blocker with `workstream.py block <name> "<reason>"`, and surface it to the user.
 
 ## Delegation (Claude Code)
 
