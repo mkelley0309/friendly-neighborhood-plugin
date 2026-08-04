@@ -59,14 +59,34 @@ Every research phase follows these rules — no exceptions:
 
 These rules enforce progressive distillation, structured handoffs to clean context windows, limited token usage, and semantic density — the properties that make a workstream coherent across multiple sessions.
 
-## Workstream Notes (Self-Learning) — Every Phase
+## Friction Log — Every Phase
 
-Each workstream keeps one `workstream-notes.md` in its folder. It is the self-learning ledger and is **not** implement-only — every phase contributes:
+Each workstream keeps one `friction-log.md` in its folder. It records **how well the harness performed**, never what the work found.
 
 - **Created at initiate** from the template in `framework-templates.md`.
-- **Appended by every phase.** Whenever a phase hits a challenge, discrepancy, friction in the workflow itself, or a lesson worth repeating/avoiding, append it to `workstream-notes.md` with a phase prefix (`[questions]`, `[research]`, `[design]`, `[plan]`, `[implement]`, `[validate]`, `[cleanup]`). Permission/settings suggestions go in their section.
-- **Implement adds** the per-step Step Status Log (see `actions/implement.md`).
-- **Reviewed at cleanup** — surfaced to the user and distilled into the log entry's "What Worked / Lessons Learned" section.
+- **Appended by every phase**, prefixed `[questions]` `[research]` `[design]` `[plan]` `[implement]` `[validate]` `[cleanup]`.
+- **Reviewed at cleanup** — surfaced to the user, distilled into the log entry, and any unresolved generalizable entry appended to `control-plane/_harness/friction.md`.
+
+### The inclusion test
+
+> **Would this note still be true and useful on a completely unrelated workstream?**
+
+If yes, it belongs here. If it names the subject matter, it belongs in the work artifact instead.
+
+| Belongs in `friction-log.md` | Belongs elsewhere |
+|---|---|
+| "Vault read scope was too narrow for the research pass" | A finding *from* that pass → `research.md` |
+| "`actions/research.md` names an agent that has no Write tool" | A defect in the code under study → `research.md` |
+| "`SKILL.md` and the action file contradict each other" | A design decision taken → `design.md` |
+| "The CLI resolves the wrong root when run from a subfolder" | Step 1.4 is done → `plan.md` (via `check-step`) |
+
+**Record the rule, not the incident.** "Diff before you copy — the plugin can be ahead" is the entry; the file you clobbered is a clause of evidence, not a paragraph.
+
+### Why the scope is narrow
+
+This is the only artifact that legitimately crosses every phase boundary. That privilege is affordable *only* because its scope is small and fixed. Let it also carry what the work found and it becomes the cross-phase accumulator that progressive distillation exists to prevent — every phase then reads every prior phase's findings, which is exactly the context pollution the handoff model is built to stop.
+
+Progress tracking is **not** its job. `plan.md` checkboxes and `index.md` `current_step` are maintained together by `workstream.py check-step`; a third hand-maintained tracker rots and then lies.
 
 ## What Is a Workstream
 

@@ -14,21 +14,21 @@ python -B tools/gate.py run
 
 This executes your defined checks (tests, lint, types — set them once with `gate.py init`) and returns a hard GO / NO-GO by exit code. Also acceptable: the `/verify` or `/run` skill, or the project's test command from its `CLAUDE.md`. If the project genuinely has no automated checks, say so explicitly and verify behavior by an observable alternative — never skip silently.
 
-Record the result (command run, exit code, what passed or failed) in `workstream-notes.md` prefixed `[validate]`.
+Record the result (command run, exit code, what passed or failed) in `validate.md` — that is the work record. Only record it in `friction-log.md` if the *gate itself* misbehaved (no checks configured, the skill gave no usable instruction, the runner failed for reasons unrelated to the deliverables).
 
-**If NO-GO:** stop. Document the failures in `workstream-notes.md` and surface them to the user. Return to `actions/implement.md` to remediate, then re-run the gate.
+**If NO-GO:** stop. Document the failures in `validate.md` and surface them to the user. Return to `actions/implement.md` to remediate, then re-run the gate.
 
 ### 2. Functional validation — spawn `gwen`
 
 Hand the gate result and the mission's completion criteria (from `plan.md`) to `gwen`. Her job: *exercise* the work — run it, drive each flow, probe the edges — and confirm it actually does what each completion criterion says, reporting evidence ("ran X, got Y, expected Z"), not opinion. `jameson` may be spawned alongside as the adversarial second pair of eyes on the framing.
 
-`gwen` returns findings to main context (≤400 words). Record sign-off or objections in `workstream-notes.md` prefixed `[validate]`.
+`gwen` returns findings to main context (≤400 words). Record sign-off or objections in `validate.md`.
 
 **If gwen raises objections:** resolve them before proceeding. Unresolved objections block advance to cleanup.
 
 ### 3. Security red-team (when the surface warrants it) — spawn `cat`
 
-If the work touches auth, secrets, input handling, or any external surface, spawn `cat` to red-team it. If Black Cat finds an open window — a hardcoded secret, a missing auth check, an injection surface — close it before advancing. Record findings in `workstream-notes.md` prefixed `[validate]`.
+If the work touches auth, secrets, input handling, or any external surface, spawn `cat` to red-team it. If Black Cat finds an open window — a hardcoded secret, a missing auth check, an injection surface — close it before advancing. Record findings in `friction-log.md` prefixed `[validate]`.
 
 ### 4. Advance phase
 
