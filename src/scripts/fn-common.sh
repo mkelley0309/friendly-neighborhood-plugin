@@ -15,10 +15,12 @@ FN_DATE="$(date +%Y-%m-%d 2>/dev/null || echo unknown)"
 FN_TS="$(date -Iseconds 2>/dev/null || date +%Y-%m-%dT%H:%M:%S%z 2>/dev/null || echo now)"
 FN_LOG="${FN_LOG_DIR}/session-${FN_DATE}.log"
 
+# FEATURE:observation_deck:start
 # Observation deck — themed per-agent streams the operator can tail (full edition).
 FN_AGENTS_DIR="${FN_LOG_DIR}/agents"
 FN_DECK="${FN_WS}/.claude/scripts/agent-log.sh"   # scaffolded workspace copy
 
+# FEATURE:observation_deck:end
 # Read all of stdin (hook input JSON), best-effort.
 fn_read_input() { cat 2>/dev/null || true; }
 
@@ -43,6 +45,7 @@ fn_speaker() {
   name="${name##*:}"   # strip a namespace like spideys:peter
   printf '%s' "$name" | tr '[:lower:]' '[:upper:]'
 }
+# FEATURE:observation_deck:start
 
 # Lowercase, namespace-stripped agent name (for deck stream / suit-flag filenames).
 fn_speaker_lc() { fn_speaker "$1" | tr '[:upper:]' '[:lower:]'; }
@@ -62,3 +65,4 @@ fn_suit_off() {
   case "$1" in *[!a-z0-9-]*|"") return 0 ;; esac   # plain agent name only — no path traversal in the rm
   rm -f "${FN_AGENTS_DIR}/.suit/${1}" 2>/dev/null || true
 }
+# FEATURE:observation_deck:end

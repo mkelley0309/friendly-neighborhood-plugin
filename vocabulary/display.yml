@@ -50,6 +50,16 @@ skills:
     core: knowledge
     themed: web-archive
 
+# ── Non-tier folder renames ─────────────────────────────────────────────────
+# Found during 3.5 (see generation-diff-triage.md): confirmed identical in both
+# friendly-neighborhood and friendly-neighborhood-lite templates. Renames the
+# templates/{core} folder AND the .claude/rules/{core}.md file to {themed} in
+# both name and `paths:` glob; prose inside gets ordinary tier substitution.
+folders:
+  personal:
+    core: personal
+    themed: secret-identity
+
 # ── Themed-only doctrine skills ─────────────────────────────────────────────
 # No core equivalent at all — core ships zero cast/doctrine vocabulary, so
 # there is nothing to map from. These map to a native-mechanism doctrine
