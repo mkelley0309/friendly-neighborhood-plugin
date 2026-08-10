@@ -1,0 +1,118 @@
+# vocabulary/data-model.yml — PINNED
+#
+# Folder names, CLI filenames, and YAML frontmatter keys for the four QRDPIV
+# tiers. Everything in this file is a literal identifier a generator may
+# copy verbatim but must never run through the display-vocabulary
+# substitution in `display.yml`.
+#
+# `pinned: true` tiers (objective, workstream) use ONE identifier in every
+# edition, including the fully themed one. Their themed words
+# (responsibility, campaign — see display.yml) are prose-only: they never
+# touch a folder name, a CLI filename, or a frontmatter key. Evidence:
+# `plugins/friendly-neighborhood/templates/control-plane/workstreams/` is
+# still named `workstreams/`, not `campaigns/`, in the full edition.
+#
+# `pinned: false` tiers (assignment, cadence) are substituted end-to-end per
+# edition — folder, CLI filename, AND frontmatter key all change together.
+# Evidence: `assignment.py` -> `mission.py`, `assignments/` -> `missions/`,
+# frontmatter `assignment: {name}` -> `mission: {name}` in both the lite and
+# full editions (core is the only edition using the untethemed identifier).
+#
+# THE LANDMINE (plan 3.1): a generator that treats all four tiers as one
+# substitutable table will rewrite `workstream:` frontmatter to `campaign:`
+# in the full edition and break every scaffolded workspace. The `pinned`
+# flag below is what a generator must branch on before substituting
+# anything in this file's scope.
+#
+# COUNTER-LANDMINE, found while auditing `objective.py`: the string
+# "cadence" also appears as an UNRELATED frontmatter field inside
+# `objective.py` (`cadence: quarterly` — review cadence, nothing to do with
+# the cadence *tier*). It is correctly left untouched in every edition,
+# including full/lite where the cadence tier itself becomes `patrol`. A
+# generator must substitute the tier identifier by structural position
+# (the tier's own folder/CLI/frontmatter-key slots below), never by a bare
+# string match against the word "cadence" — the same caution applies to
+# "objective" (the objective tier vs. the English word) if it is ever used
+# generically in prose.
+
+tiers:
+  objective:
+    pinned: true
+    identifier: objective
+    folder: objectives
+    cli: objective.py
+    frontmatter_key: objective
+    log_file: null          # objectives have no _log/ — they close via review, not deletion
+
+  workstream:
+    pinned: true
+    identifier: workstream
+    folder: workstreams
+    cli: workstream.py
+    frontmatter_key: workstream
+    log_dir: _log            # control-plane/workstreams/_log/YYYY-MM-DD-{name}.md
+    tags_prefix: workstream   # tags: [workstream/{name}]
+
+  assignment:
+    pinned: false
+    identifier: assignment    # canonical/source-tree name; core edition's shipped name too
+    editions:
+      core:
+        folder: assignments
+        cli: assignment.py
+        frontmatter_key: assignment
+        log_file: _log.md
+        tags_prefix: assignment
+      lite:
+        folder: missions
+        cli: mission.py
+        frontmatter_key: mission
+        log_file: _log.md
+        tags_prefix: mission
+      full:
+        folder: missions
+        cli: mission.py
+        frontmatter_key: mission
+        log_file: _log.md
+        tags_prefix: mission
+
+  cadence:
+    pinned: false
+    identifier: cadence       # canonical/source-tree name; core edition's shipped name too
+    editions:
+      core:
+        folder: cadences
+        cli: cadence.py
+        frontmatter_key: cadence
+        log_file: _log.md
+        tags_prefix: cadence
+      lite:
+        folder: patrols
+        cli: patrol.py
+        frontmatter_key: patrol
+        log_file: _log.md
+        tags_prefix: patrol
+      full:
+        folder: patrols
+        cli: patrol.py
+        frontmatter_key: patrol
+        log_file: _log.md
+        tags_prefix: patrol
+
+# Scaffold filenames used by every tier's CLI, identical in every edition —
+# never templated, not tier-dependent. Listed once here rather than per tier
+# to avoid implying they vary.
+pinned_filenames:
+  - index.md      # portfolio index (all tiers) and per-item index (workstream, objective, assignment/mission, cadence/patrol)
+  - plan.md        # workstream QRDPIV plan artifact
+  - design.md
+  - research.md
+  - request.md
+  - friction-log.md
+
+# Other tiers that exist but sit outside the four-tier data model (no
+# generated CLI/folder identifiers of their own to pin — they are addressed
+# entirely through display.yml or are cross-tier mechanisms, not tiers):
+#   - intake (control-plane/intake/ — folder name pinned, no per-item CLI)
+#   - /goal — documented as cross-tier, not a tier (see workstream index note
+#     2026-08-10 "Document /goal as a cross-tier mechanism, not a tier")
