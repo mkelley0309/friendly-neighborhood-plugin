@@ -1,0 +1,43 @@
+# editions/full.yml
+# Generator input (plan 3.5) for the `friendly-neighborhood` edition.
+# See editions/core.yml for the axis model.
+
+plugin:
+  name: friendly-neighborhood
+  displayName: Friendly Neighborhood
+  description: >
+    An opinionated Claude Code harness for serious, long-horizon work,
+    re-themed Spider-Man. Three tiers of work (responsibility → campaign →
+    mission), a peer-reviewed knowledge-vault pipeline, progressive
+    distillation at every handoff, and a decision mechanic that splits
+    hard signals (a deterministic gate) from soft ones (affirmative
+    villain dissent). Plus a Spider-cast of agents, the symbiote
+    (disciplined, turn-limited model escalation), a live per-character
+    observation deck, and native autonomous looping. Cheap by default;
+    ceremony scaled to the work.
+
+display: spider-man
+
+roster: 32   # vocabulary/display.yml -> roster.full
+
+features:
+  observation_deck: true    # confirmed: templates/.vscode, plugin.json + symbiote SKILL.md both reference it; full-only on disk
+  vscode_workspace: true      # templates/.vscode present only here
+  themes: true                  # themes/ present only here
+  output_style: true
+  output_style_screenplay: true   # "Format: the script" section present here, absent from lite's copy of the same file
+  phase_council: true               # populated from the full 32-agent roster
+  cast_council: true
+  doctrine_skills: [church-bell, creed, spider-sense, symbiote]
+
+skills:
+  - responsibility
+  - campaign
+  - mission
+  - patrol
+  - web-archive
+  - origin-story
+  - church-bell
+  - creed
+  - spider-sense
+  - symbiote
