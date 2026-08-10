@@ -1,0 +1,113 @@
+# vocabulary/display.yml — TEMPLATED
+#
+# Prose terms, skill names, slash-command names, and character names. Every
+# value here is safe to substitute per edition — none of it touches a folder
+# name, CLI filename, or frontmatter key (that's `data-model.yml`'s job; see
+# its header for the pinned/templated split and why the two must not share
+# one substitution table).
+#
+# A skill's *name* (== its slash-command, Claude Code invokes skills as
+# `/<skill-name>`) is display vocabulary and freely renames. What that
+# skill's prose *points at on disk* is not — e.g. the `campaign` skill must
+# still say `control-plane/workstreams/`, not `control-plane/campaigns/`.
+# (Confirmed live discrepancy in the currently shipped edition: see
+# `_working/generation-diff-triage.md`. That is exactly the class of bug
+# this file/data-model.yml split exists to make structurally impossible
+# going forward, and 3.6 must classify the current instance.)
+
+# ── Tier prose + skill-name pairs ───────────────────────────────────────────
+# Core is untethemed: its skill name equals the pinned tier identifier
+# (`assignment`, `cadence`, `objective`, `workstream`), so it has no entry
+# here — there is nothing to template. Lite and full use the SAME skill
+# names for these tiers, but the file *content* under those names has
+# already drifted between the two editions (`diff -rq` on `skills/` shows
+# every shared skill differs — `campaign/actions/*`, `mission/SKILL.md`,
+# `responsibility/actions/*`, plus all four themed-only doctrine skills
+# below). That drift is exactly the class of bug single-source generation
+# (3.3/3.5) exists to make impossible; it is a 3.6 triage item, not
+# something this vocabulary file can fix by itself.
+tiers:
+  objective:
+    core: objective          # skill: plugins/harness-core/skills/objective/
+    themed: responsibility   # skill: plugins/*/skills/responsibility/
+  workstream:
+    core: workstream          # skill: plugins/harness-core/skills/workstream/
+    themed: campaign          # skill: plugins/*/skills/campaign/
+  assignment:
+    core: assignment          # skill: plugins/harness-core/skills/assignment/
+    themed: mission           # skill: plugins/*/skills/mission/
+  cadence:
+    core: cadence              # skill: plugins/harness-core/skills/cadence/
+    themed: patrol              # skill: plugins/*/skills/patrol/
+
+# ── Non-tier skill-name pairs ───────────────────────────────────────────────
+# Same concept, renamed skill, no tier/folder underneath it to protect.
+skills:
+  init-workspace:
+    core: init-workspace
+    themed: origin-story
+  knowledge:
+    core: knowledge
+    themed: web-archive
+
+# ── Themed-only doctrine skills ─────────────────────────────────────────────
+# No core equivalent at all — core ships zero cast/doctrine vocabulary, so
+# there is nothing to map from. These map to a native-mechanism doctrine
+# line in core instead of a skill (see plan 4d.1 for the eventual retirement
+# of most of these in favor of that doctrine-line approach; Phase 3 ships
+# them as they exist today, unchanged, per the byte-reproduction mandate).
+themed_only_skills:
+  - church-bell    # -> native: TaskStop (per plan 4d.1)
+  - creed          # -> doctrine line in root CLAUDE.md
+  - spider-sense   # -> native: pre-flight check, no skill needed
+  - symbiote       # -> native: Agent() with model/effort override (per plan 4d.1)
+
+# ── Character names ──────────────────────────────────────────────────────
+# Core roster: 0 (no agents/ directory). Lite roster: 7. Full roster: 32.
+# Character *content* (identity, tools, aphorism) is not vocabulary — it
+# lives in each edition's agents/*.md today and moves to src/lenses +
+# src/registers at Phase 4 (4a.1/4b.1). This file records only the roster
+# membership axis so the generator can select which names ship per edition;
+# it is not the roster's data source.
+roster:
+  lite:  # plugins/friendly-neighborhood-lite/agents/*.md — confirmed 7
+    - carnage
+    - jameson
+    - kingpin
+    - miguel
+    - mysterio
+    - noir
+    - peter
+  full:  # plugins/friendly-neighborhood/agents/*.md — confirmed 32 (lite's 7 is a subset)
+    - aunt-may
+    - ben-reilly
+    - carnage
+    - cat
+    - electro
+    - gwen
+    - ham
+    - jameson
+    - jessica
+    - kingpin
+    - kraven
+    - lizard
+    - madame-web
+    - miguel
+    - miles
+    - mj
+    - mysterio
+    - ned
+    - noir
+    - octavius
+    - osborn
+    - peni
+    - peter
+    - punk
+    - rhino
+    - robbie
+    - sandman
+    - scorpion
+    - silk
+    - uncle-ben
+    - venom
+    - vulture
