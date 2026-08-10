@@ -1,26 +1,292 @@
-# build/ — maintenance scripts
+# build/ — the generator (plan 3.5)
 
-This repo is a **marketplace** with three editions under `plugins/`:
+`build/generate.py` reads `src/` + `vocabulary/{data-model,display}.yml` +
+`editions/{core,lite,full}.yml` + `build/phase-council.yml`, and emits each
+edition into `build/_generated/{plugin-name}/`. `build/difflint.py` compares
+that output against the currently-shipped `plugins/{edition}/` trees and
+writes `build/difflint-report.md`.
 
-| Edition | Source of truth |
-|---|---|
-| `friendly-neighborhood` (full) | **canonical** — author changes here first |
-| `friendly-neighborhood-lite` | a curated *trim* of full (themed) |
-| `harness-core` | the *un-themed* edition (original naming, no personas/theme) |
+**Neither script touches `plugins/*`.** That tree is the byte-reproduction
+reference target for step 3.6 (a separate step, not this one) — it stays
+untouched so a human can diff against it.
 
-## `sync-clis.sh`
+Run:
 
-Keeps the deterministic Python CLIs (`workstream.py`, `objective.py`, `initiative.py`, `setup-keys.ps1`) aligned across editions, since they're copied into each edition's `templates/tools/`.
-
-```bash
-bash build/sync-clis.sh
+```
+python build/generate.py
+python build/difflint.py
 ```
 
-- **Full → Lite:** all four CLIs are byte-identical and are overwritten from full.
-- **Full → Core:** only `objective.py` + `setup-keys.ps1` are identical (synced). `workstream.py` and `initiative.py` carry **un-themed vocabulary** in Core (a code comment / body strings), so they are *not* overwritten — the script prints how many lines diverge and reminds you to hand-apply any **logic** change to the Core variant.
+## How it works
 
-## Editing guidance
+1. Load `vocabulary/data-model.yml` (pinned identifiers), `vocabulary/display.yml`
+   (templated vocabulary), and the edition's own `editions/{name}.yml`.
+2. Build a `Vocab` object per edition — three substitution tables:
+   - **non-pinned tiers** (`assignment`/`cadence`): full identifier swap
+     (folder, CLI filename, frontmatter key, prose — all together), no guards,
+     safe to run on path segments and file content alike.
+   - **pinned tiers** (`objective`/`workstream`): prose-only swap, heavily
+     guarded (see "The pinned-word guards" below) so a folder name, CLI
+     filename, or frontmatter key is never corrupted.
+   - **non-tier skill self-references** (`init-workspace`/`knowledge`):
+     narrow patterns only (`name:`, `# Skill:`, `` /plugin:skill ``, `` `skill` ``)
+     — never a blanket word substitution, since "knowledge" and "init" are
+     common English/code words. Runs in **both directions** depending on
+     which core edition a given `src/` file was copied from (see
+     "Bidirectional skill substitution" below).
+3. Copy each src subtree through its dedicated `build_*` function (tier
+   skills, non-tier skills, doctrine skills, agents, scripts, templates,
+   output-styles, themes, hooks, plugin.json).
+4. Write to `build/_generated/{plugin.name}/`.
 
-- **Skills / agents / templates / hooks / docs** differ per edition by design (naming, flavor, roster) — edit each edition directly; there's no auto-sync for prose.
-- **CLI logic** — change it in `full` first, then run `sync-clis.sh`; for `workstream.py`/`initiative.py`, also hand-apply the logic delta to `harness-core` (its wording is intentionally different).
-- After any change, re-validate: `claude plugin validate ./plugins/<edition> --strict`.
+## The marker convention
+
+Two forms, both meaning "this block exists only when a named feature is
+on":
+
+- Shell/Python: `# FEATURE:<flag>:start` … `# FEATURE:<flag>:end`
+- Markdown: `<!-- FEATURE:<flag>:start -->` … `<!-- FEATURE:<flag>:end -->`
+
+`<flag>` is a key from the edition's `features:` map in `editions/*.yml`
+(`observation_deck`, `doctrine_skills` — list-truthiness, i.e. non-empty
+list counts as "on"). `strip_markers()` in `generate.py` removes the block
+verbatim (nothing added, nothing removed beyond the marker lines themselves)
+when the flag is off, and removes only the marker lines (keeping the body)
+when it's on.
+
+**Blank-line spacing quirk, worth knowing before adding a new marker:**
+because the strip is a literal "remove exactly this span," a block that
+sits between two blank lines when present must have ITS OWN leading blank
+line moved to be the *first line of the body*, not left outside the
+markers — otherwise dropping the block leaves two blank lines stacked (kept
+case) or none at all (EOF case). See `src/scripts/fn-session-start.sh`
+(mid-file case) and `src/scripts/fn-common.sh` (EOF case) for the two
+worked examples; both are one-line adjustments once you see the pattern.
+
+Markers were added to: `src/scripts/fn-session-start.sh`,
+`fn-subagent-stop.sh`, `fn-common.sh` (the last wasn't in the original scope
+of three gaps handed off, but is the exact same mechanism and closes a real
+lite-vs-full diff — see Known Gaps for the other `fn-*.sh` files that were
+**not** similarly fixed), `scaffold.py` (partially — see below), and
+`src/output-styles/friendly-neighborhood.md`.
+
+`settings.json` does **not** use markers (JSON has no comment syntax) — its
+two observation-deck-gated permission lines are added/removed by
+`build_settings_json()` working on the parsed JSON structure directly.
+
+## scaffold.py's bespoke core branch
+
+`src/scripts/scaffold.py` is copied from **full** (the themed superset), so
+its self-references (`` `origin-story` ``, `/friendly-neighborhood:...`)
+are already themed-named; the reverse substitution (see "Bidirectional
+skill substitution") turns them back into `init-workspace`/etc. for core.
+That covers everything **except** the "Next steps" onboarding block: core's
+version doesn't just omit two lines (the marker-gated `doctrine_skills`
+creed line and `observation_deck` watch-your-agents line) — its remaining
+"Start work: …" line is different prose entirely (different tier order,
+different descriptors, different skill list) because core's onboarding
+copy was hand-authored separately, not derived from full's by any
+substitution rule. `build_scripts_scaffold_special()` special-cases this:
+for `display: none` editions it regex-replaces the whole `print(...)` call
+with core's literal, verbatim text. This is the one place the generator
+hardcodes edition-specific prose rather than deriving it — flagged here
+rather than building a more general mechanism for a single occurrence.
+
+**Gotcha found and fixed along the way:** `re.sub()`'s *string* replacement
+form interprets `\n` as an actual newline (not the literal two-character
+sequence `\`+`n` the generated `.py` source needs inside its own string
+literals) — the fix was passing a replacement **function** instead of a
+string, which bypasses that escape processing entirely.
+
+## Bidirectional skill substitution
+
+`src/skills/{init-workspace,knowledge}/` is copied from **core** (see
+`src/README.md`), so themed editions need core-name → themed-name.
+`src/scripts/*` is copied from **full**, so core needs the **reverse**,
+themed-name → core-name. `Vocab.skill_pairs` is built once in both
+directions; `apply()` picks the direction from `self.themed`. Missing this
+direction was the single biggest bug during development — it silently
+produced e.g. `origin-story` inside `harness-core`'s own scaffold.py
+docstring, which would have been very confusing to debug downstream.
+
+## The pinned-word guards
+
+`objective`/`workstream` prose substitution (`_sub_pinned_word`) skips a
+match when it's:
+
+- a bare frontmatter key at true line start (`objective:`) — the pinned key
+  itself, never renamed;
+- immediately followed by `.py` — a pinned CLI filename;
+- immediately followed by `-` and not part of a `{word-name}` placeholder —
+  a compound value like `note_type: workstream-plan`, except a documentation
+  placeholder like `{workstream-name}` which legitimately becomes
+  `{campaign-name}`;
+- the entire content of a bare quoted literal, `"objective"`/`"objectives"`
+  — a path/key literal, e.g. inside a `parent: "objectives/{name}"` value;
+- immediately followed by `/` — a bare folder-name usage in an ASCII tree
+  listing (`  objectives/   <- comment`), as opposed to *preceded* by `/`
+  (`control-plane/objectives/`), which the pattern's lookbehind already
+  excludes from matching at all.
+
+Each of these was found empirically by generating output, diffing against
+`plugins/friendly-neighborhood/`, and checking whether the residual
+difference was a shipped bug (my output correct, theirs a known
+`workstream:`→`campaign:`-style corruption already documented in
+`vocabulary/display.yml`'s header) or a generator bug (mine wrong). Several
+rounds of this surfaced additional real, live instances of exactly the
+corruption `vocabulary/data-model.yml`'s header warns about — e.g.
+`plugins/friendly-neighborhood/skills/campaign/SKILL.md` literally says
+"Manages the full lifecycle of a campaign in `control-plane/campaigns/`" —
+the real folder is (and must stay) `control-plane/workstreams/`. My
+generated output gets this right; the shipped file doesn't. That's a
+`bug-to-fix-everywhere` candidate for 3.6, not something I patched in
+`plugins/*` (out of scope, read-only reference tree).
+
+## The `cadence` counter-landmine
+
+`vocabulary/data-model.yml`'s header calls this out by name: the word
+"cadence" has two unrelated meanings in this corpus —
+
+1. the **cadence tier** itself (folder `cadences/`, CLI `cadence.py`,
+   frontmatter key `cadence`/`patrol`) — this one fully renames to `patrol`
+   for lite/full, no guard needed (it's a non-pinned tier, same as
+   `assignment`/`mission`);
+2. an **unrelated review-frequency field** on objective/responsibility items
+   (`cadence: quarterly`, "a review cadence", `set-cadence`) — this one must
+   **never** rename, in any edition, because a responsibility's own
+   frontmatter key is always `cadence` (there is no "patrol" field on an
+   objective — `patrol` is a different tier entirely).
+
+Both meanings use the identical bare word, so this can't be solved by a
+folder/CLI/frontmatter-key guard the way `objective`/`workstream` are
+guarded — it needs semantic disambiguation. Two mechanisms handle the
+confirmed cases:
+
+- **File-level exemption** (`skip_nonpinned={"cadence"}`): applied to
+  `templates/tools/objective.py` and the entire `skills/objective/` tree.
+  Empirically, every "cadence" occurrence in those files is meaning #2 —
+  confirmed by grepping every hit before adding the exemption, not assumed.
+- **Per-occurrence guards** (`_apply_nonpinned_guarded`, `cadence`-only):
+  skip when preceded by "review " ("a review cadence"), when it's a bare
+  frontmatter key at line start, when preceded by "set-" or "milestones, "
+  (CLI-example tokens and list phrasing), or when it's a bare `<cadence>`
+  placeholder in a CLI usage example.
+
+**This is not proven exhaustive.** It was tuned against every file that
+currently contains the word "cadence" in `src/` (nine files, sampled and
+verified individually), but a future edit introducing a new mixed-context
+sentence could still misfire either direction (wrongly renaming the
+unrelated field, or wrongly protecting a real tier mention). Treat any
+`cadence`/`patrol` discrepancy in `build/difflint-report.md` as worth a
+manual look, not an automatic pass.
+
+## Known gaps — discovered during 3.5, not fixed
+
+These surfaced empirically (by diffing generated output against shipped
+`plugins/*`) and are real, but fixing them would mean either inventing new
+content (not this step's job) or building a materially bigger mechanism
+than the three gaps this step was scoped to close. Flagged for 3.6 to
+classify, per the plan's own instruction to report rather than guess at a
+fix.
+
+1. **`fn-common.sh`, `fn-post-tool.sh`, `fn-pre-tool.sh`, `fn-stop.sh`
+   diverge between core and themed by more than vocabulary or the two named
+   feature flags.** Core's copies don't just omit the observation-deck code
+   — they lack the entire `fn_speaker` acting-persona mechanism, use
+   different log message text, and (`fn-pre-tool.sh`) core has no
+   spider-sense danger-pattern check at all. This is a "does this concept
+   exist in this edition" axis (roughly, `display: none` vs `spider-man`)
+   that's bigger than a marker block — it would need its own content-fork
+   mechanism to generate, not just strip. `fn-common.sh`'s **one** clean,
+   markable difference (the observation-deck struct/functions) was fixed;
+   the rest of that file's and its three siblings' core-vs-themed
+   divergence is left as-is (src holds full's content; core's generated
+   output differs from core's shipped copy in the ways described).
+   `fn-session-start.sh` and `fn-subagent-stop.sh` are fully closed (byte-
+   identical to shipped for all three editions, once you account for
+   `plugins/friendly-neighborhood-lite/scripts/scaffold.py`'s own bug, item
+   6 below).
+
+2. **Agent files (`src/agents/*.md`) carry an observation-deck-gated "Voice"
+   + "Observation deck" section that lite's shipped copies omit.** E.g.
+   `peter.md`: full has ~20 extra lines full editions get and lite doesn't.
+   This wasn't one of the three named gaps and would need the same
+   marker mechanism extended into every one of the 32 agent files — a
+   bigger lift than this step's scope, and not attempted. Full edition
+   agents match shipped byte-for-byte (confirmed for `peter.md`, spot-check
+   passed); lite's 7 agents are missing this section in generated output
+   the same way they're present in full but this generator doesn't strip
+   it for lite specifically.
+
+3. **`mission`/`patrol` skills are structurally different from
+   `assignment`/`cadence`, not just renamed.** `src/skills/assignment/` (and
+   `cadence/`) has an `actions/` subfolder (`complete.md`, `initiate.md`);
+   the shipped themed `mission`/`patrol` skills are single-file (`SKILL.md`
+   only — content presumably inlined by hand). The generator faithfully
+   reproduces the `actions/` structure under the renamed folder, which
+   difflint reports as "added" files relative to shipped. Restructuring
+   `assignment`'s content to match would be real authoring work, not
+   mechanical generation.
+
+4. **`templates/.claude/rules/secret-identity.md` and
+   `templates/secret-identity/CLAUDE.md`'s intro paragraph are bespoke
+   themed prose, not a mechanical rename of `personal.md`.** The folder
+   rename and the `CLAUDE.md` cross-reference line are handled correctly
+   (verified byte-identical for the reference-line case); the rules file's
+   header/H1/intro/closing line are hand-authored ("What's behind the
+   mask — Peter Parker's life, not Spider-Man's...") and confirmed
+   identical between lite and full, but not derivable from `personal.md` by
+   any substitution rule. Generated output uses substituted `personal.md`
+   content; shipped uses the bespoke version.
+
+5. **Top-level plugin metadata files** (`CHANGELOG.md`, `LICENSE`,
+   `README.md`, `NOTICE`) live directly under `plugins/{edition}/` and were
+   never part of `src/`'s scope (not mentioned anywhere in `src/README.md`'s
+   provenance table). The generator doesn't produce them; difflint reports
+   them as "removed."
+
+6. **`plugins/friendly-neighborhood-lite/scripts/scaffold.py`'s "Start
+   work" onboarding line has a real, pre-existing bug**: it omits the
+   `campaign` skill entirely and mislabels `mission` as "(a campaign)". The
+   generator produces the correct, complete line (all four skills, correct
+   labels) — sourced from full's structure with lite's own plugin slug
+   substituted in — so this shows up as a "changed" diff. Not fixed in
+   `plugins/*` (read-only reference tree); flagged for 3.6 as a genuine bug
+   in the shipped file, not a generator defect.
+
+7. **`plugin.json`'s `author` object formatting is cosmetically different**
+   (shipped: `{ "name": "Matt" }` on one line; generated: pretty-printed
+   across three). `ensure_ascii=False` was added so unicode arrows (→) come
+   through literally rather than as `\uXXXX` escapes, closing the one
+   *substantive* difference; the remaining one is pure `json.dumps`
+   indentation style, not content.
+
+8. **Extensive, already-known hand-drift inside shipped doc/skill prose**
+   beyond simple vocabulary — e.g. `templates/.claude/rules/control-plane.md`,
+   `tools.md`, `skills/responsibility/actions/review.md`, and
+   `skills/responsibility/SKILL.md` all have sentences that differ in
+   wording, not just tier vocabulary, between what the generator produces
+   (word-substituted from the untethemed canonical prose) and what's
+   currently shipped (independently hand-edited over time — e.g. "campaigns
+   are mid-horizon coordinators" vs. the generator's "the heavy lifecycle
+   units"). This is exactly the drift this whole restructuring exists to
+   eliminate going forward; it will show as many "changed" entries in
+   `build/difflint-report.md` and is 3.6's reconciliation work, not
+   something to paper over here.
+
+9. **The `.py` CLI files' (`objective.py`, `workstream.py`) prose
+   substitution is regex-guarded, not code-aware.** It was verified by
+   sampling actual generated output against shipped files and fixing every
+   discrepancy found this way (see the pinned-word-guards and
+   cadence-counter-landmine sections above for the specific bugs this
+   caught), but it is not a parser — a sufficiently unusual line could
+   still misfire. Re-run `python build/generate.py && python build/difflint.py`
+   after any `src/templates/tools/*.py` edit and check the diff before
+   trusting it blindly.
+
+## Line endings
+
+`plugins/*` is checked out with CRLF for most files (`.gitattributes`:
+`* text=auto`, Windows checkout) while `generate.py` always writes LF.
+`difflint.py` normalizes `\r\n` → `\n` on both sides before comparing, so
+this is never reported as a discrepancy — it isn't one.

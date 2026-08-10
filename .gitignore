@@ -7,3 +7,7 @@ __pycache__/
 /.claude/logs/
 # personal local overrides, wherever they appear (templates ship settings.json, not .local)
 .claude/settings.local.json
+
+# build/generate.py output — ephemeral, regenerated on demand, not source.
+/build/_generated/
+/build/difflint-report.md
