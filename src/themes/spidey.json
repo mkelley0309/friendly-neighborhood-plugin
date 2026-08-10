@@ -1,0 +1,12 @@
+{
+  "name": "Spidey",
+  "base": "dark",
+  "overrides": {
+    "claude": "#E62429",
+    "error": "#C8102E",
+    "success": "#2FA84F",
+    "warning": "#F5A623",
+    "link": "#1A8FE3",
+    "selection": "#16243F"
+  }
+}

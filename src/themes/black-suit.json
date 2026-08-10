@@ -1,0 +1,13 @@
+{
+  "name": "Black Suit",
+  "base": "dark",
+  "overrides": {
+    "claude": "#B14AED",
+    "error": "#FF3B6B",
+    "success": "#7C4DFF",
+    "warning": "#C9A227",
+    "link": "#9D7BFF",
+    "selection": "#2A0A3A",
+    "text": "#ECE6F5"
+  }
+}

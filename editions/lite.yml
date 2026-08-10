@@ -1,0 +1,53 @@
+# editions/lite.yml
+# Generator input (plan 3.5) for the `friendly-neighborhood-lite` edition.
+# See editions/core.yml for the axis model.
+
+plugin:
+  name: friendly-neighborhood-lite
+  displayName: Friendly Neighborhood (Lite)
+  description: >
+    The LEAN themed edition of Friendly Neighborhood. Defensible
+    differentiators: three-tier work model (responsibility = long-lived
+    why/role/annual objective; campaign = multi-session multi-handoff;
+    mission = single work unit); progressive distillation at every
+    handoff; peer-reviewed knowledge vault pipeline; a two-track decision
+    mechanic (hard signals → deterministic gate via tools/gate.py; soft
+    signals → affirmative villain dissent + recorded judgment, no fake
+    scores); and the symbiote (turn-limited self-escalation). Tiny roster
+    only — spideys peter/miguel/noir, support jameson, villains
+    carnage/mysterio/kingpin. No full cast, no per-agent screenplay
+    output-style, no themes.
+  # KNOWN DISCREPANCY (see _working/generation-diff-triage.md): the shipped
+  # description above says "no ... phase-council", but the lite edition
+  # DOES ship phase-council lines (e.g. skills/campaign/actions/plan.md),
+  # populated from its own 7-agent roster rather than omitted. 5.1
+  # regenerates this description from canonical vocabulary/roster data;
+  # left as the pre-change text here since 3.3 is structural, not a content
+  # fix.
+
+display: spider-man
+
+roster: 7   # vocabulary/display.yml -> roster.lite
+
+features:
+  observation_deck: false
+  vscode_workspace: false
+  themes: false
+  output_style: true
+  output_style_screenplay: false   # confirmed: lite's output-style file omits the "Format: the script" section present in full
+  phase_council: true                # confirmed present, populated from the 7-agent roster — contradicts the shipped plugin.json description above
+  cast_council: true                  # creed skill ships
+  doctrine_skills: [church-bell, creed, spider-sense, symbiote]
+
+# Skills this edition ships, by THEMED identifier (vocabulary/display.yml).
+skills:
+  - responsibility   # objective
+  - campaign          # workstream
+  - mission            # assignment
+  - patrol              # cadence
+  - web-archive          # knowledge
+  - origin-story          # init-workspace
+  - church-bell
+  - creed
+  - spider-sense
+  - symbiote
