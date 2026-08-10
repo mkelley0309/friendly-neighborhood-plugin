@@ -23,7 +23,7 @@ that the copy is generation-ready as-is — see **Known gaps** below.
 | `skills/{church-bell,creed,spider-sense,symbiote}/` | `plugins/friendly-neighborhood/skills/*` | Themed-only; full is the roster superset |
 | `agents/*.md` (32) | `plugins/friendly-neighborhood/agents/` | Full is the roster superset — lite's 7 are a subset by name (`vocabulary/display.yml` `roster.lite`) |
 | `hooks/hooks.json` | `plugins/harness-core/hooks/` | Confirmed byte-identical across all three editions (`diff -rq`) |
-| `scripts/*` | `plugins/friendly-neighborhood/scripts/` | Provisional — **3.4 has not yet line-diffed these against core/lite**; may need to move to a per-edition source or gain a data-driven branch if divergence turns out to be logic, not vocabulary |
+| `scripts/*` | `plugins/friendly-neighborhood/scripts/` | **3.4 line-diffed against core/lite** (`_working/script-divergence.md`): divergence is vocabulary substitution plus blocks gated by `features:` flags already in `editions/*.yml` (`observation_deck`, `doctrine_skills`) — no roster-count-dependent logic, no revision to 3.3 needed. Full's copy carries the superset of feature-gated blocks; the generator must strip them per edition (see gap below) |
 | `templates/` (all except `.vscode/`) | `plugins/harness-core/templates/` | Untethemed, pinned folder names |
 | `templates/.vscode/` | `plugins/friendly-neighborhood/templates/.vscode/` | Full-only feature (`observation_deck`/`vscode_workspace` in `editions/full.yml`) |
 | `output-styles/friendly-neighborhood.md` | `plugins/friendly-neighborhood/` | Full's copy includes the screenplay section; lite's is a reduced variant (`output_style_screenplay: false` in `editions/lite.yml`) — **not yet reconciled, see gaps** |
@@ -48,11 +48,13 @@ that the copy is generation-ready as-is — see **Known gaps** below.
   contiguous and toggleable, but this has not been verified against every
   other line in the file). Treat `output_style_screenplay` as a real
   section-inclusion flag to implement in 3.5, not decoration.
-- **`scripts/*`**: copied from full without diffing core/lite. 3.4 owns
-  determining whether the divergence here is vocabulary-only (safe, same
-  pattern as the skills) or carries roster-dependent logic (would grow the
-  roster axis a code dimension, per plan 3.4's own escape hatch — revise
-  `editions/*.yml` if so).
+- **`scripts/*`**: 3.4 resolved the vocabulary-vs-logic question (see table
+  above) — divergence is vocabulary plus feature-flag-gated blocks, not
+  roster-dependent logic, so `editions/*.yml` needs no revision. The
+  generator (3.5) still needs the conditional-block-injection mechanism
+  described below (same shape as the phase-council injection) to strip the
+  `observation_deck` and `doctrine_skills` blocks for editions where those
+  flags are false, since `src/` currently holds full's superset copy.
 - **Doctrine skill content (`church-bell`, `creed`, `spider-sense`,
   `symbiote`) between lite and full**: confirmed to differ (`diff -rq`,
   see `_working/generation-diff-triage.md`) but not yet line-diffed for
