@@ -52,14 +52,14 @@ tags: [workstream/{name}]
 | Working scratch | `workstreams/{name}/_working/` — deleted at cleanup |
 | Process artifacts | `workstreams/{name}/` — `plan.md`, `research.md`, `design.md`, `validate.md`, `friction-log.md`, `index.md` — deleted at cleanup |
 | Harness friction | `control-plane/_harness/friction.md` — cross-run ledger, appended at cleanup; **permanent** |
-| Promoting intake item | leave in `intake/` during the mission; cleanup moves it to `intake/_archive/` |
+| Promoting intake item | leave in `intake/` during the campaign; cleanup moves it to `intake/_archive/` |
 | **Produced outputs** | **`outputs/{name}/` — permanent, never deleted by cleanup** |
 | Vault additions | `knowledge/vault/` |
 | Reusable prompts | `prompts/templates/` or `prompts/workflows/` |
 | Code | `projects/{name}/` |
 | Durable log | `workstreams/_log/YYYY-MM-DD-{name}.md` — permanent |
 
-**Produced outputs** = anything the mission creates for use beyond the mission: slides, documents, configs, reports, generated content. Write these to `outputs/{name}/` during implement, then add a row to `outputs/index.md`.
+**Produced outputs** = anything the campaign creates for use beyond the campaign: slides, documents, configs, reports, generated content. Write these to `outputs/{name}/` during implement, then add a row to `outputs/index.md`.
 
 ---
 
@@ -72,7 +72,7 @@ research   →  plan          (after research.md written; if no design needed)
 design     →  plan          (after design.md written)
 plan       →  implement     (when execution begins)
 implement  →  validate      (when all plan.md checkboxes checked)
-validate   →  complete      (when gate is GO and jameson signs off)
+validate   →  complete      (when gate is GO and adversarial QA signs off)
 complete   →  cleanup       (when log entry is being written)
 cleanup    →  (done)        (after log filed, outputs verified in outputs/, folder deleted)
 ```
@@ -81,7 +81,7 @@ cleanup    →  (done)        (after log filed, outputs verified in outputs/, fo
 
 ## Research Pass Selection
 
-| Mission type | Knowledge | Web | Codebase |
+| Campaign type | Knowledge | Web | Codebase |
 |---|---|---|---|
 | Knowledge maintenance / reorg | ✓ | — | — |
 | Content generation (GTM, narrative) | ✓ | ✓ | — |
@@ -100,4 +100,4 @@ cleanup    →  (done)        (after log filed, outputs verified in outputs/, fo
 - **Template filling, file renames, status checks** → Haiku subagent. (≤200 words back to main context.)
 - **Cleanup file deletions** → confirm with user first; do not delegate destructive ops.
 
-**Concurrency budget: up to your configured limit in flight** (`max_concurrent_agents`, default 2; set during `origin-story`). Default behavior is sequential. See `_addenda/claude-code.md` for the full rule.
+**Concurrency budget: up to your configured limit in flight** (`max_concurrent_agents`, default 2; set during `origin-story`). Default behavior is sequential. See root `CLAUDE.md` → Subagent Delegation for the full rule.

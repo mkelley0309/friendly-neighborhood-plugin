@@ -1,10 +1,16 @@
 # build/ — the generator (plan 3.5)
 
 `build/generate.py` reads `src/` + `vocabulary/{data-model,display}.yml` +
-`editions/{core,lite,full}.yml`, and emits each edition into
+`editions/{core,full}.yml`, and emits each edition into
 `build/_generated/{plugin-name}/`. `build/difflint.py` compares that output
 against the currently-shipped `plugins/{edition}/` trees and writes
 `build/difflint-report.md`.
+
+**Two editions, not three** — [D24] dropped `friendly-neighborhood-lite`: the roster axis
+collapsed to binary (`0`/full-cast) once the cast became lens/register data instead of 32
+separate agent definitions, so a curated-roster tier no longer earns its cost. Historical
+sections below still reference `lite` where they document *why* a decision was made at the time —
+left as written rather than scrubbed, per this repo's own "history stays as written" policy.
 
 `build/phase-council.yml` is **no longer read by the generator** (plan
 4b.2) — it's kept on disk as a reference fixture only. See "Phase council
@@ -100,6 +106,15 @@ of three gaps handed off, but is the exact same mechanism and closes a real
 lite-vs-full diff — see Known Gaps for the other `fn-*.sh` files that were
 **not** similarly fixed), `scaffold.py` (partially — see below), and
 `src/output-styles/friendly-neighborhood.md`.
+
+**5.1 addition:** `build_templates()` (used for the general `templates/` tree, as opposed to
+`copy_file_substituted()` used for skills/output-styles/doctrine-skills) only ever stripped
+`.py`/`.sh` markers with `MARKER_RE_SH` — it had no path for `.md` markers with `MARKER_RE_MD` at
+all, unlike `copy_file_substituted()` which already branched on `src.suffix`. Extended to match,
+and used immediately for `templates/CLAUDE.md`'s new `themed_doctrine` marker (see
+`src/README.md`'s provenance table) — a synthetic feature key derived from `vocab.themed` rather
+than a real `editions/*.yml` entry, since no edition needs to toggle it independently of the
+display axis.
 
 `settings.json` does **not** use markers (JSON has no comment syntax) — its
 two observation-deck-gated permission lines are added/removed by

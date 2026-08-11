@@ -136,7 +136,7 @@ Per workspace `CLAUDE.md`:
 - **Haiku subagents** for template filling, bounded lookups, file moves
 - Never delegate synthesis, decisions, or cross-artifact reconciliation — those stay in main context
 
-**Agent scoping (default).** Every subagent is **scoped to a single subtree** — it reads and writes within that subtree only. Cross-boundary work is the orchestrator's job: `control-plane` (main context) coordinates by deploying the **right agent per subtree** and passing distilled artifacts between them — never sending one agent across the boundary. (See `_addenda/claude-code.md` → Directory Scoping.)
+**Agent scoping (default).** Every subagent is **scoped to a single subtree** — it reads and writes within that subtree only. Cross-boundary work is the orchestrator's job: `control-plane` (main context) coordinates by deploying the **right agent per subtree** and passing distilled artifacts between them — never sending one agent across the boundary. (See root `CLAUDE.md` → Subagent Delegation.)
 
 - **Scope + absolute path.** Open each brief with `Work within <absolute-subtree-path>/ only`, using the absolute path of the agent's own subtree (agents don't resolve sibling top-level subtrees by glob).
 - **Isolation by scope:** directory-scoped prompts for non-git subtrees (`control-plane/`, `knowledge/`); **worktree isolation** for code work inside a git-repo project. Never `isolation: "worktree"` from `control-plane/` (not a git repo).

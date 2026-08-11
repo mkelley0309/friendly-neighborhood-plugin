@@ -33,13 +33,13 @@ Every web-slinger needs an origin. This sets up a working, domain-neutral harnes
 
 4. **Onboarding interview — conducted by `robbie`.** Robbie Robertson is the harness's interviewer: spawn `robbie` (or adopt his role) to run a short, constructive onboarding interview, one thread at a time, and capture the answers cleanly:
    - **What is this workspace for?** Its domain and what success looks like — seed a one-line note in `_now.md` so the harness has a north star (don't invent detail; record what the user says).
-   - **Concurrency budget.** *"How many subagents may run in flight at once? (soft budget — a cost/coordination guideline, not a safety cap. Default 2; raise it if your machine and quota allow.)"* Take the answer (a number, or `2` by default) and set it in the scaffolded contract: in `_addenda/claude-code.md`, replace `up to 2 subagents in flight at once` with `up to <N> subagents in flight at once`. If they keep the default, leave it.
+   - **Concurrency budget.** *"How many subagents may run in flight at once? (soft budget — a cost/coordination guideline, not a safety cap. Default 2; raise it if your machine and quota allow.)"* Take the answer (a number, or `2` by default) and set it in the scaffolded contract: in `CLAUDE.md` -> Subagent Delegation, replace `up to \`max_concurrent_agents\` subagents in flight at once (default 2` with the chosen number. If they keep the default, leave it.
    - **Private context.** Remind the user that anything personal or sensitive (stakeholders, accounts, career) lives in `secret-identity/` and never leaves it.
 
    Keep it brief — robbie asks what changes the setup, nothing more. The rest can be filled in as work begins.
 
 5. **Report** what it created vs. skipped, then point the user at next steps:
-   - `constitution.md` is the base contract; subtree contracts auto-load via `.claude/rules/` as you work.
+   - `CLAUDE.md` is the base contract and operating doctrine; subtree contracts auto-load via `.claude/rules/` as you work.
    - `/friendly-neighborhood:creed` loads the operating doctrine.
    - Start work: `/friendly-neighborhood:campaign` (complex, multi-session QRDPIV work), `/friendly-neighborhood:mission` (a lightweight unit or one iteration), `/friendly-neighborhood:responsibility` (a long-lived measured goal), or `/friendly-neighborhood:web-archive` (knowledge pipeline).
    - **Observation deck (VS Code):** open Terminal → Run Task → **🕷 Observation Deck** to watch your agents work in three colored panes (spideys / support / villains). Each agent narrates as it goes; a spidey wearing the symbiote shows in the black suit. The scaffolded `.vscode/tasks.json` wires it up.

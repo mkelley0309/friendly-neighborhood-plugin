@@ -2,7 +2,7 @@
 """build/generate.py — plan 3.5 generator.
 
 Reads canonical `src/` + `vocabulary/{data-model,display}.yml` +
-`editions/{core,lite,full}.yml` + `build/phase-council.yml`, and emits each
+`editions/{core,full}.yml` + `build/phase-council.yml`, and emits each
 edition into `build/_generated/{plugin-name}/`.
 
 Does NOT touch `plugins/*` — that tree is the byte-reproduction reference
@@ -26,7 +26,7 @@ OUT_ROOT = ROOT / "build" / "_generated"
 EDITIONS_DIR = ROOT / "editions"
 VOCAB_DIR = ROOT / "vocabulary"
 
-EDITION_NAMES = ["core", "lite", "full"]
+EDITION_NAMES = ["core", "full"]
 
 
 def load_yaml(path: Path):
@@ -144,9 +144,7 @@ class Vocab:
             if spec.get("pinned"):
                 continue
             core_id = spec["identifier"]
-            ed_key = "core" if self.display_axis == "none" else (
-                "lite" if edition["roster"] == 7 else "full"
-            )
+            ed_key = "core" if self.display_axis == "none" else "full"
             # editions map's own identifier IS the frontmatter_key/folder/cli
             # base word (folder/cli/frontmatter_key share one word per tier).
             ed_word = spec["editions"][ed_key]["frontmatter_key"]
@@ -405,7 +403,7 @@ def tier_dest_name(tier: str, vocab: Vocab, data_model: dict, display: dict) -> 
     spec = data_model["tiers"][tier]
     if spec.get("pinned"):
         return display["tiers"][tier]["themed"] if vocab.themed else tier
-    ed_key = "core" if not vocab.themed else ("lite" if vocab.edition["roster"] == 7 else "full")
+    ed_key = "core" if not vocab.themed else "full"
     return spec["editions"][ed_key]["frontmatter_key"]
 
 
@@ -418,34 +416,30 @@ def tier_dest_name(tier: str, vocab: Vocab, data_model: dict, display: dict) -> 
 #
 # What's genuinely DERIVED vs kept STATIC here — see build/README.md
 # "Phase council generation" for the full rationale, condensed:
-#  - Counsel/watch NAME MEMBERSHIP + ORDER + inline annotation for both
-#    rosters are kept as static tables (PHASE_COUNCIL_FULL / _LITE) below,
-#    extracted verbatim from build/phase-council.yml. Order and annotation
-#    text are hand-authored prose, confirmed non-formulaic (design.md and
-#    plan.md list the identical 4 watch villains in different orders; lite's
-#    3 villains get reused across phases far outside any one villain's own
-#    frontmatter — `kingpin` watches `questions` despite `questions` not
-#    being in kingpin's own `phases:`). A naive "any roster member whose
-#    frontmatter phase+role matches" filter also can't be used for full
+#  - Counsel/watch NAME MEMBERSHIP + ORDER + inline annotation are kept as a
+#    static table (PHASE_COUNCIL_FULL) below, extracted verbatim from
+#    build/phase-council.yml. Order and annotation text are hand-authored
+#    prose, confirmed non-formulaic (design.md and plan.md list the identical
+#    4 watch villains in different orders). A naive "any roster member whose
+#    frontmatter phase+role matches" filter also can't be used
 #    without regressing byte-reproduction: it would newly pull in
 #    scorpion/venom/ham/punk (four lenses added this same step, now carrying
 #    their own `phases:` frontmatter) into phases they were never routed to.
-#  - Driver clause + trailer sentence (both editions): static prose
-#    (DRIVER/TRAILER embedded per phase) — "driver" vs "drivers", "/" vs ","
-#    separators, inline routing notes have no roster-membership logic to
-#    derive from.
+#  - Driver clause + trailer sentence: static prose (DRIVER/TRAILER embedded
+#    per phase) — "driver" vs "drivers", "/" vs "," separators, inline
+#    routing notes have no roster-membership logic to derive from.
 #  - What IS genuinely wired to frontmatter: validate_phase_council_tables()
 #    (called once from main()) cross-checks every non-delegation name in
 #    PHASE_COUNCIL_FULL against that character's own lens/register `phases:`
-#    frontmatter, and every PHASE_COUNCIL_LITE name against
-#    vocabulary/display.yml's roster.lite — so an edit to a lens file's role,
-#    or a roster change, that drifts out of sync with these tables fails the
-#    build loudly instead of silently reproducing a stale line.
+#    frontmatter — so an edit to a lens file's role that drifts out of sync
+#    with this table fails the build loudly instead of silently reproducing
+#    a stale line.
 #  - The `/{plugin-slug}:creed` reference is now built from the edition's own
 #    `plugin.name` at render time instead of being baked into the stored
 #    string — removes the COUPLING CAVEAT build/phase-council.yml used to
-#    document (a second roster-7 or roster-32 edition under a different
-#    plugin name no longer needs its own copy of these strings).
+#    document ([D24]: only one themed, full-roster edition ships now, but a
+#    future one under a different plugin name still wouldn't need its own
+#    copy of these strings).
 
 PHASE_QRDPIV = {
     "questions.md": "Q",
@@ -511,52 +505,6 @@ PHASE_COUNCIL_FULL = {
     },
 }
 
-PHASE_COUNCIL_LITE = {
-    "questions.md": {
-        "driver": "driver `peter`",
-        "counsel": [("jameson", None)],
-        "watch": [("mysterio", None), ("kingpin", None)],
-        "trailer": "",
-    },
-    "research.md": {
-        "driver": "drivers `peter` (recall/docs/codebase), `noir` (investigation)",
-        "counsel": [("jameson", None)],
-        "watch": [("mysterio", None), ("kingpin", None)],
-        "trailer": "",
-    },
-    "design.md": {
-        "driver": "driver `miguel`",
-        "counsel": [("jameson", None)],
-        "watch": [("kingpin", None), ("mysterio", None)],
-        "trailer": "",
-    },
-    "plan.md": {
-        "driver": "driver `miguel`",
-        "counsel": [("jameson", None)],
-        "watch": [("kingpin", None), ("mysterio", None)],
-        "trailer": "",
-    },
-    "implement.md": {
-        "driver": "driver `peter` (route each step to the right Spider-variant — see Delegation)",
-        "counsel": [("jameson", None)],
-        "watch": [("carnage", None), ("kingpin", None)],
-        "trailer": " Verification and adversarial QA happen in `validate` — `jameson` and `mysterio` are the validate phase council.",
-    },
-    "validate.md": {
-        "driver": "driver `jameson` (adversarial QA)",
-        "counsel": [],
-        "watch": [("mysterio", "claiming done without proof — the exact failure this phase exists to catch")],
-        "trailer": "",
-    },
-    "cleanup.md": {
-        "driver": "driver `peter`",
-        "counsel": [("jameson", None)],
-        "watch": [("carnage", None), ("mysterio", None)],
-        "trailer": "",
-    },
-}
-
-
 def _format_name_list(entries: list[tuple[str, str | None]]) -> str:
     return ", ".join(f"`{name}`" + (f" ({ann})" if ann else "") for name, ann in entries)
 
@@ -598,9 +546,9 @@ def load_lens_register_phase_roles() -> dict:
 
 
 def validate_phase_council_tables() -> None:
-    """Fail loudly if PHASE_COUNCIL_FULL/_LITE have drifted out of sync with
-    src/{lenses,registers}/*.md frontmatter or vocabulary/display.yml's
-    roster.lite — see module comment above for what's checked and why.
+    """Fail loudly if PHASE_COUNCIL_FULL has drifted out of sync with
+    src/{lenses,registers}/*.md frontmatter — see module comment above for
+    what's checked and why.
     """
     roles = load_lens_register_phase_roles()
     for filename, entry in PHASE_COUNCIL_FULL.items():
@@ -613,17 +561,10 @@ def validate_phase_council_tables() -> None:
                 if got != role:
                     die(f"phase council drift: {filename} (full) lists '{name}' as {role}, "
                         f"but src/{{lenses,registers}}/{name}.md phases.{phase} = {got!r}")
-    display = load_yaml(VOCAB_DIR / "display.yml")
-    lite_roster = set(display["roster"]["lite"])
-    for filename, entry in PHASE_COUNCIL_LITE.items():
-        for role in ("counsel", "watch"):
-            for name, _ann in entry[role]:
-                if name not in lite_roster:
-                    die(f"phase council drift: {filename} (lite) lists out-of-roster '{name}'")
 
 
 def inject_phase_council(text: str, filename: str, roster_key: str, plugin_slug: str) -> str:
-    council = PHASE_COUNCIL_LITE if roster_key == "lite" else PHASE_COUNCIL_FULL
+    council = PHASE_COUNCIL_FULL
     if filename not in council:
         return text
     line = render_phase_council_line(filename, council, plugin_slug)
@@ -638,7 +579,7 @@ def inject_phase_council(text: str, filename: str, roster_key: str, plugin_slug:
 def build_tier_skills(edition: dict, vocab: Vocab, data_model: dict, display: dict,
                        skills_dest: Path):
     roster = edition["roster"]
-    roster_key = "lite" if roster == 7 else ("full" if roster == 32 else None)
+    roster_key = "full" if roster else None
     for tier, src_dir in TIER_SRC_DIRS.items():
         dest_name = tier_dest_name(tier, vocab, data_model, display)
         dest_dir = skills_dest / dest_name
@@ -700,7 +641,7 @@ def build_agents(edition: dict, vocab: Vocab, display: dict, dest_root: Path):
     roster = edition["roster"]
     if roster == 0:
         return
-    names = display["roster"]["lite"] if roster == 7 else display["roster"]["full"]
+    names = display["roster"]["full"]
     agents_src = SRC / "agents"
     dest = dest_root / "agents"
     for name in names:
@@ -745,6 +686,13 @@ def build_templates(edition: dict, vocab: Vocab, display: dict, dest_root: Path)
         if rel.parts[:1] == (".vscode",) and not features.get("vscode_workspace"):
             dirs[:] = []
             continue
+        # .claude/scripts/ (agent-log.sh, agent-colors.sh, observe.sh) is the
+        # observation-deck narration mechanism — only editions with a roster
+        # worth watching ship it (settings.json's own allowlist already gates
+        # the two Bash permission lines on this same flag; see build_settings_json).
+        if rel.parts[:2] == (".claude", "scripts") and not features.get("observation_deck"):
+            dirs[:] = []
+            continue
         # rename templates/personal/ -> templates/secret-identity/ for themed
         rel_parts = list(rel.parts)
         if vocab.themed and rel_parts and rel_parts[0] == "personal":
@@ -768,7 +716,14 @@ def build_templates(edition: dict, vocab: Vocab, display: dict, dest_root: Path)
                 build_settings_json(src_file, dst_file, vocab, features)
                 continue
 
-            marker_features = features if src_file.suffix in (".py", ".sh") else None
+            marker_features = features if src_file.suffix in (".py", ".sh", ".md") else None
+            # templates/CLAUDE.md carries an edition-varying doctrine body (plan
+            # 5.1 backfill) — themed only, gated the same way any other feature
+            # flag is, via a synthetic key derived from the display axis rather
+            # than a real editions/*.yml entry (no edition needs to toggle it
+            # independently of display: none vs. spider-man).
+            if rel == Path(".") and name == "CLAUDE.md":
+                marker_features = {**features, "themed_doctrine": vocab.themed}
             text = None
             try:
                 text = src_file.read_text(encoding="utf-8")
@@ -781,7 +736,8 @@ def build_templates(edition: dict, vocab: Vocab, display: dict, dest_root: Path)
             own_tier_file = in_tools and name == "cadence.py"
             text = vocab.apply(text, skip_nonpinned=skip_nonpinned, own_tier_file=own_tier_file)
             if marker_features is not None:
-                text = strip_markers(text, marker_features, MARKER_RE_SH)
+                marker_re = MARKER_RE_MD if src_file.suffix == ".md" else MARKER_RE_SH
+                text = strip_markers(text, marker_features, marker_re)
             if vocab.themed and rel.parts == (".claude", "rules") and name == "personal.md":
                 text = text.replace('paths: ["personal/**"]', f'paths: ["{folder_disp["themed"]}/**"]')
             dst_file.parent.mkdir(parents=True, exist_ok=True)
@@ -856,15 +812,17 @@ def build_hooks(dest_root: Path):
 # and is preserved from the existing file rather than invented here.
 
 
+MARKETPLACE_EDITION_FILE = {
+    "harness-core": "core.yml",
+    "friendly-neighborhood": "full.yml",
+}
+
+
 def build_marketplace_json():
     path = ROOT / ".claude-plugin" / "marketplace.json"
     data = json.loads(path.read_text(encoding="utf-8"))
     for entry in data["plugins"]:
-        edition_file = EDITIONS_DIR / f"{entry['name'] if entry['name'] != 'friendly-neighborhood-lite' else 'lite'}.yml"
-        if entry["name"] == "harness-core":
-            edition_file = EDITIONS_DIR / "core.yml"
-        elif entry["name"] == "friendly-neighborhood":
-            edition_file = EDITIONS_DIR / "full.yml"
+        edition_file = EDITIONS_DIR / MARKETPLACE_EDITION_FILE[entry["name"]]
         edition = load_yaml(edition_file)
         entry["description"] = " ".join(edition["plugin"]["description"].split())
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
@@ -911,10 +869,9 @@ def build_scripts_scaffold_special(edition: dict, vocab: Vocab, dest_root: Path)
         replacement = (
             "print(\n"
             '        "\\n  Next:\\n"\n'
-            '        "    1. Open constitution.md - the base contract.\\n"\n'
+            '        "    1. CLAUDE.md is the base contract - it loads automatically.\\n"\n'
             '        "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\\n"\n'
-            '        "    3. The operating doctrine (principles, decision mechanic, vocabulary) is in CLAUDE.md and loads automatically.\\n"\n'
-            '        "    4. Start work: /harness-core:workstream (a complex effort), "\n'
+            '        "    3. Start work: /harness-core:workstream (a complex effort), "\n'
             '        "/harness-core:objective (a long-lived goal), "\n'
             '        "/harness-core:assignment (a lightweight unit), "\n'
             '        "or /harness-core:knowledge (knowledge pipeline).\\n"\n'

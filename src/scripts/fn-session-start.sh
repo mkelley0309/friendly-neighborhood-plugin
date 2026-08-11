@@ -8,7 +8,7 @@ fn_read_input >/dev/null 2>&1  # drain stdin if any (ignored)
 fn_log "=== Scene opens: $(basename "${FN_WS}") ==="
 
 # Only speak up in an actual harness workspace — never nag in unrelated projects.
-if [ ! -f "${FN_WS}/constitution.md" ] && [ ! -d "${FN_WS}/control-plane" ]; then
+if [ ! -f "${FN_WS}/.claude/rules/control-plane.md" ] && [ ! -d "${FN_WS}/control-plane" ]; then
   exit 0
 fi
 # FEATURE:observation_deck:start

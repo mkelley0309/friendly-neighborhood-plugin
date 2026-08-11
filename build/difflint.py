@@ -31,11 +31,10 @@ GENERATED_ROOT = ROOT / "build" / "_generated"
 PLUGINS_ROOT = ROOT / "plugins"
 EDITIONS_DIR = ROOT / "editions"
 
-EDITIONS = ["harness-core", "friendly-neighborhood-lite", "friendly-neighborhood"]
+EDITIONS = ["harness-core", "friendly-neighborhood"]
 
 MARKETPLACE_EDITION_FILE = {
     "harness-core": "core.yml",
-    "friendly-neighborhood-lite": "lite.yml",
     "friendly-neighborhood": "full.yml",
 }
 
@@ -63,7 +62,7 @@ def check_marketplace() -> list[str]:
 # as ones that must never appear as a frontmatter key "anywhere". Taken
 # literally that's inconsistent with vocabulary/data-model.yml: `mission:`
 # and `patrol:` ARE the correct, intended frontmatter keys for the
-# non-pinned assignment/cadence tiers in the lite and full editions (a
+# non-pinned assignment/cadence tiers in the themed edition (a
 # blanket zero-hits check on those two words would permanently fail on
 # correct output). What data-model.yml actually calls the landmine is pinned
 # tiers (objective/workstream) getting their frontmatter key corrupted to a
@@ -74,7 +73,7 @@ def check_marketplace() -> list[str]:
 # that corrected, per-data-model version rather than the literal brief —
 # flagged in build/README.md rather than silently applied.
 ALWAYS_FORBIDDEN_KEYS = ["campaign", "responsibility"]  # pinned tiers' themed words
-CORE_ONLY_FORBIDDEN_KEYS = ["mission", "patrol"]  # correct in lite/full, wrong in core
+CORE_ONLY_FORBIDDEN_KEYS = ["mission", "patrol"]  # correct in the themed edition, wrong in core
 
 
 def forbidden_key_pattern(words: list[str]) -> re.Pattern:

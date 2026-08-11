@@ -60,7 +60,7 @@ Do not create for:
 
 ## Subagent Delegation
 
-Projects may use subagents during execution. For model selection, see `_addenda/claude-code.md` (Claude Code) or the tool's equivalent. Distill subagent outputs before integrating into main context.
+Projects may use subagents during execution. For model selection, see root `CLAUDE.md` → Subagent Delegation. Distill subagent outputs before integrating into main context.
 
 ---
 

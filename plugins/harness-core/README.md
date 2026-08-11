@@ -2,7 +2,7 @@
 
 > An opinionated workflow + knowledge harness for Claude Code. Cheap by default; distill at every phase boundary.
 
-The **un-themed** edition: all the capabilities, none of the costume. If you want the Spider-Man skin, install **`friendly-neighborhood-lite`** (light) or **`friendly-neighborhood`** (full) from the same marketplace.
+The **un-themed** edition: all the capabilities, none of the costume. If you want the Spider-Man skin, install **`friendly-neighborhood`** from the same marketplace.
 
 ## What makes it different
 

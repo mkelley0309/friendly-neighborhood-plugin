@@ -199,7 +199,7 @@ Responsibilities carry a **Key Results** table, a **Milestones** checklist, a **
 1. Interpret request into a structured responsibility
 2. Identify required capabilities and targets (`projects/`, `knowledge/`, `tools/`, external)
 3. Decompose into discrete steps with owning targets
-4. Delegate — use subagents where token budget justifies (see `_addenda/claude-code.md` for model selection)
+4. Delegate — use subagents where token budget justifies (see root `CLAUDE.md` for model selection)
 5. Collect outputs; reconcile against plan
 6. Validate completeness against original intent
 
