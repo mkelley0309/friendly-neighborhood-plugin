@@ -1,10 +1,14 @@
 # build/ — the generator (plan 3.5)
 
 `build/generate.py` reads `src/` + `vocabulary/{data-model,display}.yml` +
-`editions/{core,lite,full}.yml` + `build/phase-council.yml`, and emits each
-edition into `build/_generated/{plugin-name}/`. `build/difflint.py` compares
-that output against the currently-shipped `plugins/{edition}/` trees and
-writes `build/difflint-report.md`.
+`editions/{core,lite,full}.yml`, and emits each edition into
+`build/_generated/{plugin-name}/`. `build/difflint.py` compares that output
+against the currently-shipped `plugins/{edition}/` trees and writes
+`build/difflint-report.md`.
+
+`build/phase-council.yml` is **no longer read by the generator** (plan
+4b.2) — it's kept on disk as a reference fixture only. See "Phase council
+generation" below.
 
 **Neither script touches `plugins/*`.** That tree is the byte-reproduction
 reference target for step 3.6 (a separate step, not this one) — it stays
@@ -283,6 +287,100 @@ fix.
    still misfire. Re-run `python build/generate.py && python build/difflint.py`
    after any `src/templates/tools/*.py` edit and check the diff before
    trusting it blindly.
+
+## Phase council generation (plan 4b.2)
+
+The `> **Phase council** ...` line injected into each `workstream`-tier
+action file (`skills/{workstream-tier}/actions/{questions,research,design,
+plan,implement,validate,cleanup}.md`) used to come from `build/phase-
+council.yml`: two flat, fully pre-formatted strings per phase (one for
+`roster: 7`, one for `roster: 32`), read verbatim by `inject_phase_council()`.
+That scaled to exactly the two rosters that happened to exist; a third
+roster would have needed its own third hardcoded string with no shared
+derivation at all.
+
+**What changed:** `src/lenses/*.md` and `src/registers/*.md` frontmatter now
+carries a `phases:` **mapping** (`{phase: role}`, role one of `driver` /
+`counsel` / `watch`) instead of a bare phase list. `build/generate.py` gained
+`PHASE_COUNCIL_FULL` / `PHASE_COUNCIL_LITE` (structured per-phase driver/
+counsel/watch data, still living in `generate.py` itself — see below for
+why), `render_phase_council_line()` (the shared formatter, including the
+`counsel none` / singular-`watch villain` edge cases), and
+`validate_phase_council_tables()` (run once from `main()`, dies loudly on
+drift). The `/{plugin-slug}:creed` reference is now built from the edition's
+own `plugin.name` at render time — closes `phase-council.yml`'s documented
+"COUPLING CAVEAT" (a second roster-7 or roster-32 edition under a different
+plugin name no longer needs its own copy of these strings).
+
+**Why the tables are still static, not purely derived from frontmatter +
+roster filtering**, investigated and confirmed empirically before deciding:
+
+- **Order and inline annotations aren't recoverable from a per-character
+  `{phase: role}` map.** They're hand-authored prose with no discoverable
+  formula — e.g. `design.md` and `plan.md` list the identical 4 watch
+  villains (`octavius`, `vulture`, `kraven`, `kingpin`) in two different
+  orders. Kept as `PHASE_COUNCIL_FULL`'s literal ordering + `(annotation)`
+  text, extracted verbatim from `phase-council.yml`'s `full` lines.
+- **A naive "any roster member whose frontmatter phase+role matches" filter
+  regresses full's own byte-reproduction.** This same step (4b.2) added
+  `phases:` frontmatter to four lenses (`scorpion`, `venom`, `ham`, `punk`)
+  that were never previously routed into any phase council. Filtering
+  full's 32-member roster by frontmatter alone would newly pull them into
+  `implement`/`validate`/`design`/`plan`, which doesn't match shipped
+  output. `PHASE_COUNCIL_FULL`'s explicit membership boundary is what keeps
+  those four out, exactly as shipped.
+- **Lite's watch/counsel lists are hand-curated padding, not a roster
+  filter of full's list.** Lite's roster has only 3 villains (`carnage`,
+  `kingpin`, `mysterio`) and 1 support character (`jameson`), reused across
+  phases well outside any one character's own natural relevance — e.g.
+  `kingpin` watches `questions` in lite despite `questions` not being in
+  kingpin's own `phases:` frontmatter (kingpin's full-edition role is
+  `research`/`design`/`plan` only). Filtering `PHASE_COUNCIL_FULL` by lite
+  roster membership leaves `questions`/`implement` watch empty or short,
+  which doesn't match shipped lite output either. Confirmed non-formulaic
+  the same way as full's ordering (`research.md` and `design.md` both reuse
+  `kingpin`+`mysterio` in opposite order). Kept as its own static table,
+  `PHASE_COUNCIL_LITE`, verbatim from `phase-council.yml`'s `lite` lines.
+- **Driver clause + trailer sentence** (both editions) are kept as literal
+  strings per phase — "driver" vs "drivers", `/` vs `,` separators, and
+  inline routing notes ("route each step to the right Spider-variant — see
+  Delegation") have no roster-membership logic to derive from.
+
+**What genuinely IS wired to frontmatter, and what that buys:**
+`validate_phase_council_tables()` cross-checks every non-delegation name in
+`PHASE_COUNCIL_FULL` against that character's own lens/register `phases:`
+frontmatter (dies if they disagree), and every `PHASE_COUNCIL_LITE` name
+against `vocabulary/display.yml`'s `roster.lite` (dies if it names someone
+out of roster — the structural guarantee that makes the zero-leakage grep
+check pass by construction, not just by the current table's contents
+happening to be correct). A lens file's role changing, or a roster changing,
+without the corresponding table update now fails the build instead of
+silently reproducing a stale line.
+
+**Delegations** (`silk`, `noir`, `miguel`, `gwen`, `ned`) are real subagents,
+not lens/register carriers in this workstream's model — they're skipped by
+the frontmatter cross-check (no `phases:` frontmatter by design) and their
+driver/counsel role per phase lives only inside `PHASE_COUNCIL_FULL`/`_LITE`,
+extracted directly from `phase-council.yml`'s full-edition lines, per the
+plan step's explicit instruction not to invent a frontmatter mechanism for
+them.
+
+**`build/phase-council.yml`'s fate:** kept on disk, unread by the generator,
+as the original byte-checked-against-shipped reference the tables above were
+transcribed from — useful for a future re-verification pass, not a live
+input. Its header comments describing itself as the generator's input are
+now stale (superseded by this section); left as historical record rather
+than rewritten, since the file is no longer live code and 3.6-style
+"reproduce then classify" isn't warranted for a fixture nothing reads.
+
+Verified: `python build/generate.py && python build/difflint.py` produces
+**zero** `difflint-report.md` entries under any of `harness-core`,
+`friendly-neighborhood-lite`, `friendly-neighborhood` for any `Phase
+council` line (i.e. no regression from the two-hardcoded-string mechanism
+this replaced), and grepping every generated `friendly-neighborhood-lite`
+action file's `Phase council` line for the 22 characters outside lite's
+7-person roster (per known-gap #1's "Deferred to Phase 4" list) returns zero
+hits.
 
 ## Line endings
 

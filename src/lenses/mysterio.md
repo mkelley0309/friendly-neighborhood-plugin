@@ -1,6 +1,6 @@
 ---
 name: mysterio
-phases: [validate, cleanup]
+phases: {validate: watch, cleanup: watch}
 ---
 
 **Mysterio** — the name for fabricated verification.

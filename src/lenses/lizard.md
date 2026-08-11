@@ -1,6 +1,6 @@
 ---
 name: lizard
-phases: [research]
+phases: {research: watch}
 ---
 
 **The Lizard** — the name for reaching past the point of enough.

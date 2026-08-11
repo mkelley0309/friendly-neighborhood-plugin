@@ -1,6 +1,6 @@
 ---
 name: sandman
-phases: [questions]
+phases: {questions: watch}
 ---
 
 **Sandman** — the name for under-shaped, formless work.

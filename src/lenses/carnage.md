@@ -1,6 +1,6 @@
 ---
 name: carnage
-phases: [implement, cleanup]
+phases: {implement: watch, cleanup: watch}
 ---
 
 **Carnage** — the name for needless destruction and irreversible operations.

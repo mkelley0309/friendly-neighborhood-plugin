@@ -1,6 +1,6 @@
 ---
 name: jameson
-phases: [questions, validate, cleanup]
+phases: {questions: counsel, validate: counsel, cleanup: counsel}
 ---
 
 **Jameson** — the name for work that isn't shaped well enough to start.

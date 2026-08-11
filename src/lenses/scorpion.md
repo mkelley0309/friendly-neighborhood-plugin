@@ -1,6 +1,6 @@
 ---
 name: scorpion
-phases: [implement, cleanup]
+phases: {implement: watch, cleanup: watch}
 ---
 
 **Scorpion** — the name for poisoned intent.

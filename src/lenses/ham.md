@@ -1,6 +1,6 @@
 ---
 name: ham
-phases: [validate]
+phases: {validate: watch}
 ---
 
 **Spider-Ham** — the name for work that's green for the wrong reason.
