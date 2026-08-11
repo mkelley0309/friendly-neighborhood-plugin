@@ -9,11 +9,11 @@ claude plugin install <edition>@friendly-neighborhood
 
 | Edition (`<edition>`) | Theme | What it is |
 |---|---|---|
-| [`harness-core`](plugins/harness-core) | none | The capabilities, none of the costume. Three-tier orchestration (`objective → workstream → task`) + knowledge-vault pipeline, observational hooks, statusline, scaffolder. Original naming, **no agent personas**. |
-| [`friendly-neighborhood-lite`](plugins/friendly-neighborhood-lite) | light | The harness + the Spider-Man skin and voice, a **tiny roster** (peter, miguel, noir, jameson + a few critics), and the three mechanics. No full cast, screenplay, themes, or phase-council. |
+| [`harness-core`](plugins/harness-core) | none | The capabilities, none of the costume. Three-tier orchestration (`objective → workstream → assignment`) + knowledge-vault pipeline, observational hooks, statusline, scaffolder. Original naming, **no agent personas**. |
+| [`friendly-neighborhood-lite`](plugins/friendly-neighborhood-lite) | light | The harness + the Spider-Man skin and voice, a **tiny roster** (peter, miguel, noir, jameson + a few critics), phase-council, and the three mechanics. No full cast, screenplay, or themes. |
 | [`friendly-neighborhood`](plugins/friendly-neighborhood) | full | The whole show: **32-agent Spider-cast**, the 14-villain dissent council, contextual phase-council, screenplay output, a live per-character observation deck, themes, and all three moral mechanics. |
 
-All three share the same spine: a QRDPIV/RPIV mission lifecycle (objective → workstream/mission → task/patrol) with progressive distillation, a peer-reviewed knowledge vault, deterministic Python CLIs for state, and a `*:init-workspace` / `*:origin-story` scaffolder that drops a working, domain-neutral harness into your project. They differ only in how much theme rides on top.
+All three share the same spine: a QRDPIV/RPIV lifecycle (objective/responsibility → workstream/campaign → assignment/mission, plus cadence/patrol for recurring work) with progressive distillation, a peer-reviewed knowledge vault, deterministic Python CLIs for state, and a `*:init-workspace` / `*:origin-story` scaffolder that drops a working, domain-neutral harness into your project. They differ only in how much theme rides on top.
 
 ## Which one?
 

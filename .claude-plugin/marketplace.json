@@ -11,19 +11,19 @@
     {
       "name": "harness-core",
       "source": "./plugins/harness-core",
-      "description": "Un-themed edition: the full three-tier orchestration (objective → workstream → task) + knowledge-vault pipeline, observational hooks, statusline, and scaffolder. Original naming, no agent personas, no theme.",
+      "description": "An opinionated workflow + knowledge harness with four structural differentiators: (1) three-tier work model — objective (long-lived why, Key Results, milestones, decisions log) → workstream (heavy QRDPIV lifecycle, multi-session) → assignment (lightweight unit, proportional admin); (2) progressive distillation — compress at every handoff, proportional to work size, lossy and phase-targeted; (3) peer-reviewed knowledge pipeline — scout → harvest → distill → cartograph → audit → sync, vault grows only by admission, nothing rewrites itself unsupervised; (4) a deterministic verification gate (tools/gate.py, GO/NO-GO exit code) for hard measurable concerns, leaving soft judgments qualitative and recorded; plus determinism for the repeatable — any assignment done twice becomes a CLI. No agent personas, no theme — just the capabilities.",
       "version": "0.3.0"
     },
     {
       "name": "friendly-neighborhood-lite",
       "source": "./plugins/friendly-neighborhood-lite",
-      "description": "Bare-minimum themed edition: the harness + Spider-Man skin and voice, a tiny agent roster, and the three mechanics — without the full cast, screenplay, themes, or phase-council.",
+      "description": "The LEAN themed edition of Friendly Neighborhood. Defensible differentiators: three-tier work model (responsibility = long-lived why/role/annual objective; campaign = multi-session multi-handoff; mission = single work unit); progressive distillation at every handoff; peer-reviewed knowledge vault pipeline; a two-track decision mechanic (hard signals → deterministic gate via tools/gate.py; soft signals → affirmative villain dissent + recorded judgment, no fake scores); and the symbiote (turn-limited self-escalation). Tiny roster only — spideys peter/miguel/noir, support jameson, villains carnage/mysterio/kingpin. No full cast, no per-agent screenplay output-style, no themes.",
       "version": "0.3.0"
     },
     {
       "name": "friendly-neighborhood",
       "source": "./plugins/friendly-neighborhood",
-      "description": "Full themed edition: 32-agent Spider-cast, the 14-villain dissent council, contextual phase-council, screenplay output, a live per-character observation deck (VS Code), themes, and all three moral mechanics.",
+      "description": "An opinionated Claude Code harness for serious, long-horizon work, re-themed Spider-Man. Three tiers of work (responsibility → campaign → mission), a peer-reviewed knowledge-vault pipeline, progressive distillation at every handoff, and a decision mechanic that splits hard signals (a deterministic gate) from soft ones (affirmative villain dissent). Plus a Spider-cast of agents, the symbiote (disciplined, turn-limited model escalation), a live per-character observation deck, and native autonomous looping. Cheap by default; ceremony scaled to the work.",
       "version": "0.3.0"
     }
   ]

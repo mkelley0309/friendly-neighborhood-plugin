@@ -847,6 +847,30 @@ def build_hooks(dest_root: Path):
     shutil.copy2(SRC / "hooks" / "hooks.json", dest / "hooks.json")
 
 
+# ── marketplace.json (plan 5.1) ─────────────────────────────────────────────
+# Per-plugin `description` is sourced from each edition's own
+# `editions/{name}.yml` `plugin.description` — the same text `build_plugin_json`
+# already writes into each shipped `plugin.json`, so marketplace.json can never
+# drift from what's actually in the plugin again. Everything else in the file
+# (top-level name/owner/metadata, per-plugin source/version) is not vocabulary
+# and is preserved from the existing file rather than invented here.
+
+
+def build_marketplace_json():
+    path = ROOT / ".claude-plugin" / "marketplace.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for entry in data["plugins"]:
+        edition_file = EDITIONS_DIR / f"{entry['name'] if entry['name'] != 'friendly-neighborhood-lite' else 'lite'}.yml"
+        if entry["name"] == "harness-core":
+            edition_file = EDITIONS_DIR / "core.yml"
+        elif entry["name"] == "friendly-neighborhood":
+            edition_file = EDITIONS_DIR / "full.yml"
+        edition = load_yaml(edition_file)
+        entry["description"] = " ".join(edition["plugin"]["description"].split())
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    print(f"  wrote {path.relative_to(ROOT)}")
+
+
 # ── plugin.json ──────────────────────────────────────────────────────────────
 
 
@@ -938,6 +962,7 @@ def main():
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     for name in EDITION_NAMES:
         build_edition(name, data_model, display)
+    build_marketplace_json()
     print("generate.py: done")
 
 
