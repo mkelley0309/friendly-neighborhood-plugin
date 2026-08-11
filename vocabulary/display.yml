@@ -88,14 +88,17 @@ roster:
     - mysterio
     - noir
     - peter
-  full:  # plugins/friendly-neighborhood/agents/*.md — confirmed 32 (lite's 7 is a subset)
+  full:  # 4e.1 added 5 new lenses; 32 -> 38. Agent Venom is a doctrine line (CLAUDE.md),
+         # not a file-backed character, and is not listed here.
     - aunt-may
     - ben-reilly
     - carnage
     - cat
+    - chameleon
     - electro
     - gwen
     - ham
+    - jackal
     - jameson
     - jessica
     - kingpin
@@ -118,6 +121,9 @@ roster:
     - sandman
     - scorpion
     - silk
+    - silver-sable
+    - spider-slayers
+    - tinkerer
     - uncle-ben
     - venom
     - vulture
