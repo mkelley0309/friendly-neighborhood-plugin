@@ -40,9 +40,11 @@ When the user provides source material directly (paste, file, link), treat it as
 2. Read `index.md` and `request.md` (if it exists). Do not read any other workstream file.
 3. Determine which passes to run from the table above.
 
-### Per Pass — Delegate to a Subagent (Sonnet)
+### Per Pass — Default to a Subagent (Sonnet)
 
-Each pass is a separate subagent call. The subagent's job is **write findings to disk and return a short confirmation** — not to produce a finished summary for main context consumption. Delegate each pass to a Sonnet subagent.
+Each pass is, by default, a separate subagent call. The subagent's job is **write findings to disk and return a short confirmation** — not to produce a finished summary for main context consumption.
+
+**Main-context fallback.** If this session operates under a policy that forbids unrequested subagent spawns, or delegation genuinely isn't available, run the pass directly in main context instead: write the same findings file, to the same path, with the same frontmatter and `## Sources` section, before moving on to the next pass or to distillation. The discipline that matters — findings on disk before distillation reads them, every finding sourced — is what this protocol actually protects; a subagent is the default way to get there, not the only one.
 
 Subagent instructions must include:
 - The specific question or scope for this pass
@@ -86,10 +88,12 @@ Run passes **sequentially, one at a time**. Do not run distillation until **all*
 
 ### Distillation — Fresh Subagent, Clean Context
 
-After all pass files are written, distillation runs as a **separate subagent** (Sonnet). This subagent must:
+After all pass files are written, distillation defaults to a **separate subagent** (Sonnet), for the fresh-context guarantee described above. This subagent must:
 - Be given only the paths to `_working/research-*.md` files — nothing else
 - Read those files and produce `research.md` using the template below
 - Have no reference to the conversation, the original request, or the pass subagent outputs
+
+**Main-context fallback.** Under the same conditions as the per-pass fallback above, distillation can run in main context instead — deliberately re-reading only the `_working/research-*.md` files (not the conversation or the original request) to approximate the fresh-context discipline a real subagent enforces automatically. State explicitly that this ran in main context so a later reader knows the guarantee was approximated, not native.
 
 Brief the distillation subagent with this structure:
 > "You are distilling research pass files into a self-contained research document. Read only the files at these paths: [list]. Write `research.md` at [path] using the template provided. Do not summarize what was asked or how you got here — synthesize only what is in those files, organized for downstream use in Design and Plan steps. Carry forward every source from the pass files: cite vault paths and URLs inline where the finding appears, and consolidate all sources in a `## Sources` section at the end of `research.md`. Omit any finding not backed by a source in the pass files."
