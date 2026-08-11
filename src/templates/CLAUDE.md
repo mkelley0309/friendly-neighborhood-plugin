@@ -197,6 +197,11 @@ loaded as a skill page:
   `PreToolUse` hook (`fn-pre-tool.sh`), which already pattern-matches destructive/irreversible
   commands (mass delete, force-push, schema drop, `chmod 777`, piping a remote script to a
   shell, etc.) and asks for confirmation before they run.
+- **Agent Venom** — the name for the symbiote worn *right*: escalated deliberately, justified in
+  one sentence, turn-boxed, and shed the moment the sub-task closes. Not a separate mechanism —
+  the disciplined outcome the symbiote protocol above is meant to produce. The `venom` lens
+  watches for the opposite: escalation reached for out of appetite rather than genuine need. If
+  a symbiote episode stayed on-mission and came home on time, that's Agent Venom, not Venom.
 
 ---
 
