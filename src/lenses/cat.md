@@ -1,6 +1,6 @@
 ---
 name: cat
-phases: [implement, validate]
+phases: {implement: watch, validate: watch}
 ---
 
 **Black Cat** — the name for weak security left in place.

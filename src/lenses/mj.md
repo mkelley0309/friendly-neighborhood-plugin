@@ -1,6 +1,6 @@
 ---
 name: mj
-phases: [questions, design]
+phases: {questions: counsel, design: counsel}
 ---
 
 **MJ** — the name for work that drifts from what the user actually needs.

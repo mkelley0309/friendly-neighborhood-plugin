@@ -1,6 +1,6 @@
 ---
 name: punk
-phases: [design, plan]
+phases: {design: watch, plan: watch}
 ---
 
 **Spider-Punk** — the name for over-engineered process.

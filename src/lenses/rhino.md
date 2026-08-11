@@ -1,6 +1,6 @@
 ---
 name: rhino
-phases: [implement]
+phases: {implement: watch}
 ---
 
 **Rhino** — the name for brute force.

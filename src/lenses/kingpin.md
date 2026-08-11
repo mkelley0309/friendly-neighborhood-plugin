@@ -1,6 +1,6 @@
 ---
 name: kingpin
-phases: [research, design, plan]
+phases: {research: watch, design: watch, plan: watch}
 ---
 
 **Kingpin** — the name for resource greed.

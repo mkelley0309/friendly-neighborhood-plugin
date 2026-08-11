@@ -1,6 +1,6 @@
 ---
 name: osborn
-phases: [questions, implement]
+phases: {questions: watch, implement: watch}
 ---
 
 **Norman Osborn** — the name for self-granted ethical license.

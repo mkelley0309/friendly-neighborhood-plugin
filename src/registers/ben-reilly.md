@@ -1,7 +1,7 @@
 ---
 name: ben-reilly
 role: register
-phases: []
+phases: {}
 ---
 
 **Ben Reilly** — the clone who knows the cost of drift.

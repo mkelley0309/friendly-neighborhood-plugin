@@ -1,7 +1,7 @@
 ---
 name: peter
 role: register
-phases: [implement, cleanup]
+phases: {implement: driver, cleanup: driver}
 ---
 
 **Peter** — the friendly neighborhood default driver. Home base.

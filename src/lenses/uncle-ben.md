@@ -1,6 +1,6 @@
 ---
 name: uncle-ben
-phases: [design, plan]
+phases: {design: counsel, plan: counsel}
 ---
 
 **Uncle Ben** — the name for a consequential move made without asking whether it should be made.

@@ -409,11 +409,224 @@ def tier_dest_name(tier: str, vocab: Vocab, data_model: dict, display: dict) -> 
     return spec["editions"][ed_key]["frontmatter_key"]
 
 
-def inject_phase_council(text: str, filename: str, roster_key: str, phase_council: dict) -> str:
-    entry = phase_council.get("workstream", {}).get(filename)
-    if not entry or roster_key not in entry:
+# ── Phase council (plan 4b.2) ───────────────────────────────────────────────
+# Generates the "> **Phase council** ..." line injected into each
+# workstream-tier action file from lens/register `phases:` frontmatter (role
+# per phase) + roster membership, replacing the old mechanism that read two
+# flat, pre-formatted strings straight out of build/phase-council.yml (one
+# per roster, no shared derivation).
+#
+# What's genuinely DERIVED vs kept STATIC here — see build/README.md
+# "Phase council generation" for the full rationale, condensed:
+#  - Counsel/watch NAME MEMBERSHIP + ORDER + inline annotation for both
+#    rosters are kept as static tables (PHASE_COUNCIL_FULL / _LITE) below,
+#    extracted verbatim from build/phase-council.yml. Order and annotation
+#    text are hand-authored prose, confirmed non-formulaic (design.md and
+#    plan.md list the identical 4 watch villains in different orders; lite's
+#    3 villains get reused across phases far outside any one villain's own
+#    frontmatter — `kingpin` watches `questions` despite `questions` not
+#    being in kingpin's own `phases:`). A naive "any roster member whose
+#    frontmatter phase+role matches" filter also can't be used for full
+#    without regressing byte-reproduction: it would newly pull in
+#    scorpion/venom/ham/punk (four lenses added this same step, now carrying
+#    their own `phases:` frontmatter) into phases they were never routed to.
+#  - Driver clause + trailer sentence (both editions): static prose
+#    (DRIVER/TRAILER embedded per phase) — "driver" vs "drivers", "/" vs ","
+#    separators, inline routing notes have no roster-membership logic to
+#    derive from.
+#  - What IS genuinely wired to frontmatter: validate_phase_council_tables()
+#    (called once from main()) cross-checks every non-delegation name in
+#    PHASE_COUNCIL_FULL against that character's own lens/register `phases:`
+#    frontmatter, and every PHASE_COUNCIL_LITE name against
+#    vocabulary/display.yml's roster.lite — so an edit to a lens file's role,
+#    or a roster change, that drifts out of sync with these tables fails the
+#    build loudly instead of silently reproducing a stale line.
+#  - The `/{plugin-slug}:creed` reference is now built from the edition's own
+#    `plugin.name` at render time instead of being baked into the stored
+#    string — removes the COUPLING CAVEAT build/phase-council.yml used to
+#    document (a second roster-7 or roster-32 edition under a different
+#    plugin name no longer needs its own copy of these strings).
+
+PHASE_QRDPIV = {
+    "questions.md": "Q",
+    "research.md": "R",
+    "design.md": "D",
+    "plan.md": "P",
+    "implement.md": "I",
+    "validate.md": "V",
+    "cleanup.md": "Cleanup",
+}
+
+# Delegations (real subagents, not lens/register carriers — see plan 4b.2
+# framing) that appear as driver/counsel in phase-council lines. Skipped by
+# validate_phase_council_tables()'s frontmatter cross-check since they carry
+# no `phases:` frontmatter by design (scoped by tools:/disallowedTools:).
+DELEGATION_NAMES = frozenset({"silk", "noir", "miguel", "gwen", "ned"})
+
+PHASE_COUNCIL_FULL = {
+    "questions.md": {
+        "driver": "driver `peter`",
+        "counsel": [("robbie", "constructive design questions"),
+                    ("jameson", "devil's-advocate grilling of poorly-shaped work"),
+                    ("mj", None), ("aunt-may", None)],
+        "watch": [("sandman", "under-shaped/formless work"), ("kraven", None), ("osborn", None)],
+        "trailer": "",
+    },
+    "research.md": {
+        "driver": "drivers `silk` (recall/docs/codebase), `noir` (investigation)",
+        "counsel": [("aunt-may", None), ("ned", None), ("madame-web", None)],
+        "watch": [("lizard", None), ("vulture", None), ("kraven", None), ("kingpin", None)],
+        "trailer": "",
+    },
+    "design.md": {
+        "driver": "driver `miguel`",
+        "counsel": [("uncle-ben", None), ("aunt-may", None), ("mj", None), ("madame-web", None)],
+        "watch": [("octavius", None), ("vulture", None), ("kraven", None), ("kingpin", None)],
+        "trailer": "",
+    },
+    "plan.md": {
+        "driver": "driver `miguel`",
+        "counsel": [("uncle-ben", None), ("aunt-may", None), ("madame-web", None)],
+        "watch": [("octavius", None), ("kraven", None), ("kingpin", None), ("vulture", None)],
+        "trailer": "",
+    },
+    "implement.md": {
+        "driver": "driver `peter` / `miles` (route each step to the right Spider-variant — see Delegation)",
+        "counsel": [("ned", None)],
+        "watch": [("carnage", None), ("cat", "security"), ("rhino", None), ("osborn", None)],
+        "trailer": " Functional validation happens in `validate` — `gwen` drives it, with `mysterio` and `cat` on watch.",
+    },
+    "validate.md": {
+        "driver": "driver `gwen` (run it — test functionality against the criteria)",
+        "counsel": [("jameson", "adversarial")],
+        "watch": [("mysterio", "claiming done without proof — the exact failure this phase exists to catch"),
+                  ("cat", "security holes left open"), ("electro", "fragile/cascading")],
+        "trailer": "",
+    },
+    "cleanup.md": {
+        "driver": "driver `peter`",
+        "counsel": [("ned", None), ("jameson", None)],
+        "watch": [("carnage", None), ("mysterio", None)],
+        "trailer": "",
+    },
+}
+
+PHASE_COUNCIL_LITE = {
+    "questions.md": {
+        "driver": "driver `peter`",
+        "counsel": [("jameson", None)],
+        "watch": [("mysterio", None), ("kingpin", None)],
+        "trailer": "",
+    },
+    "research.md": {
+        "driver": "drivers `peter` (recall/docs/codebase), `noir` (investigation)",
+        "counsel": [("jameson", None)],
+        "watch": [("mysterio", None), ("kingpin", None)],
+        "trailer": "",
+    },
+    "design.md": {
+        "driver": "driver `miguel`",
+        "counsel": [("jameson", None)],
+        "watch": [("kingpin", None), ("mysterio", None)],
+        "trailer": "",
+    },
+    "plan.md": {
+        "driver": "driver `miguel`",
+        "counsel": [("jameson", None)],
+        "watch": [("kingpin", None), ("mysterio", None)],
+        "trailer": "",
+    },
+    "implement.md": {
+        "driver": "driver `peter` (route each step to the right Spider-variant — see Delegation)",
+        "counsel": [("jameson", None)],
+        "watch": [("carnage", None), ("kingpin", None)],
+        "trailer": " Verification and adversarial QA happen in `validate` — `jameson` and `mysterio` are the validate phase council.",
+    },
+    "validate.md": {
+        "driver": "driver `jameson` (adversarial QA)",
+        "counsel": [],
+        "watch": [("mysterio", "claiming done without proof — the exact failure this phase exists to catch")],
+        "trailer": "",
+    },
+    "cleanup.md": {
+        "driver": "driver `peter`",
+        "counsel": [("jameson", None)],
+        "watch": [("carnage", None), ("mysterio", None)],
+        "trailer": "",
+    },
+}
+
+
+def _format_name_list(entries: list[tuple[str, str | None]]) -> str:
+    return ", ".join(f"`{name}`" + (f" ({ann})" if ann else "") for name, ann in entries)
+
+
+def render_phase_council_line(filename: str, council: dict, plugin_slug: str) -> str:
+    entry = council[filename]
+    qrdpiv = PHASE_QRDPIV[filename]
+    counsel, watch = entry["counsel"], entry["watch"]
+    counsel_clause = "none" if not counsel else _format_name_list(counsel)
+    watch_label = "watch villain" if len(watch) == 1 else "watch villains"
+    watch_clause = _format_name_list(watch)
+    return (
+        f"> **Phase council** (QRDPIV: {qrdpiv}) — consult only when the concern is live "
+        f"(full map in `/{plugin_slug}:creed`): {entry['driver']}; counsel {counsel_clause}; "
+        f"{watch_label} {watch_clause}.{entry['trailer']}"
+    )
+
+
+def load_lens_register_phase_roles() -> dict:
+    """{character_name: {phase: role}} read from src/lenses/*.md and
+    src/registers/*.md frontmatter — used only to cross-validate
+    PHASE_COUNCIL_FULL stays in sync with each file's own declared role (see
+    validate_phase_council_tables()), not as the direct source of the
+    generated line's membership/order/annotations (see module comment above
+    for why not).
+    """
+    roles = {}
+    for d in (SRC / "lenses", SRC / "registers"):
+        for f in sorted(d.glob("*.md")):
+            text = f.read_text(encoding="utf-8")
+            m = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+            if not m:
+                continue
+            fm = yaml.safe_load(m.group(1)) or {}
+            phases = fm.get("phases")
+            if isinstance(phases, dict):
+                roles[fm["name"]] = phases
+    return roles
+
+
+def validate_phase_council_tables() -> None:
+    """Fail loudly if PHASE_COUNCIL_FULL/_LITE have drifted out of sync with
+    src/{lenses,registers}/*.md frontmatter or vocabulary/display.yml's
+    roster.lite — see module comment above for what's checked and why.
+    """
+    roles = load_lens_register_phase_roles()
+    for filename, entry in PHASE_COUNCIL_FULL.items():
+        phase = filename[:-3]
+        for role in ("counsel", "watch"):
+            for name, _ann in entry[role]:
+                if name in DELEGATION_NAMES:
+                    continue
+                got = (roles.get(name) or {}).get(phase)
+                if got != role:
+                    die(f"phase council drift: {filename} (full) lists '{name}' as {role}, "
+                        f"but src/{{lenses,registers}}/{name}.md phases.{phase} = {got!r}")
+    display = load_yaml(VOCAB_DIR / "display.yml")
+    lite_roster = set(display["roster"]["lite"])
+    for filename, entry in PHASE_COUNCIL_LITE.items():
+        for role in ("counsel", "watch"):
+            for name, _ann in entry[role]:
+                if name not in lite_roster:
+                    die(f"phase council drift: {filename} (lite) lists out-of-roster '{name}'")
+
+
+def inject_phase_council(text: str, filename: str, roster_key: str, plugin_slug: str) -> str:
+    council = PHASE_COUNCIL_LITE if roster_key == "lite" else PHASE_COUNCIL_FULL
+    if filename not in council:
         return text
-    line = entry[roster_key]
+    line = render_phase_council_line(filename, council, plugin_slug)
     # Insert right after the H1 title + its trailing blank line.
     m = re.match(r"(# [^\n]*\n\n)", text)
     if not m:
@@ -423,7 +636,7 @@ def inject_phase_council(text: str, filename: str, roster_key: str, phase_counci
 
 
 def build_tier_skills(edition: dict, vocab: Vocab, data_model: dict, display: dict,
-                       phase_council: dict, skills_dest: Path):
+                       skills_dest: Path):
     roster = edition["roster"]
     roster_key = "lite" if roster == 7 else ("full" if roster == 32 else None)
     for tier, src_dir in TIER_SRC_DIRS.items():
@@ -447,7 +660,7 @@ def build_tier_skills(edition: dict, vocab: Vocab, data_model: dict, display: di
                     and roster_key
                     and rel == Path("actions")
                 ):
-                    text = inject_phase_council(text, name, roster_key, phase_council)
+                    text = inject_phase_council(text, name, roster_key, edition["plugin"]["name"])
                 dst_file.write_text(text, encoding="utf-8", newline="\n")
 
 
@@ -685,7 +898,7 @@ def build_scripts_scaffold_special(edition: dict, vocab: Vocab, dest_root: Path)
 # ── Main per-edition build ──────────────────────────────────────────────────
 
 
-def build_edition(name: str, data_model: dict, display: dict, phase_council: dict):
+def build_edition(name: str, data_model: dict, display: dict):
     edition = load_yaml(EDITIONS_DIR / f"{name}.yml")
     vocab = Vocab(data_model, display, edition)
     dest_root = OUT_ROOT / edition["plugin"]["name"]
@@ -694,7 +907,7 @@ def build_edition(name: str, data_model: dict, display: dict, phase_council: dic
     dest_root.mkdir(parents=True)
 
     skills_dest = dest_root / "skills"
-    build_tier_skills(edition, vocab, data_model, display, phase_council, skills_dest)
+    build_tier_skills(edition, vocab, data_model, display, skills_dest)
     build_nontier_skills(edition, vocab, display, skills_dest)
     build_doctrine_skills(edition, vocab, skills_dest)
     build_agents(edition, vocab, display, dest_root)
@@ -712,11 +925,11 @@ def build_edition(name: str, data_model: dict, display: dict, phase_council: dic
 def main():
     data_model = load_yaml(VOCAB_DIR / "data-model.yml")
     display = load_yaml(VOCAB_DIR / "display.yml")
-    phase_council = load_yaml(ROOT / "build" / "phase-council.yml")
+    validate_phase_council_tables()
 
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     for name in EDITION_NAMES:
-        build_edition(name, data_model, display, phase_council)
+        build_edition(name, data_model, display)
     print("generate.py: done")
 
 

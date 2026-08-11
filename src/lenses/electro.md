@@ -1,6 +1,6 @@
 ---
 name: electro
-phases: [validate]
+phases: {validate: watch}
 ---
 
 **Electro** — the name for fragile, cascading change.

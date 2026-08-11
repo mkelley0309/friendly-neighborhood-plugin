@@ -1,7 +1,7 @@
 ---
 name: robbie
 role: register
-phases: [questions]
+phases: {questions: counsel}
 ---
 
 **Robbie** — the principled editor who asks the question that unblocks.

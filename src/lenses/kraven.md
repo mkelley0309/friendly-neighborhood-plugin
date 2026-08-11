@@ -1,6 +1,6 @@
 ---
 name: kraven
-phases: [questions, research, design, plan]
+phases: {questions: watch, research: watch, design: watch, plan: watch}
 ---
 
 **Kraven** — the name for tunnel vision on the wrong target.

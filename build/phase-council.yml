@@ -1,5 +1,16 @@
 # build/phase-council.yml — extracted phase-council data (plan 3.5)
 #
+# RETIRED AS A GENERATOR INPUT (plan 4b.2): build/generate.py no longer
+# reads this file. It's kept on disk as the original byte-checked-against-
+# shipped reference the generator's PHASE_COUNCIL_FULL / PHASE_COUNCIL_LITE
+# tables (in build/generate.py, alongside src/lenses/*.md + src/registers/
+# *.md `phases:` frontmatter) were transcribed from — see build/README.md
+# "Phase council generation" for the replacement mechanism and why the new
+# tables still can't be purely derived from per-character frontmatter. The
+# rest of this file's header comments (describing itself as a live
+# generator input) are now historical, not current — left as-is rather than
+# rewritten, since nothing reads this file anymore.
+#
 # Populated once by reading the currently-shipped `plugins/friendly-neighborhood/
 # skills/campaign/actions/*.md` (roster: full, superset) and
 # `plugins/friendly-neighborhood-lite/skills/campaign/actions/*.md` (roster: lite)

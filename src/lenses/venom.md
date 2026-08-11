@@ -1,6 +1,6 @@
 ---
 name: venom
-phases: [implement]
+phases: {implement: watch}
 ---
 
 **Venom** — the name for premature escalation.
