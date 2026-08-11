@@ -202,6 +202,10 @@ loaded as a skill page:
   the disciplined outcome the symbiote protocol above is meant to produce. The `venom` lens
   watches for the opposite: escalation reached for out of appetite rather than genuine need. If
   a symbiote episode stayed on-mission and came home on time, that's Agent Venom, not Venom.
+- **Silk** — recall, docs, and fast precise lookups: the built-in `Explore` agent. No custom
+  agent definition ships for her; naming her is naming the built-in.
+- **Miguel** — deep design, architecture, and sequencing before anyone writes code: the built-in
+  `Plan` agent (plan mode). No custom agent definition ships for him either.
 
 ---
 

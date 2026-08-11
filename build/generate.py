@@ -706,7 +706,14 @@ def build_agents(edition: dict, vocab: Vocab, display: dict, dest_root: Path):
     for name in names:
         src_file = agents_src / f"{name}.md"
         if not src_file.exists():
-            print(f"  warning: agent '{name}' listed in roster but missing at {src_file}", file=sys.stderr)
+            # `roster` names every character (lens + register + delegation), not just
+            # agent-backed ones — most names correctly have no agents/*.md at all.
+            # Only warn if the name isn't backed by a lens or register file either,
+            # since that would mean the character resolves to nothing at all.
+            has_lens = (SRC / "lenses" / f"{name}.md").exists()
+            has_register = (SRC / "registers" / f"{name}.md").exists()
+            if not has_lens and not has_register:
+                print(f"  warning: character '{name}' listed in roster but has no agent, lens, or register file", file=sys.stderr)
             continue
         copy_file_substituted(src_file, dest / f"{name}.md", vocab)
 
