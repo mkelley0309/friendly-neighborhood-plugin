@@ -21,6 +21,7 @@ non-zero and prints a loud, specific failure if it finds a hit anywhere.
 from __future__ import annotations
 
 import difflib
+import json
 import re
 import sys
 from pathlib import Path
@@ -28,8 +29,35 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 GENERATED_ROOT = ROOT / "build" / "_generated"
 PLUGINS_ROOT = ROOT / "plugins"
+EDITIONS_DIR = ROOT / "editions"
 
 EDITIONS = ["harness-core", "friendly-neighborhood-lite", "friendly-neighborhood"]
+
+MARKETPLACE_EDITION_FILE = {
+    "harness-core": "core.yml",
+    "friendly-neighborhood-lite": "lite.yml",
+    "friendly-neighborhood": "full.yml",
+}
+
+
+def check_marketplace() -> list[str]:
+    """Plan 5.1 completion criterion: marketplace.json's per-plugin
+    `description` must equal the corresponding `editions/{name}.yml`
+    `plugin.description` verbatim (whitespace-joined) — verified here by
+    script, not by reading the file."""
+    import yaml
+
+    mismatches = []
+    path = ROOT / ".claude-plugin" / "marketplace.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    by_name = {p["name"]: p for p in data["plugins"]}
+    for name, edition_filename in MARKETPLACE_EDITION_FILE.items():
+        edition = yaml.safe_load((EDITIONS_DIR / edition_filename).read_text(encoding="utf-8"))
+        want = " ".join(edition["plugin"]["description"].split())
+        got = by_name.get(name, {}).get("description")
+        if got != want:
+            mismatches.append(f"marketplace.json: '{name}' description does not match editions/{edition_filename}")
+    return mismatches
 
 # The task brief names all four words (campaign/mission/responsibility/patrol)
 # as ones that must never appear as a frontmatter key "anywhere". Taken
@@ -214,6 +242,15 @@ def main() -> int:
         return 1
 
     print("\nfrontmatter-key check: PASS (no campaign:/mission:/responsibility:/patrol: leaked as a key)")
+
+    marketplace_mismatches = check_marketplace()
+    if marketplace_mismatches:
+        print(f"\nFATAL: {len(marketplace_mismatches)} marketplace.json vocabulary mismatch(es):", file=sys.stderr)
+        for hit in marketplace_mismatches:
+            print(f"  - {hit}", file=sys.stderr)
+        return 1
+
+    print("marketplace.json check: PASS (descriptions match editions/*.yml)")
     return 0
 
 

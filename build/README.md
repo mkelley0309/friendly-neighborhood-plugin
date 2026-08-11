@@ -14,6 +14,33 @@ generation" below.
 reference target for step 3.6 (a separate step, not this one) — it stays
 untouched so a human can diff against it.
 
+**Exception (plan 5.1):** `build_marketplace_json()` writes directly to the
+live `.claude-plugin/marketplace.json` at repo root — that file isn't part
+of the `plugins/*` byte-reproduction pipeline (it isn't per-edition, and
+nothing in `src/` sources it), so there's no staging copy to diff against.
+It overlays each plugin's `description` from `editions/{name}.yml`
+`plugin.description` — the same text already promoted into each shipped
+`plugin.json` — onto the existing file, preserving `name`/`owner`/
+`metadata`/`source`/`version`. `difflint.py`'s `check_marketplace()` verifies
+the result matches `editions/*.yml` word-for-word.
+
+**Known gap, found at 5.1, not fixed here:** `build/_generated/*` (the
+canonical `src/`-derived output) has never been promoted into `plugins/*` —
+no plan step schedules that copy. `plugins/friendly-neighborhood/agents/`
+still ships the pre-Phase-4 32-file roster (14 separate villain agents,
+inverted dissent polarity) while `src/agents/` has 6 files and the
+lens/register carrier model. Because of this, 5.1's README fixes are scoped
+to facts that are wrong **relative to what's actually shipped in `plugins/*`
+today** (the `objective → workstream → task` tier-arrow bug, the lite
+edition's stale "no phase-council" claim) — not to the future state
+`src/` already describes. Rewriting README prose to describe the
+lens/register architecture before `plugins/*` actually ships it would trade
+one drift for another. The promotion itself needs its own step (byte-diff
+`build/_generated/*` against `plugins/*` one more time, classify every
+remaining discrepancy the way 3.6 did, then copy) before any README can
+honestly describe the new cast — flagged in the workstream's friction log
+rather than attempted here.
+
 Run:
 
 ```
