@@ -209,6 +209,15 @@ class Vocab:
             # Guard: bare quoted literal "word" or "words" (path/key literal).
             if start > 0 and text[start - 1] == '"' and end < len(text) and text[end] == '"':
                 return match_text
+            # Guard: Python attribute access, e.g. `args.workstream` — the
+            # matching argparse `add_argument("workstream", ...)` dest string
+            # is already protected by the quoted-literal guard above, so
+            # substituting the attribute-access form alone would desync the
+            # two and raise AttributeError at runtime. Prose never has a
+            # pinned word immediately preceded by "." with no space (a
+            # sentence-final period is always followed by whitespace).
+            if start > 0 and text[start - 1] == ".":
+                return match_text
             # Guard: immediately followed by "/" — a bare folder-name usage
             # (e.g. an ASCII tree listing "  objectives/   <- comment"), as
             # opposed to preceded by "/" (already guarded above via the
@@ -227,16 +236,23 @@ class Vocab:
         (assignment.py -> mission.py, templates/control-plane/assignments/ ->
         .../missions/). Safe to run on a path segment string, not just prose —
         a path never carries the "cadence" counter-landmine ambiguity below.
+
+        Boundary is letters-only (not `\\b`, which treats `_` as a word char
+        and so refuses to match inside `assignment_dir`/`ASSIGNMENTS_DIR`/
+        `cadence_dir`/`CADENCES_DIR` — exactly the compound Python identifiers
+        these tools use). A pinned word is never substituted here at all, so
+        this boundary choice can't leak into pinned-tier code identifiers.
         """
         for core_word, ed_word in self.nonpinned_pairs:
-            pattern = re.compile(rf"\b{re.escape(core_word)}(s)?\b", re.IGNORECASE)
+            pattern = re.compile(rf"(?<![a-zA-Z]){re.escape(core_word)}(s)?(?![a-zA-Z])", re.IGNORECASE)
             text = pattern.sub(
                 lambda m, w=ed_word: case_like(m.group(0), pluralize(w) if m.group(1) else w),
                 text,
             )
         return text
 
-    def _apply_nonpinned_guarded(self, text: str, core_word: str, ed_word: str) -> str:
+    def _apply_nonpinned_guarded(self, text: str, core_word: str, ed_word: str,
+                                  own_tier_file: bool = False) -> str:
         """Same swap as apply_nonpinned, but for PROSE BODY content, with
         guards for `cadence` specifically — vocabulary/data-model.yml's
         documented counter-landmine: the bare word also names an UNRELATED
@@ -246,15 +262,22 @@ class Vocab:
         `review cadence`, a bare `cadence:` frontmatter key, `set-cadence`/
         `<cadence>` CLI-example tokens, and `milestones, cadence` listings.
         Residual risk is real and documented, not fully eliminated.
+
+        `own_tier_file`: True when processing the cadence tier's OWN home
+        file (`templates/tools/cadence.py`) — there, a bare `cadence:` line
+        is the tier's own identity field (must become `patrol:`), not the
+        unrelated review-frequency field the guard below exists to protect.
+        Same letters-only boundary as `apply_nonpinned`, for the same
+        compound-identifier reason (`cadence_dir`, `CADENCES_DIR`).
         """
         if core_word != "cadence":
-            pattern = re.compile(rf"\b{re.escape(core_word)}(s)?\b", re.IGNORECASE)
+            pattern = re.compile(rf"(?<![a-zA-Z]){re.escape(core_word)}(s)?(?![a-zA-Z])", re.IGNORECASE)
             return pattern.sub(
                 lambda m, w=ed_word: case_like(m.group(0), pluralize(w) if m.group(1) else w),
                 text,
             )
 
-        pattern = re.compile(r"\bcadence(s)?\b", re.IGNORECASE)
+        pattern = re.compile(r"(?<![a-zA-Z])cadence(s)?(?![a-zA-Z])", re.IGNORECASE)
 
         def repl(m: re.Match) -> str:
             match_text = m.group(0)
@@ -262,7 +285,7 @@ class Vocab:
             before = text[max(0, start - 12):start]
             after = text[end:end + 1]
             line_start = text.rfind("\n", 0, start) + 1
-            if text[line_start:start] == "" and after == ":":
+            if not own_tier_file and text[line_start:start] == "" and after == ":":
                 return match_text  # bare frontmatter key -> unrelated field
             if re.search(r"review\s*$", before, re.IGNORECASE):
                 return match_text  # "(a) review cadence"
@@ -276,7 +299,7 @@ class Vocab:
 
         return pattern.sub(repl, text)
 
-    def apply(self, text: str, skip_nonpinned: frozenset = frozenset()) -> str:
+    def apply(self, text: str, skip_nonpinned: frozenset = frozenset(), own_tier_file: bool = False) -> str:
         """`skip_nonpinned` lets a caller exempt an entire file from a
         specific non-pinned tier's substitution — used for
         `templates/tools/objective.py`, which (confirmed empirically, see
@@ -292,7 +315,10 @@ class Vocab:
                 continue
             target_words.add(ed_word)
             target_words.add(pluralize(ed_word))
-            text = self._apply_nonpinned_guarded(text, core_word, ed_word)
+            text = self._apply_nonpinned_guarded(
+                text, core_word, ed_word,
+                own_tier_file=(own_tier_file and core_word == "cadence"),
+            )
         for core_word, themed_word in self.pinned_pairs:
             text = self._sub_pinned_word(text, core_word, themed_word)
             target_words.add(themed_word)
@@ -318,6 +344,16 @@ class Vocab:
         # plugin-slug substitution for doctrine/tier skill self-refs copied from full
         if self.plugin_name != "friendly-neighborhood":
             text = text.replace("/friendly-neighborhood:", f"/{self.plugin_name}:")
+        # symmetric case: pinned-tier + knowledge/init-workspace skill files are
+        # sourced from harness-core (src/README.md provenance table) and hardcode
+        # `/harness-core:` as their own slash-command prefix — themed editions
+        # need that rewritten to their own plugin slug, and the bare "harness-core"
+        # plugin-name mention in prose (e.g. "harness-core needs Python 3...")
+        # rewritten to the edition's own displayName. Without this, themed output
+        # ships `/harness-core:campaign` (wrong plugin, right skill name).
+        if self.themed and self.plugin_name != "harness-core":
+            text = text.replace("/harness-core:", f"/{self.plugin_name}:")
+            text = re.sub(r"(?<![\w/-])harness-core(?![\w-])", self.edition["plugin"]["displayName"], text)
         return text
 
 
@@ -520,8 +556,10 @@ def build_templates(edition: dict, vocab: Vocab, display: dict, dest_root: Path)
                 dst_file.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_file, dst_file)
                 continue
-            skip_nonpinned = frozenset({"cadence"}) if (rel.parts == ("tools",) and name == "objective.py") else frozenset()
-            text = vocab.apply(text, skip_nonpinned=skip_nonpinned)
+            in_tools = rel.parts == ("tools",)
+            skip_nonpinned = frozenset({"cadence"}) if (in_tools and name == "objective.py") else frozenset()
+            own_tier_file = in_tools and name == "cadence.py"
+            text = vocab.apply(text, skip_nonpinned=skip_nonpinned, own_tier_file=own_tier_file)
             if marker_features is not None:
                 text = strip_markers(text, marker_features, MARKER_RE_SH)
             if vocab.themed and rel.parts == (".claude", "rules") and name == "personal.md":
@@ -535,7 +573,22 @@ def build_settings_json(src_file: Path, dst_file: Path, vocab: Vocab, features: 
     allow = data["permissions"]["allow"]
     # apply non-pinned CLI-filename substitution (assignment.py -> mission.py etc.)
     allow = [vocab.apply(a) for a in allow]
-    if not features.get("observation_deck"):
+    # `src/templates/.claude/settings.json` is copied from core (untethemed,
+    # pinned folder names — see src/README.md) and so never carries the two
+    # observation-deck permission lines at all; add them for editions where
+    # the feature is on, rather than only ever removing them.
+    deck_lines = [
+        "Bash(bash .claude/scripts/agent-log.sh:*)",
+        "Bash(bash .claude/scripts/observe.sh:*)",
+    ]
+    if features.get("observation_deck"):
+        statusline_idx = next(
+            (i for i, a in enumerate(allow) if "statusline.sh" in a), len(allow) - 1
+        )
+        for offset, line in enumerate(deck_lines):
+            if line not in allow:
+                allow.insert(statusline_idx + 1 + offset, line)
+    else:
         allow = [a for a in allow if "agent-log.sh" not in a and "observe.sh" not in a]
     data["permissions"]["allow"] = allow
     dst_file.parent.mkdir(parents=True, exist_ok=True)
