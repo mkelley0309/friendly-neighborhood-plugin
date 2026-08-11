@@ -24,7 +24,17 @@ The subagent returns findings to main context (≤400 words). Record sign-off or
 
 **If objections are raised:** resolve them before proceeding. Unresolved objections block advance to cleanup.
 
-### 3. Advance phase
+### 3. Security red-team (when applicable)
+
+If the workstream's changes touch auth, secrets, input handling, or any external-facing
+surface, spawn `dissent` with `lens: cat` — the security red-team — before advancing. Her whole
+job is to find the open window; if she finds one, close it and re-run this step before
+proceeding.
+
+Record sign-off or findings in `validate.md`. If the change genuinely doesn't touch any of the
+above surfaces, skip this step and say so explicitly — don't skip silently.
+
+### 4. Advance phase
 
 Only when the gate is GO **and** adversarial QA signs off:
 

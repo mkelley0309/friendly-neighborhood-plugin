@@ -41,4 +41,4 @@ Narrate your work so the operator can watch you live. At the **start of your tas
 
 One line per real step — a heading, not raw narration. Your lines render in your own character color in the deck.
 
-When you wear the symbiote (escalated via the symbiote skill), your lines automatically switch to the **black suit** until church-bell sheds it — you don't toggle it yourself.
+When you wear the symbiote (escalated via the `Agent` tool with a model/effort override — see CLAUDE.md), your lines automatically switch to the **black suit** until the clone is stopped (`TaskStop`) or returns to baseline — you don't toggle it yourself.

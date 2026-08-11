@@ -68,9 +68,7 @@ def main() -> int:
         "\n  Next:\n"
         "    1. Open constitution.md - the base contract.\n"
         "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\n"
-        # FEATURE:doctrine_skills:start
-        "    3. Run /friendly-neighborhood:creed to load the operating doctrine.\n"
-        # FEATURE:doctrine_skills:end
+        "    3. The operating doctrine (principles, decision mechanic, vocabulary) is in CLAUDE.md and loads automatically.\n"
         "    4. Start work: /friendly-neighborhood:campaign (heavy QRDPIV work), "
         "/friendly-neighborhood:mission (a quick unit), /friendly-neighborhood:responsibility (a long-lived goal), "
         "or /friendly-neighborhood:web-archive (knowledge).\n"
