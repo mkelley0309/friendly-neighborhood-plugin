@@ -20,7 +20,9 @@ Do **not** build a step-status table anywhere. `plan.md` checkboxes and `index.m
 
 ## Execution loop
 
-**One subagent per step — no exceptions.** Every plan step is delegated to its own subagent. Main context does not execute step logic directly. This keeps main context clean across multi-phase workstreams and ensures each step is scoped and independently verifiable.
+**One subagent per step, by default.** Every plan step is delegated to its own subagent unless the fallback below applies. This keeps main context clean across multi-phase workstreams and ensures each step is scoped and independently verifiable.
+
+**Main-context fallback.** If this session operates under a policy that forbids unrequested subagent spawns, execute the step directly in main context instead — brief yourself with the same scoped context a subagent would get (this step's text, the relevant file paths, the expected output) rather than pulling in the full plan or unrelated prior-step context. Still tick the step and still log friction per the rules below; the fallback changes who runs the step, not what gets recorded.
 
 For each step:
 

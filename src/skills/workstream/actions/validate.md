@@ -18,9 +18,11 @@ Record the result (command run, exit code, what passed or failed) in `validate.m
 
 ### 2. Adversarial QA
 
-Hand the gate result and the workstream's completion criteria (from `plan.md`) to a Sonnet subagent with the prompt: "Red-team these deliverables against every completion criterion — find anything claimed done but not actually verified."
+By default, hand the gate result and the workstream's completion criteria (from `plan.md`) to a Sonnet subagent with the prompt: "Red-team these deliverables against every completion criterion — find anything claimed done but not actually verified."
 
 The subagent returns findings to main context (≤400 words). Record sign-off or objections in `validate.md`.
+
+**Main-context fallback.** If this session operates under a policy that forbids unrequested subagent spawns, run the same adversarial pass directly in main context instead — genuinely argue against your own completion claims, criterion by criterion, rather than restating them as done. The point of the subagent is adversarial distance from the work just finished; approximate that distance deliberately if a fresh context isn't available.
 
 **If objections are raised:** resolve them before proceeding. Unresolved objections block advance to cleanup.
 
