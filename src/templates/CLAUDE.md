@@ -216,9 +216,34 @@ Speakable terms built into the harness — not separate skills.
 | wall-crawl | Map or traverse the codebase |
 | thwip | Fast hop between files |
 | web-shooter | A small self-built targeted action |
-| spider-tracer | Tag or track a TODO item |
+| spider-tracer | Tag or track a TODO item — plural (**spider-tracers**) also names background task tracking; see Capability Vocabulary below |
 | leap-of-faith | Commit to a judgment call under uncertainty |
 | spider-society | Orchestrate multiple agents together |
+
+---
+
+## Capability Vocabulary Mappings
+
+Platform capabilities that had no name in this harness before now resolve to one:
+
+| Term | Concept | Native mechanism |
+|---|---|---|
+| **Spider-Verse** | Parallel, isolated lines of work — Earth-616 is always the main line | Git worktrees (`isolation: "worktree"` on a subagent spawn, or a manually created worktree) |
+| **Web of Life and Destiny** | Persistent memory that outlives a single session | The harness's file-based memory system — durable notes recalled across sessions, distinct from a session's own working context |
+| **One More Day** | The context window resets and picks up where it left off, minus what got forgotten | Automatic context compaction — prior turns are summarized when the window fills; work continues, detail is lossy |
+| **Daily Bugle** | Publishing something for others to read | The platform's page-publishing mechanism (e.g. `Artifact`) — a durable, shareable page, not a raw file dump |
+| **spider-tracers** | Work set running and checked on later, not watched live | Background task execution (`run_in_background`) plus the tools that check on it (`Monitor`, `TaskOutput`, `TaskStop`) |
+| **Madame Web's futures** | Seeing the possible paths before committing to one | Plan mode (`EnterPlanMode` / `ExitPlanMode`) — design and align before the first write |
+
+**The neighborhood check** — *"this isn't your neighborhood."* Per [D23]: before git-dependent
+work inside a nested repo (`projects/{name}` here — an independent git repo, not part of this
+workspace's own history), stop and advise relocating the session into that repo's own directory
+first. Running git-dependent work (commits, branches, `isolation: "worktree"`) from the wrong
+root doesn't just work worse — it targets the *wrong repo* and can report success while the real
+change sits untouched, uncommitted, in the nested repo. This is the plugin's own titular premise
+— a hero with **territorial** scope — doing real work, not new vocabulary: **MUST** relocate for
+git-dependent work in a nested repo (a correctness question); **CONSIDER** relocating for
+sustained single-subtree focus (an optimization, not a requirement).
 
 ---
 
