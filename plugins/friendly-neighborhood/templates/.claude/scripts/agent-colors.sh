@@ -23,7 +23,7 @@ agent_group() {
   case "$1" in
     peter|miles|gwen|noir|miguel|ben-reilly|silk|peni|ham|jessica|punk) echo spideys ;;
     uncle-ben|aunt-may|mj|ned|jameson|madame-web|robbie) echo support ;;
-    osborn|octavius|venom|sandman|lizard|electro|mysterio|kraven|rhino|vulture|scorpion|carnage|kingpin|cat) echo villains ;;
+    osborn|octavius|venom|sandman|lizard|electro|mysterio|kraven|rhino|vulture|scorpion|carnage|kingpin|cat|jackal|chameleon|silver-sable|spider-slayers|tinkerer) echo villains ;;
     *) echo unknown ;;
   esac
 }

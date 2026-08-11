@@ -100,4 +100,4 @@ cleanup    →  (done)        (after log filed, outputs verified in outputs/, fo
 - **Template filling, file renames, status checks** → Haiku subagent. (≤200 words back to main context.)
 - **Cleanup file deletions** → confirm with user first; do not delegate destructive ops.
 
-**Concurrency budget: up to your configured limit in flight** (`max_concurrent_agents`, default 2; set during `init-workspace`). Default behavior is sequential. See `_addenda/claude-code.md` for the full rule.
+**Concurrency budget: up to your configured limit in flight** (`max_concurrent_agents`, default 2; set during `init-workspace`). Default behavior is sequential. See root `CLAUDE.md` → Subagent Delegation for the full rule.

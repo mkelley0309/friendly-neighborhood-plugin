@@ -5,19 +5,13 @@
     "url": "https://github.com/mkelley0309"
   },
   "metadata": {
-    "description": "An opinionated Claude Code workflow + knowledge harness in three editions — un-themed (harness-core), bare themed (lite), and full Spider-Man (friendly-neighborhood). Install one."
+    "description": "An opinionated Claude Code workflow + knowledge harness in two editions — un-themed (harness-core) and full Spider-Man (friendly-neighborhood). Install one."
   },
   "plugins": [
     {
       "name": "harness-core",
       "source": "./plugins/harness-core",
-      "description": "An opinionated workflow + knowledge harness with four structural differentiators: (1) three-tier work model — objective (long-lived why, Key Results, milestones, decisions log) → workstream (heavy QRDPIV lifecycle, multi-session) → assignment (lightweight unit, proportional admin); (2) progressive distillation — compress at every handoff, proportional to work size, lossy and phase-targeted; (3) peer-reviewed knowledge pipeline — scout → harvest → distill → cartograph → audit → sync, vault grows only by admission, nothing rewrites itself unsupervised; (4) a deterministic verification gate (tools/gate.py, GO/NO-GO exit code) for hard measurable concerns, leaving soft judgments qualitative and recorded; plus determinism for the repeatable — any assignment done twice becomes a CLI. No agent personas, no theme — just the capabilities.",
-      "version": "0.3.0"
-    },
-    {
-      "name": "friendly-neighborhood-lite",
-      "source": "./plugins/friendly-neighborhood-lite",
-      "description": "The LEAN themed edition of Friendly Neighborhood. Defensible differentiators: three-tier work model (responsibility = long-lived why/role/annual objective; campaign = multi-session multi-handoff; mission = single work unit); progressive distillation at every handoff; peer-reviewed knowledge vault pipeline; a two-track decision mechanic (hard signals → deterministic gate via tools/gate.py; soft signals → affirmative villain dissent + recorded judgment, no fake scores); and the symbiote (turn-limited self-escalation). Tiny roster only — spideys peter/miguel/noir, support jameson, villains carnage/mysterio/kingpin. No full cast, no per-agent screenplay output-style, no themes.",
+      "description": "An opinionated workflow + knowledge harness with four structural differentiators: (1) three-tier work model — objective (long-lived why, Key Results, milestones, decisions log) → workstream (heavy QRDPIV lifecycle, multi-session) → assignment (lightweight unit, proportional admin); (2) progressive distillation — research broadly, then compress at every handoff to the fewest, most precise words (semantic density: dense meaning per token via careful word choice, not just fewer tokens), keeping the decisions reached and dropping the back-and-forth that reached them, proportional to work size and targeted at the next phase's needs; (3) peer-reviewed knowledge pipeline — scout → harvest → distill → cartograph → audit → sync, vault grows only by admission, nothing rewrites itself unsupervised; (4) a deterministic verification gate (tools/gate.py, GO/NO-GO exit code) for hard measurable concerns, leaving soft judgments qualitative and recorded; plus determinism for the repeatable — any assignment done twice becomes a CLI. No agent personas, no theme — just the capabilities.",
       "version": "0.3.0"
     },
     {

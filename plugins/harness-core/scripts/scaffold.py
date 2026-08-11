@@ -66,7 +66,7 @@ def main() -> int:
 
     print(
         "\n  Next:\n"
-        "    1. Open constitution.md - the base contract.\n"
+        "    1. CLAUDE.md is the base contract - it loads automatically.\n"
         "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\n"
         "    3. Start work: /harness-core:workstream (a complex effort), "
         "/harness-core:objective (a long-lived goal), "

@@ -31,10 +31,10 @@ This sets up a working, domain-neutral harness in the current project so the oth
    ```
    (e.g. `python3 -B "${CLAUDE_SKILL_DIR}/../../scripts/scaffold.py"`)
 
-4. **Set the concurrency budget.** Ask: *"How many subagents may run in flight at once? (soft budget — a cost/coordination guideline, not a safety cap. Default 2; raise it if your machine and quota allow.)"* Take the answer (a number, or "2" if they accept the default) and set it in the scaffolded contract: in `_addenda/claude-code.md`, replace `up to 2 subagents in flight at once` with `up to <N> subagents in flight at once`. If they keep the default, leave it.
+4. **Set the concurrency budget.** Ask: *"How many subagents may run in flight at once? (soft budget — a cost/coordination guideline, not a safety cap. Default 2; raise it if your machine and quota allow.)"* Take the answer (a number, or "2" if they accept the default) and set it in the scaffolded contract: in `CLAUDE.md` -> Subagent Delegation, replace `up to \`max_concurrent_agents\` subagents in flight at once (default 2` with the chosen number. If they keep the default, leave it.
 
 5. **Report** what it created vs. skipped, then point the user at next steps:
-   - `constitution.md` is the base contract; subtree contracts auto-load via `.claude/rules/` as you work.
+   - `CLAUDE.md` is the base contract and operating doctrine; subtree contracts auto-load via `.claude/rules/` as you work.
    - Start work: `/harness-core:workstream` (a complex effort), `/harness-core:objective` (a long-lived goal), `/harness-core:assignment` (a lightweight unit), or `/harness-core:knowledge` (knowledge pipeline).
    - Optional UX: the knowledge vault is plain markdown; install the kepano Obsidian skills separately if you want graph/wikilink/Bases tooling (`npx skills add kepano/obsidian-skills -g -a claude-code`). Not required.
 

@@ -15,8 +15,8 @@
 # `pinned: false` tiers (assignment, cadence) are substituted end-to-end per
 # edition — folder, CLI filename, AND frontmatter key all change together.
 # Evidence: `assignment.py` -> `mission.py`, `assignments/` -> `missions/`,
-# frontmatter `assignment: {name}` -> `mission: {name}` in both the lite and
-# full editions (core is the only edition using the untethemed identifier).
+# frontmatter `assignment: {name}` -> `mission: {name}` in the full edition
+# (core is the only edition using the untethemed identifier).
 #
 # THE LANDMINE (plan 3.1): a generator that treats all four tiers as one
 # substitutable table will rewrite `workstream:` frontmatter to `campaign:`
@@ -28,7 +28,7 @@
 # "cadence" also appears as an UNRELATED frontmatter field inside
 # `objective.py` (`cadence: quarterly` — review cadence, nothing to do with
 # the cadence *tier*). It is correctly left untouched in every edition,
-# including full/lite where the cadence tier itself becomes `patrol`. A
+# including full where the cadence tier itself becomes `patrol`. A
 # generator must substitute the tier identifier by structural position
 # (the tier's own folder/CLI/frontmatter-key slots below), never by a bare
 # string match against the word "cadence" — the same caution applies to
@@ -63,12 +63,6 @@ tiers:
         frontmatter_key: assignment
         log_file: _log.md
         tags_prefix: assignment
-      lite:
-        folder: missions
-        cli: mission.py
-        frontmatter_key: mission
-        log_file: _log.md
-        tags_prefix: mission
       full:
         folder: missions
         cli: mission.py
@@ -86,12 +80,6 @@ tiers:
         frontmatter_key: cadence
         log_file: _log.md
         tags_prefix: cadence
-      lite:
-        folder: patrols
-        cli: patrol.py
-        frontmatter_key: patrol
-        log_file: _log.md
-        tags_prefix: patrol
       full:
         folder: patrols
         cli: patrol.py

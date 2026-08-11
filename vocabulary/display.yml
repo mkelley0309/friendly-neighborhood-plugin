@@ -51,8 +51,7 @@ skills:
     themed: web-archive
 
 # ── Non-tier folder renames ─────────────────────────────────────────────────
-# Found during 3.5 (see generation-diff-triage.md): confirmed identical in both
-# friendly-neighborhood and friendly-neighborhood-lite templates. Renames the
+# Found during 3.5 (see generation-diff-triage.md). Renames the
 # templates/{core} folder AND the .claude/rules/{core}.md file to {themed} in
 # both name and `paths:` glob; prose inside gets ordinary tier substitution.
 folders:
@@ -73,21 +72,14 @@ themed_only_skills:
   - symbiote       # -> native: Agent() with model/effort override (per plan 4d.1)
 
 # ── Character names ──────────────────────────────────────────────────────
-# Core roster: 0 (no agents/ directory). Lite roster: 7. Full roster: 32.
-# Character *content* (identity, tools, aphorism) is not vocabulary — it
-# lives in each edition's agents/*.md today and moves to src/lenses +
-# src/registers at Phase 4 (4a.1/4b.1). This file records only the roster
-# membership axis so the generator can select which names ship per edition;
-# it is not the roster's data source.
+# Core roster: 0 (no agents/ directory). Full roster: 38 (see [D24] —
+# the roster axis is binary; a separate curated "lite" roster no longer
+# earns its cost now that the cast is lens/register data, not 32 separate
+# agent definitions). Character *content* (identity, tools, aphorism) is not
+# vocabulary — it lives in src/agents + src/lenses + src/registers. This
+# file records only the roster membership axis so the generator can select
+# which names ship; it is not the roster's data source.
 roster:
-  lite:  # plugins/friendly-neighborhood-lite/agents/*.md — confirmed 7
-    - carnage
-    - jameson
-    - kingpin
-    - miguel
-    - mysterio
-    - noir
-    - peter
   full:  # 4e.1 added 5 new lenses; 32 -> 38. Agent Venom is a doctrine line (CLAUDE.md),
          # not a file-backed character, and is not listed here.
     - aunt-may

@@ -20,7 +20,9 @@ Do **not** build a step-status table anywhere. `plan.md` checkboxes and `index.m
 
 ## Execution loop
 
-**One subagent per step — no exceptions.** Every plan step is delegated to its own subagent. Main context does not execute step logic directly. This keeps main context clean across multi-phase workstreams and ensures each step is scoped and independently verifiable.
+**One subagent per step, by default.** Every plan step is delegated to its own subagent unless the fallback below applies. This keeps main context clean across multi-phase workstreams and ensures each step is scoped and independently verifiable.
+
+**Main-context fallback.** If this session operates under a policy that forbids unrequested subagent spawns, execute the step directly in main context instead — brief yourself with the same scoped context a subagent would get (this step's text, the relevant file paths, the expected output) rather than pulling in the full plan or unrelated prior-step context. Still tick the step and still log friction per the rules below; the fallback changes who runs the step, not what gets recorded.
 
 For each step:
 
@@ -45,7 +47,7 @@ For each step:
 
 Main context receives only the step status confirmation and any distilled findings needed to brief the next step. Never pull raw file contents into main context.
 
-**Agent scoping (default) — see SKILL.md → Subagent Delegation and `_addenda/claude-code.md` → Directory Scoping.** Every step-agent is scoped to a **single subtree** (reads + writes within it). Cross-boundary work stays with the orchestrator: `control-plane` deploys the right agent per subtree and passes distilled artifacts between them — e.g. a **knowledge agent** scoped to `knowledge/vault/` for vault lookups, a **design agent** scoped to `projects/<name>/`, an **implementation agent** in a **worktree** of the project repo. Brief each with the **absolute path** of its own subtree. Isolation: directory-scoped prompts for non-git subtrees; worktree isolation for code inside a git repo; **never `isolation: "worktree"` from `control-plane/`** (not a git repo).
+**Agent scoping (default) — see SKILL.md → Subagent Delegation and root `CLAUDE.md` → Subagent Delegation.** Every step-agent is scoped to a **single subtree** (reads + writes within it). Cross-boundary work stays with the orchestrator: `control-plane` deploys the right agent per subtree and passes distilled artifacts between them — e.g. a **knowledge agent** scoped to `knowledge/vault/` for vault lookups, a **design agent** scoped to `projects/<name>/`, an **implementation agent** in a **worktree** of the project repo. Brief each with the **absolute path** of its own subtree. Isolation: directory-scoped prompts for non-git subtrees; worktree isolation for code inside a git repo; **never `isolation: "worktree"` from `control-plane/`** (not a git repo).
 
 **When briefing subagents that write vault notes:** include this wikilink rule verbatim in the brief: *"Vault root is `knowledge/vault/`. Write all wikilinks relative to that root — never include `vault/` as a prefix (wrong: `[[vault/domain-knowledge/payments]]`; correct: `[[domain-knowledge/payments]]`). Before writing any wikilink to a path outside the subtree you are currently authoring, verify the target exists with a Glob or Read check. Do not assume directory structure."*
 
