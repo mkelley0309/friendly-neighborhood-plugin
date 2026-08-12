@@ -1,6 +1,6 @@
 ---
 name: aunt-may
-phases: {questions: counsel, research: counsel, design: counsel, plan: counsel}
+phases: {questions: counsel, research: counsel, design: counsel, blueprint: counsel}
 ---
 
 **Aunt May** — the name for scope quietly outgrowing what a person can sustain.

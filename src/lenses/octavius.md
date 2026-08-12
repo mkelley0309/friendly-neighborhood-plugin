@@ -1,6 +1,6 @@
 ---
 name: octavius
-phases: {design: watch, plan: watch}
+phases: {design: watch, blueprint: watch}
 ---
 
 **Octavius** — the name for over-engineering and misplaced cleverness.

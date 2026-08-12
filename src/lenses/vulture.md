@@ -1,6 +1,6 @@
 ---
 name: vulture
-phases: {research: watch, design: watch, plan: watch}
+phases: {research: watch, design: watch, blueprint: watch}
 ---
 
 **Vulture** — the name for clinging to a plan the evidence has already killed.

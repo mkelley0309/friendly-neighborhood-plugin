@@ -43,8 +43,8 @@ don't support rules.
 
 | Phase | From | To |
 |---|---|---|
-| In-session | `_working/` | `research.md` / `design.md` / `plan.md` |
-| Workstream implement | plan step execution | `outputs/{workstream-name}/` (never inside the workstream folder) |
+| In-session | `_working/` | `research.md` / `design.md` / `blueprint.md` |
+| Workstream implement | blueprint step execution | `outputs/{workstream-name}/` (never inside the workstream folder) |
 | Workstream close | workstream folder | `control-plane/workstreams/_log/YYYY-MM-DD-{name}.md` |
 | Objective decisions | session | objective `index.md` → Key Decisions Log (append-only) |
 
@@ -149,7 +149,7 @@ ceremony to the size of the work.
 1. **Three tiers of work.** *Objective* = the long-lived "why" — a role, a measured annual
    objective, a career goal — with structured tracking (Key Results, milestones, cadence) and an
    append-only decisions log. *Workstream* = complex work spanning multiple sessions and
-   handoffs, run through the heavy **QRDPIV** lifecycle. *Assignment* = a lightweight unit or one
+   handoffs, run through the heavy **QRDBIV** lifecycle. *Assignment* = a lightweight unit or one
    iteration against a workstream, carrying only *proportional* admin. Strategy, workstreams, and
    lightweight units each keep their own durable state — and you size the ceremony to the tier.
 
@@ -158,7 +158,7 @@ ceremony to the size of the work.
    fresh context, not the raw history. Two things happen at once, and both matter:
    - **Semantic density** — pack maximum meaning into minimum tokens through compact words and
      careful, unambiguous synonym choice. The goal is *clarity*, not mere compaction.
-   - **Prune process, keep outcome.** A handoff artifact (`request.md`, `design.md`, `plan.md`)
+   - **Prune process, keep outcome.** A handoff artifact (`request.md`, `design.md`, `blueprint.md`)
      carries the *decisions reached*, not the back-and-forth that reached them. An option raised
      in Questions and dropped, a design considered and reversed — these are not evidence to
      preserve in the next artifact; carrying them forward is stale context that competes with the
@@ -233,7 +233,7 @@ The three tiers are *defined* in Operating Principle 1 — here's their machiner
 | Tier | CLI | Lifecycle |
 |---|---|---|
 | **Objective** | `objective.py` | structured tracking (Key Results, milestones, cadence, health) + append-only decisions log; never deleted |
-| **Workstream** | `workstream.py` | heavy **QRDPIV** (Q→R→D→P→I→V→Cleanup; **RPIV** if the spec's already clear); deleted at cleanup, its log survives; may link child assignments |
+| **Workstream** | `workstream.py` | heavy **QRDBIV** (Q→R→D→B→I→V→Cleanup; **RBIV** if the spec's already clear); deleted at cleanup, its log survives; may link child assignments |
 | **Assignment** | `assignment.py` | proportional admin only (assignment / checklist / handoff / lessons); promote to a workstream if it grows |
 
 ---
@@ -249,7 +249,7 @@ never passively.
 | Tier | Driver | Standing counsel | Standing watch |
 |---|---|---|---|
 | **Objective** | main context | ethics/consequence check, evidence review, real-need check | corner-cutting the goal to mark it done |
-| **Workstream** (QRDPIV) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
+| **Workstream** (QRDBIV) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
 | **Assignment** (light) | the driver the unit's *nature* calls for (default: general-purpose driver) | repeatability | claiming done unverified |
 
 **Drivers follow the *nature* of the work, not the tier:** an assignment takes the one driver its
@@ -257,14 +257,14 @@ task calls for; a workstream routes per phase; an objective is stewarded from ma
 assignment keeps the council *small on purpose* — pick the fitting driver, run the gate, watch
 for unverified claims. Don't convene a workstream's full council around a one-shot task.
 
-### The QRDPIV phase council (workstreams)
+### The QRDBIV phase council (workstreams)
 
 | Phase | Driver | Counsel | Watch for |
 |---|---|---|---|
 | **Questions** | default driver | constructive design questions, devil's-advocate grilling of poorly-shaped work, real-need check, scope discipline | under-shaped/formless work, wrong target, corner-cutting |
 | **Research** | lookup/recall, investigation | scope discipline, systems, evidence review | diminishing returns, won't-update, wrong target, resource greed |
 | **Design** | architecture/planning driver | constructive shaping, ethics check, scope discipline, real-need check, evidence review | over-engineering, security, won't-update, wrong target, resource greed |
-| **Plan** | architecture/planning driver | scope discipline, systems | over-engineering, resource greed |
+| **Blueprint** | architecture/planning driver | scope discipline, systems | over-engineering, resource greed |
 | **Implement** | build (fans out across independent worktrees), drive; refactor, debug within | systems | needless destruction, security, brute force, ends-justify-means |
 | **Validate** | run it (test functionality against criteria), catch coincidental/green-for-wrong-reason passes | adversarial review | faked verification, security, fragile/cascading change, spite |
 | **Cleanup** | default driver | systems, adversarial review | needless destruction, faked verification |
