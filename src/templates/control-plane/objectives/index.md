@@ -5,7 +5,7 @@ scope: objectives
 
 # Objectives
 
-Portfolio index of long-lived, review-cycle-measured objectives. See [../CLAUDE.md](../CLAUDE.md) for lifecycle.
+Portfolio index of long-lived, checkpoint-cycle-measured objectives. See [../CLAUDE.md](../CLAUDE.md) for lifecycle.
 
 ## Active
 

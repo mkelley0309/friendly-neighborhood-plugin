@@ -97,7 +97,7 @@ Heavy, formal, multi-session work with a defined completion state and a cleanup 
 Workstreams can link child assignments and have a parent at one tier:
 
 - **Child Assignments** — the workstream's `index.md` maintains a roster of child assignment links.
-- **Objective** (`parent: "objectives/{name}"`) — a review-cycle-measured strategic objective.
+- **Objective** (`parent: "objectives/{name}"`) — a checkpoint-cycle-measured strategic objective.
 
 If the user describes work that should be tied to an objective and none exists, suggest creating it first via the `objective` skill.
 

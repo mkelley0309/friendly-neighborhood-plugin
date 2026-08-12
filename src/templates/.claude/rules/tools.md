@@ -90,7 +90,7 @@ python -B tools/assignment.py delete <name>
 
 ### objective.py — the strategy tier
 
-Manages long-lived objectives with structured progress tracking at `control-plane/objectives/{name}/index.md` — Key Results, milestones, linked workstreams, a review cadence, health, and an append-only decisions log.
+Manages long-lived objectives with structured progress tracking at `control-plane/objectives/{name}/index.md` — Key Results, milestones, linked workstreams, a checkpoint cadence, health, and an append-only decisions log.
 
 ```
 python -B tools/objective.py list

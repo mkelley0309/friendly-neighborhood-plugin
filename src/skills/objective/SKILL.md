@@ -2,11 +2,11 @@
 name: objective
 description: >
   Manages the lifecycle of an objective in control-plane/objectives/ — a long-lived,
-  review-cycle-measured objective with structured progress tracking: Key Results (with
-  targets), milestones, linked workstreams, a review cadence, a health signal,
+  checkpoint-cycle-measured objective with structured progress tracking: Key Results (with
+  targets), milestones, linked workstreams, a checkpoint cadence, a health signal,
   and an append-only decisions log. This is the strategic container that outlasts
   any individual assignment or workstream beneath it.
-  Trigger when the user references a formal objective, a review-cycle goal, or wants
+  Trigger when the user references a formal objective, a checkpoint-cycle goal, or wants
   to capture a strategic objective that will span multiple workstreams or assignments. Also
   trigger when asked about objective status, when KRs or milestones need updating,
   when decisions should be logged against an objective, or when an objective is
@@ -17,10 +17,10 @@ description: >
 
 ## What Is an Objective
 
-A long-lived goal measured in the formal review cycle. Distinguishing traits:
+A long-lived goal measured in the formal checkpoint cycle. Distinguishing traits:
 
 - **Spans multiple workstreams and assignments** — the objective is the strategic container; workstreams are the heavy lifecycle units; assignments are the lightweight executions
-- **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked workstreams, a review cadence, and a health signal make progress legible at any review
+- **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked workstreams, a checkpoint cadence, and a health signal make progress legible at any checkpoint
 - **Retained after completion** — the decisions log is often more valuable than the outcome
 - **One folder per objective**, never deleted, lives at `control-plane/objectives/{name}/`
 
@@ -49,7 +49,7 @@ An objective may own child workstreams directly, child assignments directly, or 
 | Situation | Load |
 |---|---|
 | New objective — nothing exists yet | `actions/initiate.md` |
-| Existing objective — review status, update KRs/milestones/health | `actions/review.md` |
+| Existing objective — checkpoint status, update KRs/milestones/health | `actions/checkpoint.md` |
 | Logging a decision against an existing objective | `actions/log-decision.md` |
 | Objective is closing out | `actions/complete.md` |
 
@@ -88,23 +88,23 @@ Key Results are for criteria that already imply a count, a state transition, or 
 
 The same applies to an entire objective: a discovery-stage or gated objective may legitimately carry no Key Results at all. Record why in the decisions log.
 
-## Reviews
+## Checkpoints
 
-`cadence` mandates recurring review. Each review is a dated file in the objective's own folder, never appended to `index.md`:
+`cadence` mandates recurring checkpoints. Each checkpoint is a dated file in the objective's own folder, never appended to `index.md`:
 
 ```
 objectives/{name}/
   index.md
-  reviews/YYYY-MM-DD.md
+  checkpoints/YYYY-MM-DD.md
 ```
 
 ```
-python -B tools/objective.py review <name> [--date YYYY-MM-DD] [--force]
+python -B tools/objective.py checkpoint <name> [--date YYYY-MM-DD] [--force]
 ```
 
 Snapshots current KRs, milestones, workstreams, and health into a new entry. It does not write to `index.md`. This is what gives Key Results a history — `update-kr` overwrites `current` in place, so without a dated snapshot the trajectory is lost on every update, and `health` can only ever be asserted rather than derived.
 
-When filling a review, the health call must cite its evidence — a line in `index.md`, a linked workstream, a decision entry. A health value without evidence is an assertion.
+When filling a checkpoint, the health call must cite its evidence — a line in `index.md`, a linked workstream, a decision entry. A health value without evidence is an assertion.
 
 ## CLI Reference
 
@@ -113,7 +113,7 @@ python -B tools/objective.py create <name> --title "<Title>" [--group "<index su
 python -B tools/objective.py status <name>
 python -B tools/objective.py health <name> <on-track|at-risk|blocked|stale>
 python -B tools/objective.py set-cadence <name> "<cadence>"
-python -B tools/objective.py review <name> [--date YYYY-MM-DD] [--force]
+python -B tools/objective.py checkpoint <name> [--date YYYY-MM-DD] [--force]
 python -B tools/objective.py add-kr <name> "<result>" "<target>"
 python -B tools/objective.py update-kr <name> "<result>" "<current>"
 python -B tools/objective.py add-milestone <name> "<text>"

@@ -7,7 +7,7 @@ Append an entry to an objective's Key Decisions Log. Load this file only.
 A decision has been made — by the user, in conversation, or via a workstream outcome — that:
 - Affects how this objective will be pursued
 - Closes off an alternative path
-- Would be useful context for future-you at review time
+- Would be useful context for future-you at checkpoint time
 
 **The decisions log is the durable value of an objective.** Err on the side of logging.
 
