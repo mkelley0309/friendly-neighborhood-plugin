@@ -26,7 +26,7 @@
 #
 # COUNTER-LANDMINE, found while auditing `objective.py`: the string
 # "cadence" also appears as an UNRELATED frontmatter field inside
-# `objective.py` (`cadence: quarterly` — review cadence, nothing to do with
+# `objective.py` (`cadence: quarterly` — checkpoint cadence, nothing to do with
 # the cadence *tier*). It is correctly left untouched in every edition,
 # including full where the cadence tier itself becomes `patrol`. A
 # generator must substitute the tier identifier by structural position
@@ -42,7 +42,7 @@ tiers:
     folder: objectives
     cli: objective.py
     frontmatter_key: objective
-    log_file: null          # objectives have no _log/ — they close via review, not deletion
+    log_file: null          # objectives have no _log/ — they close via checkpoint, not deletion
 
   workstream:
     pinned: true

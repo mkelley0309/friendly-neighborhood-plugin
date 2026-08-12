@@ -17,7 +17,7 @@ control-plane/
   intake/                   ← capture layer for unstructured input (pre-triage)
     index.md              ← intake conventions and lifecycle
     {item}.md             ← one file per captured idea or note
-  objectives/               ← long-lived, review-cycle-measured objectives
+  objectives/               ← long-lived, checkpoint-cycle-measured objectives
     index.md              ← portfolio index of active objectives
     {name}/
       index.md            ← objective anchor (Key Results, milestones, workstreams, decisions log)
@@ -56,7 +56,7 @@ control-plane/
 
 **Intake** = unstructured capture. Ideas, notes, partial thoughts land here before triage. Lifecycle: `capture → triage → promote or discard`. Promoted items become objectives, workstreams, or assignments; discarded leave no trace.
 
-**Objectives** (top tier) = the long-lived "why" — a role, a measured annual objective, a career goal. Carry structured progress tracking: Key Results, milestones, linked workstreams, a review cadence, health, and an append-only decisions log. One folder per objective. Lifecycle: `active` → `complete`; folders never deleted (the decisions log is the durable value). Driven by `objective.py`.
+**Objectives** (top tier) = the long-lived "why" — a role, a measured annual objective, a career goal. Carry structured progress tracking: Key Results, milestones, linked workstreams, a checkpoint cadence, health, and an append-only decisions log. One folder per objective. Lifecycle: `active` → `complete`; folders never deleted (the decisions log is the durable value). Driven by `objective.py`.
 
 **Workstreams** (middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A workstream may be parented to an objective, or be standalone. Driven by `workstream.py`.
 
@@ -104,7 +104,7 @@ These are **mechanisms, not tiers** — they say *how* a unit of work keeps goin
 | `/loop [interval]` | you stop it | a cadence run that polls |
 | `schedule` | its cron says otherwise | a cadence trigger |
 
-**`/goal` applies wherever the work has a verifiable end state inside a session.** That is an assignment ("the checklist is complete and the gate reported GO"), a workstream *phase* ("every plan step is checked"), or a *single* cadence run ("the queue is drained"). It does **not** apply to an objective, which is measured in review cycles against Key Results and deliberately outlives any session, nor to a cadence itself, which by definition never completes.
+**`/goal` applies wherever the work has a verifiable end state inside a session.** That is an assignment ("the checklist is complete and the gate reported GO"), a workstream *phase* ("every plan step is checked"), or a *single* cadence run ("the queue is drained"). It does **not** apply to an objective, which is measured in checkpoint cycles against Key Results and deliberately outlives any session, nor to a cadence itself, which by definition never completes.
 
 The evaluator judges the condition against **what has been surfaced in the conversation** — it does not run commands or read files — so a run must *print* its gate result for `"the gate passes"` to be usable. `/goal` also needs an accepted trust dialog and is unavailable under `disableAllHooks` or `allowManagedHooksOnly`, so anything depending on it should say so in its guardrails.
 
@@ -116,7 +116,7 @@ The evaluator judges the condition against **what has been surfaced in the conve
 2. Read `objectives/index.md`, `workstreams/index.md`, `assignments/index.md`, and `cadences/index.md`
 3. If unstructured input needs triage, read `intake/index.md` first
 4. If a specific item is in scope, read its `index.md`
-5. Identify current phase (workstreams), review state (objectives), or assignment (assignments)
+5. Identify current phase (workstreams), checkpoint state (objectives), or assignment (assignments)
 6. **State scope, phase/status, and intended next action before proceeding**
 
 ---
@@ -184,7 +184,7 @@ An assignment's body holds, *proportionally*: **Assignment**, **Checklist**, **H
 objective: kebab-case-name
 status: active | complete
 health: on-track | at-risk | blocked | stale
-cadence: "<review cadence>"
+cadence: "<checkpoint cadence>"
 created: YYYY-MM-DD
 completed: YYYY-MM-DD
 tags: [objective, ...]
