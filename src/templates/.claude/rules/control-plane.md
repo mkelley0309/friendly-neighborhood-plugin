@@ -22,11 +22,11 @@ control-plane/
     {name}/
       index.md            ← objective anchor (Key Results, milestones, workstreams, decisions log)
       {supporting files}    ← retained after completion; never deleted
-  workstreams/              ← the heavy QRDPIV lifecycle: complex, multi-session work
+  workstreams/              ← the heavy QRDBIV lifecycle: complex, multi-session work
     index.md              ← portfolio index of active workstreams
     {name}/
       index.md            ← workstream status anchor (phase, health)
-      request.md | research.md | design.md | plan.md | worktree-{nn}.md
+      request.md | research.md | design.md | blueprint.md | worktree-{nn}.md
       friction-log.md       ← how the *harness* performed; never what the work found
       _working/             ← throwaway scratch
     _log/
@@ -58,7 +58,7 @@ control-plane/
 
 **Objectives** (top tier) = the long-lived "why" — a role, a measured annual objective, a career goal. Carry structured progress tracking: Key Results, milestones, linked workstreams, a checkpoint cadence, health, and an append-only decisions log. One folder per objective. Lifecycle: `active` → `complete`; folders never deleted (the decisions log is the durable value). Driven by `objective.py`.
 
-**Workstreams** (middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A workstream may be parented to an objective, or be standalone. Driven by `workstream.py`.
+**Workstreams** (middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDBIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A workstream may be parented to an objective, or be standalone. Driven by `workstream.py`.
 
 **Assignments** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a workstream. An assignment carries *proportional* admin only (assignment, checklist, handoff, lessons) — no phase machine, no progressive distillation. If an assignment grows (multiple sessions, real research, design decisions), **promote it to a workstream**. Driven by `assignment.py`.
 
@@ -72,7 +72,7 @@ control-plane/
 
 ```
 objective                     <- long-lived strategy, measured
-    |-- workstream            <- heavy QRDPIV lifecycle, multi-session
+    |-- workstream            <- heavy QRDBIV lifecycle, multi-session
     |       \-- assignment           <- spawned child unit
     |-- assignment                  <- lightweight unit, standalone
     \-- cadence              <- recurring; runs again, scheduled or on demand
@@ -138,12 +138,12 @@ The evaluator judges the condition against **what has been surfaced in the conve
 
 ---
 
-## Workstream Framework (QRDPIV)
+## Workstream Framework (QRDBIV)
 
-**QRDPIV** (default): Questions → Research → Design → Plan → Implement → Validate → Cleanup
-**RPIV** (spec already clear): Research → Plan → Implement → Validate → Cleanup
+**QRDBIV** (default): Questions → Research → Design → Blueprint → Implement → Validate → Cleanup
+**RBIV** (spec already clear): Research → Blueprint → Implement → Validate → Cleanup
 
-Questions are cheap. Under-shaped work is expensive. Use the full QRDPIV the moment ambiguity, cross-system scope, or missing constraints surface. **Validate** runs the deterministic gate (`gate.py`) plus adversarial QA before cleanup — nothing is called done on faith.
+Questions are cheap. Under-shaped work is expensive. Use the full QRDBIV the moment ambiguity, cross-system scope, or missing constraints surface. **Validate** runs the deterministic gate (`gate.py`) plus adversarial QA before cleanup — nothing is called done on faith.
 
 Phase mechanics, artifact templates, and action-file routing live in the `workstream` skill. Assignments do **not** use this framework — they are deliberately lightweight.
 
@@ -155,8 +155,8 @@ Phase mechanics, artifact templates, and action-file routing live in the `workst
 
 ```yaml
 workstream: kebab-case-name
-framework: rpiv | qrdpiv
-workstream_phase: questions | research | design | plan | implement | validate | complete | cleanup
+framework: rbiv | qrdbiv
+workstream_phase: questions | research | design | blueprint | implement | validate | complete | cleanup
 workstream_health: healthy | needs-questions | needs-design | under-shaped | blocked | stale
 status: active | complete | paused | abandoned
 started: YYYY-MM-DD

@@ -419,8 +419,8 @@ def tier_dest_name(tier: str, vocab: Vocab, data_model: dict, display: dict) -> 
 #  - Counsel/watch NAME MEMBERSHIP + ORDER + inline annotation are kept as a
 #    static table (PHASE_COUNCIL_FULL) below, extracted verbatim from
 #    build/phase-council.yml. Order and annotation text are hand-authored
-#    prose, confirmed non-formulaic (design.md and plan.md list the identical
-#    4 watch villains in different orders). A naive "any roster member whose
+#    prose, confirmed non-formulaic (design.md and blueprint.md list the
+#    identical 4 watch villains in different orders). A naive "any roster member whose
 #    frontmatter phase+role matches" filter also can't be used
 #    without regressing byte-reproduction: it would newly pull in
 #    scorpion/venom/ham/punk (four lenses added this same step, now carrying
@@ -441,11 +441,11 @@ def tier_dest_name(tier: str, vocab: Vocab, data_model: dict, display: dict) -> 
 #    future one under a different plugin name still wouldn't need its own
 #    copy of these strings).
 
-PHASE_QRDPIV = {
+PHASE_QRDBIV = {
     "questions.md": "Q",
     "research.md": "R",
     "design.md": "D",
-    "plan.md": "P",
+    "blueprint.md": "B",
     "implement.md": "I",
     "validate.md": "V",
     "cleanup.md": "Cleanup",
@@ -478,7 +478,7 @@ PHASE_COUNCIL_FULL = {
         "watch": [("octavius", None), ("vulture", None), ("kraven", None), ("kingpin", None)],
         "trailer": "",
     },
-    "plan.md": {
+    "blueprint.md": {
         "driver": "driver `miguel`",
         "counsel": [("uncle-ben", None), ("aunt-may", None), ("madame-web", None)],
         "watch": [("octavius", None), ("kraven", None), ("kingpin", None), ("vulture", None)],
@@ -511,13 +511,13 @@ def _format_name_list(entries: list[tuple[str, str | None]]) -> str:
 
 def render_phase_council_line(filename: str, council: dict, plugin_slug: str) -> str:
     entry = council[filename]
-    qrdpiv = PHASE_QRDPIV[filename]
+    qrdbiv = PHASE_QRDBIV[filename]
     counsel, watch = entry["counsel"], entry["watch"]
     counsel_clause = "none" if not counsel else _format_name_list(counsel)
     watch_label = "watch villain" if len(watch) == 1 else "watch villains"
     watch_clause = _format_name_list(watch)
     return (
-        f"> **Phase council** (QRDPIV: {qrdpiv}) — consult only when the concern is live "
+        f"> **Phase council** (QRDBIV: {qrdbiv}) — consult only when the concern is live "
         f"(full map in `/{plugin_slug}:creed`): {entry['driver']}; counsel {counsel_clause}; "
         f"{watch_label} {watch_clause}.{entry['trailer']}"
     )

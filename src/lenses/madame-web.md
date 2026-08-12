@@ -1,6 +1,6 @@
 ---
 name: madame-web
-phases: {research: counsel, design: counsel, plan: counsel}
+phases: {research: counsel, design: counsel, blueprint: counsel}
 ---
 
 **Madame Web** — the name for evidence that arrived and changed nothing.

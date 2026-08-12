@@ -2,7 +2,7 @@
 name: workstream
 description: >
   Manages the full lifecycle of a workstream in control-plane/workstreams/ —
-  initiation, questions, research, design, plan, implement, validate, cleanup.
+  initiation, questions, research, design, blueprint, implement, validate, cleanup.
   A workstream is the heavy, formal lifecycle for complex multi-session, multi-handoff
   work: open one when the work is too big for an assignment (too many sessions, too many
   handoffs, or too much structural risk to leave untracked). Trigger whenever
@@ -23,7 +23,7 @@ description: >
 6. Load **only** that action file — nothing else
 7. State phase, health, and intended action to the user before proceeding
 
-**What NOT to load at session entry:** Do not read research files, design.md, plan.md, or any `_working/` files during session entry. These are loaded only when the action explicitly requires them (e.g., implement loads plan.md to check step status; a research step loads its source files). Assess and cleanup never need research files.
+**What NOT to load at session entry:** Do not read research files, design.md, blueprint.md, or any `_working/` files during session entry. These are loaded only when the action explicitly requires them (e.g., implement loads blueprint.md to check step status; a research step loads its source files). Assess and cleanup never need research files.
 
 ## Action Routing
 
@@ -31,22 +31,22 @@ description: >
 |---|---|
 | New workstream — nothing exists yet | `actions/initiate.md` |
 | Existing workstream — need to understand state or advise | `actions/assess.md` |
-| QRDPIV Questions step — refining an ambiguous request | `actions/questions.md` |
+| QRDBIV Questions step — refining an ambiguous request | `actions/questions.md` |
 | Research step — running distillation passes | `actions/research.md` |
 | Design step — architectural decisions | `actions/design.md` |
-| Plan step — producing `plan.md` | `actions/plan.md` |
-| Implement step — executing against `plan.md` or worktrees | `actions/implement.md` |
+| Blueprint step — producing `blueprint.md` | `actions/blueprint.md` |
+| Implement step — executing against `blueprint.md` or worktrees | `actions/implement.md` |
 | Validate step — gate run + adversarial QA before closing | `actions/validate.md` |
 | Workstream complete — writing log, deleting files | `actions/cleanup.md` |
 
 ## Framework at a Glance
 
-**QRDPIV** (default): Questions → Research → Design? → Plan → Implement → Validate → Cleanup
-**RPIV** (clear-spec): Research → Plan → Implement → Validate → Cleanup
+**QRDBIV** (default): Questions → Research → Design? → Blueprint → Implement → Validate → Cleanup
+**RBIV** (clear-spec): Research → Blueprint → Implement → Validate → Cleanup
 
-Default to QRDPIV. Questions are cheap; under-shaped plans are expensive.
+Default to QRDBIV. Questions are cheap; under-shaped blueprints are expensive.
 
-**Research is mandatory.** There is no shortcut from Questions or Initiate to Design or Plan without a `research.md`. Even when the user provides source material directly, that material must be written to `_working/` and distilled through the research protocol before proceeding.
+**Research is mandatory.** There is no shortcut from Questions or Initiate to Design or Blueprint without a `research.md`. Even when the user provides source material directly, that material must be written to `_working/` and distilled through the research protocol before proceeding.
 
 ## Research Protocol (Non-Negotiable)
 
@@ -64,7 +64,7 @@ These rules enforce progressive distillation, structured handoffs to clean conte
 Each workstream keeps one `friction-log.md` in its folder. It records **how well the harness performed**, never what the work found.
 
 - **Created at initiate** from the template in `framework-templates.md`.
-- **Appended by every phase**, prefixed `[questions]` `[research]` `[design]` `[plan]` `[implement]` `[validate]` `[cleanup]`.
+- **Appended by every phase**, prefixed `[questions]` `[research]` `[design]` `[blueprint]` `[implement]` `[validate]` `[cleanup]`.
 - **Reviewed at cleanup** — surfaced to the user, distilled into the log entry, and any unresolved generalizable entry appended to `control-plane/_harness/friction.md`.
 
 ### The inclusion test
@@ -78,7 +78,7 @@ If yes, it belongs here. If it names the subject matter, it belongs in the work 
 | "Vault read scope was too narrow for the research pass" | A finding *from* that pass → `research.md` |
 | "`actions/research.md` names an agent that has no Write tool" | A defect in the code under study → `research.md` |
 | "`SKILL.md` and the action file contradict each other" | A design decision taken → `design.md` |
-| "The CLI resolves the wrong root when run from a subfolder" | Step 1.4 is done → `plan.md` (via `check-step`) |
+| "The CLI resolves the wrong root when run from a subfolder" | Step 1.4 is done → `blueprint.md` (via `check-step`) |
 
 **Record the rule, not the incident.** "Diff before you copy — the plugin can be ahead" is the entry; the file you clobbered is a clause of evidence, not a paragraph.
 
@@ -86,7 +86,7 @@ If yes, it belongs here. If it names the subject matter, it belongs in the work 
 
 This is the only artifact that legitimately crosses every phase boundary. That privilege is affordable *only* because its scope is small and fixed. Let it also carry what the work found and it becomes the cross-phase accumulator that progressive distillation exists to prevent — every phase then reads every prior phase's findings, which is exactly the context pollution the handoff model is built to stop.
 
-Progress tracking is **not** its job. `plan.md` checkboxes and `index.md` `current_step` are maintained together by `workstream.py check-step`; a third hand-maintained tracker rots and then lies.
+Progress tracking is **not** its job. `blueprint.md` checkboxes and `index.md` `current_step` are maintained together by `workstream.py check-step`; a third hand-maintained tracker rots and then lies.
 
 ## What Is a Workstream
 
@@ -127,12 +127,12 @@ The test for whether something is an aside: **would working on it now put materi
 
 Operational schemas and state transitions live in `framework.md`. Load it when creating or updating any workstream file.
 
-Templates (index.md, request.md, research.md, design.md, plan.md, log entry) live in `framework-templates.md`. Load it **only** when you are about to fill in a new artifact — not during session entry, assess, or implement continuation.
+Templates (index.md, request.md, research.md, design.md, blueprint.md, log entry) live in `framework-templates.md`. Load it **only** when you are about to fill in a new artifact — not during session entry, assess, or implement continuation.
 
 ## Subagent Delegation
 
 Per workspace `CLAUDE.md`:
-- **Sonnet subagents** for research passes, plan drafting, design analysis
+- **Sonnet subagents** for research passes, blueprint drafting, design analysis
 - **Haiku subagents** for template filling, bounded lookups, file moves
 - Never delegate synthesis, decisions, or cross-artifact reconciliation — those stay in main context
 
@@ -146,6 +146,6 @@ Per workspace `CLAUDE.md`:
 
 Orient → shape → execute → validate → distill → log → delete. At every transition, something becomes smaller and more useful.
 
-**Progressive distillation:** Raw findings compress to pass files. Pass files compress to `research.md`. Research compresses to design decisions. Design compresses to plan steps. Plan compresses to a log entry. Nothing flows forward at full density.
+**Progressive distillation:** Raw findings compress to pass files. Pass files compress to `research.md`. Research compresses to design decisions. Design compresses to blueprint steps. Blueprint compresses to a log entry. Nothing flows forward at full density.
 
 **Structured handoffs:** Each phase transition hands off an artifact, not a conversation. The next phase reads the artifact, not what was said. Clean context windows are a feature — they enforce that the artifact carries all necessary information.

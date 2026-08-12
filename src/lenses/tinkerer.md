@@ -1,6 +1,6 @@
 ---
 name: tinkerer
-phases: {plan: watch, implement: watch}
+phases: {blueprint: watch, implement: watch}
 ---
 
 **The Tinkerer** — the name for the wrong tool, or a hand-built one where a real one already exists.

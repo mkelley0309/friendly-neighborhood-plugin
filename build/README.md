@@ -359,7 +359,7 @@ roster filtering**, investigated and confirmed empirically before deciding:
 
 - **Order and inline annotations aren't recoverable from a per-character
   `{phase: role}` map.** They're hand-authored prose with no discoverable
-  formula — e.g. `design.md` and `plan.md` list the identical 4 watch
+  formula — e.g. `design.md` and `blueprint.md` list the identical 4 watch
   villains (`octavius`, `vulture`, `kraven`, `kingpin`) in two different
   orders. Kept as `PHASE_COUNCIL_FULL`'s literal ordering + `(annotation)`
   text, extracted verbatim from `phase-council.yml`'s `full` lines.

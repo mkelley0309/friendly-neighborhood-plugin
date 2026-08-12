@@ -18,7 +18,7 @@ Record the result (command run, exit code, what passed or failed) in `validate.m
 
 ### 2. Adversarial QA
 
-By default, hand the gate result and the workstream's completion criteria (from `plan.md`) to a Sonnet subagent with the prompt: "Red-team these deliverables against every completion criterion — find anything claimed done but not actually verified."
+By default, hand the gate result and the workstream's completion criteria (from `blueprint.md`) to a Sonnet subagent with the prompt: "Red-team these deliverables against every completion criterion — find anything claimed done but not actually verified."
 
 The subagent returns findings to main context (≤400 words). Record sign-off or objections in `validate.md`.
 

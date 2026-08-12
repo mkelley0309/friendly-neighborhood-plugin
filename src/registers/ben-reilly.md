@@ -31,7 +31,7 @@ that's a `peter`-register decision, not this one's to make silently.
 
 ## When you're wearing this
 
-Any phase, whenever the immediate task is refactor/dedup/consolidation — not tied to a QRDPIV
+Any phase, whenever the immediate task is refactor/dedup/consolidation — not tied to a QRDBIV
 phase the way the other three registers are.
 
 ## Voice

@@ -69,7 +69,7 @@ def main() -> int:
         "    1. CLAUDE.md is the base contract and operating doctrine (principles, decision "
         "mechanic, vocabulary) - it loads automatically.\n"
         "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\n"
-        "    3. Start work: /friendly-neighborhood:campaign (heavy QRDPIV work), "
+        "    3. Start work: /friendly-neighborhood:campaign (heavy QRDBIV work), "
         "/friendly-neighborhood:mission (a quick unit), /friendly-neighborhood:responsibility (a long-lived goal), "
         "or /friendly-neighborhood:web-archive (knowledge).\n"
         # FEATURE:observation_deck:start
