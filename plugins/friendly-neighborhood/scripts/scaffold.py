@@ -66,13 +66,13 @@ def main() -> int:
 
     print(
         "\n  Next:\n"
-        "    1. CLAUDE.md is the base contract and operating doctrine - it loads automatically.\n"
+        "    1. CLAUDE.md is the base contract and operating doctrine (principles, decision "
+        "mechanic, vocabulary) - it loads automatically.\n"
         "    2. The subtree contracts auto-load via .claude/rules/ when you work in each area.\n"
-        "    3. Run /friendly-neighborhood:creed to load the operating doctrine.\n"
-        "    4. Start work: /friendly-neighborhood:campaign (heavy QRDPIV work), "
+        "    3. Start work: /friendly-neighborhood:campaign (heavy QRDBIV work), "
         "/friendly-neighborhood:mission (a quick unit), /friendly-neighborhood:responsibility (a long-lived goal), "
         "or /friendly-neighborhood:web-archive (knowledge).\n"
-        "    5. Watch your agents: VS Code -> Terminal -> Run Task -> 'Observation Deck' "
+        "    4. Watch your agents: VS Code -> Terminal -> Run Task -> 'Observation Deck' "
         "opens the spideys / support / villains panes.\n"
     )
     return 0

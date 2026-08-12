@@ -2,12 +2,12 @@
 name: responsibility
 description: >
   Manages the lifecycle of a responsibility in control-plane/objectives/ — a long-lived,
-  review-cycle-measured objective with structured progress tracking: Key Results (with
-  targets), milestones, linked campaigns (workstreams), a review cadence, a health signal,
-  and an append-only decisions log. With great power comes great responsibility: this is
-  the strategic container that outlasts any individual mission or campaign beneath it.
-  Trigger when the user references a formal responsibility, a review-cycle goal, or wants
-  to capture a strategic objective that will span multiple campaigns or missions. Also
+  checkpoint-cycle-measured responsibility with structured progress tracking: Key Results (with
+  targets), milestones, linked campaigns, a checkpoint cadence, a health signal,
+  and an append-only decisions log. This is the strategic container that outlasts
+  any individual mission or campaign beneath it.
+  Trigger when the user references a formal responsibility, a checkpoint-cycle goal, or wants
+  to capture a strategic responsibility that will span multiple campaigns or missions. Also
   trigger when asked about responsibility status, when KRs or milestones need updating,
   when decisions should be logged against a responsibility, or when a responsibility is
   closing out.
@@ -17,24 +17,24 @@ description: >
 
 ## What Is a Responsibility
 
-A long-lived objective measured in the formal review cycle. Distinguishing traits:
+A long-lived goal measured in the formal checkpoint cycle. Distinguishing traits:
 
-- **Spans multiple campaigns and missions** — the responsibility is the strategic container; campaigns are mid-horizon coordinators; missions are the tactical executions
-- **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked workstreams (child campaigns), a review cadence, and a health signal make progress legible at any review
+- **Spans multiple campaigns and missions** — the responsibility is the strategic container; campaigns are the heavy lifecycle units; missions are the lightweight executions
+- **Structured progress tracking** — Key Results with numeric targets, a milestones checklist, linked campaigns, a checkpoint cadence, and a health signal make progress legible at any checkpoint
 - **Retained after completion** — the decisions log is often more valuable than the outcome
 - **One folder per responsibility**, never deleted, lives at `control-plane/objectives/{name}/`
 
-Not a campaign (those coordinate a cluster of missions under a bounded goal). Not a mission (those have defined completion states and are deleted on cleanup).
+Not a campaign (those have defined completion states and are deleted on cleanup). Not a mission (those are lightweight single-thread executions).
 
 ## Three-Tier Awareness
 
 ```
-responsibility  (control-plane/objectives/)
-  └── campaign   (control-plane/workstreams/)   ← child campaigns are workstreams
-        └── mission  (control-plane/missions/)
+responsibility   (control-plane/objectives/)
+  └── campaign  (control-plane/workstreams/)   ← heavy QRDBIV lifecycle
+        └── mission  (control-plane/missions/)          ← lightweight unit
 ```
 
-A responsibility may own child campaigns directly, child missions directly, or both. When creating related work, choose the right tier: campaigns for multi-mission efforts; missions for single-thread execution. Child campaigns are linked via `link-campaign` (which takes a workstream name).
+A responsibility may own child campaigns directly, child missions directly, or both. When creating related work, choose the right tier: campaigns for multi-phase efforts; missions for single-thread execution. Child campaigns are linked via `link-campaign` (which takes a campaign name).
 
 ## Session Entry — Always Run First
 
@@ -49,7 +49,7 @@ A responsibility may own child campaigns directly, child missions directly, or b
 | Situation | Load |
 |---|---|
 | New responsibility — nothing exists yet | `actions/initiate.md` |
-| Existing responsibility — review status, update KRs/milestones/health | `actions/review.md` |
+| Existing responsibility — checkpoint status, update KRs/milestones/health | `actions/checkpoint.md` |
 | Logging a decision against an existing responsibility | `actions/log-decision.md` |
 | Responsibility is closing out | `actions/complete.md` |
 
@@ -62,8 +62,7 @@ health: on-track | at-risk | blocked | stale
 cadence: weekly | bi-weekly | monthly | quarterly | semi-annual | annual
 created: YYYY-MM-DD
 completed: YYYY-MM-DD          # set at close; folder retained
-tags: [objective, ...]
-note_type: objective
+tags: [responsibility, ...]
 ```
 
 ## `index.md` Sections
@@ -75,7 +74,7 @@ Canonical order — this is what `create` generates and what backfilled responsi
 3. **Key Results** — table of measurable results with targets and current values (managed via `add-kr` / `update-kr`)
 4. **Milestones** — checklist of concrete checkpoints (managed via `add-milestone` / `check-milestone`)
 5. **Campaigns** — linked campaigns advancing this responsibility (managed via `link-campaign`)
-6. *responsibility-specific sections* — Content Scope, Sequencing, Stakeholders, etc. Keep their own relative order.
+6. *objective-specific sections* — Content Scope, Sequencing, Stakeholders, etc. Keep their own relative order.
 7. **Dependencies** — what this responsibility requires from elsewhere
 8. **Key Decisions Log** — append-only table (Decision | Rationale | Date). **Never truncated, never reordered.**
 9. **Definition of Done** — completion criteria
@@ -89,23 +88,23 @@ Key Results are for criteria that already imply a count, a state transition, or 
 
 The same applies to an entire responsibility: a discovery-stage or gated responsibility may legitimately carry no Key Results at all. Record why in the decisions log.
 
-## Reviews
+## Checkpoints
 
-`cadence` mandates recurring review. Each review is a dated file in the responsibility's own folder, never appended to `index.md`:
+`cadence` mandates recurring checkpoints. Each checkpoint is a dated file in the responsibility's own folder, never appended to `index.md`:
 
 ```
 objectives/{name}/
   index.md
-  reviews/YYYY-MM-DD.md
+  checkpoints/YYYY-MM-DD.md
 ```
 
 ```
-python -B tools/objective.py review <name> [--date YYYY-MM-DD] [--force]
+python -B tools/objective.py checkpoint <name> [--date YYYY-MM-DD] [--force]
 ```
 
 Snapshots current KRs, milestones, campaigns, and health into a new entry. It does not write to `index.md`. This is what gives Key Results a history — `update-kr` overwrites `current` in place, so without a dated snapshot the trajectory is lost on every update, and `health` can only ever be asserted rather than derived.
 
-When filling a review, the health call must cite its evidence — a line in `index.md`, a linked campaign, a decision entry. A health value without evidence is an assertion.
+When filling a checkpoint, the health call must cite its evidence — a line in `index.md`, a linked campaign, a decision entry. A health value without evidence is an assertion.
 
 ## CLI Reference
 
@@ -114,12 +113,12 @@ python -B tools/objective.py create <name> --title "<Title>" [--group "<index su
 python -B tools/objective.py status <name>
 python -B tools/objective.py health <name> <on-track|at-risk|blocked|stale>
 python -B tools/objective.py set-cadence <name> "<cadence>"
-python -B tools/objective.py review <name> [--date YYYY-MM-DD] [--force]
+python -B tools/objective.py checkpoint <name> [--date YYYY-MM-DD] [--force]
 python -B tools/objective.py add-kr <name> "<result>" "<target>"
 python -B tools/objective.py update-kr <name> "<result>" "<current>"
 python -B tools/objective.py add-milestone <name> "<text>"
 python -B tools/objective.py check-milestone <name> "<text>"
-python -B tools/objective.py link-campaign <name> <campaign> [--status active|complete|paused|abandoned]
+python -B tools/objective.py link-campaign <responsibility> <campaign> [--status active|complete|paused|abandoned]
 python -B tools/objective.py log-decision <name> "<decision>" "<rationale>"
 python -B tools/objective.py complete <name>
 ```
@@ -131,10 +130,11 @@ Campaigns that execute toward a responsibility are linked via `link-campaign <re
 Completed campaigns are linked too, by their log path and with an explicit status:
 
 ```
-python -B tools/objective.py link-campaign field-enablement \n    workstreams/_log/2026-05-22-example --status complete
+python -B tools/objective.py link-campaign field-enablement \
+    workstreams/_log/2026-05-22-fynapse-buy-v-build-insurance --status complete
 ```
 
-A responsibility whose `## Campaigns` reads "(none yet)" despite delivered work misreports its own state, and `health` is judged partly on that.
+A responsibility whose `## Campaigns` reads "(none yet)" despite delivered work misreports its own state, and `health` is judged partly on that. When a campaign or mission closes, link it, and reflect any strategy-relevant lessons in the responsibility's decisions log.
 
 ## Guiding Principle
 

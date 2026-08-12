@@ -658,6 +658,25 @@ def build_agents(edition: dict, vocab: Vocab, display: dict, dest_root: Path):
             continue
         copy_file_substituted(src_file, dest / f"{name}.md", vocab)
 
+    # `dissent` is the real subagent the lens library is applied through — a
+    # delegation like noir/jessica/gwen/peni/ned, not a themed character, so it is
+    # deliberately absent from `display.yml`'s roster list and must be copied here
+    # explicitly rather than discovered by iterating that list.
+    dissent_src = agents_src / "dissent.md"
+    if dissent_src.exists():
+        copy_file_substituted(dissent_src, dest / "dissent.md", vocab)
+
+
+def build_lenses(edition: dict, vocab: Vocab, dest_root: Path):
+    # Lenses only mean anything alongside `dissent`, which only ships when the
+    # edition has a roster (see build_agents).
+    if edition["roster"] == 0:
+        return
+    lenses_src = SRC / "lenses"
+    dest = dest_root / "lenses"
+    for f in sorted(lenses_src.glob("*.md")):
+        copy_file_substituted(f, dest / f.name, vocab)
+
 
 # ── Scripts ──────────────────────────────────────────────────────────────────
 
@@ -900,6 +919,7 @@ def build_edition(name: str, data_model: dict, display: dict):
     build_nontier_skills(edition, vocab, display, skills_dest)
     build_doctrine_skills(edition, vocab, skills_dest)
     build_agents(edition, vocab, display, dest_root)
+    build_lenses(edition, vocab, dest_root)
     build_scripts(edition, vocab, dest_root)
     build_scripts_scaffold_special(edition, vocab, dest_root)
     build_templates(edition, vocab, display, dest_root)

@@ -74,7 +74,7 @@ Rules:
 - Retained after distillation (like `sources/`) — it is the first-party record of origin; never deleted by cleanup
 - Distilled output goes to the most appropriate vault concept subtree — **never** `vault/perspective/`
 - Provenance frontmatter marks it first-party: `note_type: perspective`, `domain`, `captured_at`, `origin`, `tags: [perspective/{domain}]`
-- Content lands here three ways: authored directly, surfaced from workstream research by Synthesizer, or auto-routed by Scout/Harvester when they detect first-party views inside otherwise-external material (see `AGENTS.md`)
+- Content lands here three ways: authored directly, surfaced from campaign research by Synthesizer, or auto-routed by Scout/Harvester when they detect first-party views inside otherwise-external material (see `AGENTS.md`)
 
 Perspective is raw input, not the curated layer — keep it faithful to your own voice; the vault is where it becomes navigable.
 
@@ -82,14 +82,14 @@ Perspective is raw input, not the curated layer — keep it faithful to your own
 
 ## Distillers
 
-Recipes for turning `sources/` and `perspective/` into `vault/` content. Invoke via the `knowledge` skill or directly from `knowledge/distillers/`. See `distillers/CLAUDE.md`.
+Recipes for turning `sources/` and `perspective/` into `vault/` content. Invoke via the `web-archive` skill or directly from `knowledge/distillers/`. See `distillers/CLAUDE.md`.
 
 ---
 
 ## Boundaries
 
 - Projects write to `sources/` (via their own entry points)
-- `perspective/` is written by you, by Synthesizer (from workstream research), or by Scout/Harvester auto-routing detected first-party views
+- `perspective/` is written by you, by Synthesizer (from campaign research), or by Scout/Harvester auto-routing detected first-party views
 - Distillers read `sources/` and `perspective/`, write to `vault/`
 - Nothing writes to `vault/` automatically — hand-curation is fine, auto-generation is not (every vault write still passes Peer Review)
 - Control-plane reads all three; writes to none directly

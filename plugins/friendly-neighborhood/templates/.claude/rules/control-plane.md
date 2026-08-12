@@ -17,36 +17,36 @@ control-plane/
   intake/                   ← capture layer for unstructured input (pre-triage)
     index.md              ← intake conventions and lifecycle
     {item}.md             ← one file per captured idea or note
-  objectives/               ← long-lived, review-cycle-measured responsibilities
+  objectives/               ← long-lived, checkpoint-cycle-measured responsibilities
     index.md              ← portfolio index of active responsibilities
     {name}/
       index.md            ← responsibility anchor (Key Results, milestones, campaigns, decisions log)
       {supporting files}    ← retained after completion; never deleted
-  workstreams/              ← campaigns: the heavy QRDPIV lifecycle
+  workstreams/              ← the heavy QRDBIV lifecycle: complex, multi-session work
     index.md              ← portfolio index of active campaigns
     {name}/
       index.md            ← campaign status anchor (phase, health)
-      request.md | research.md | design.md | plan.md | worktree-{nn}.md
+      request.md | research.md | design.md | blueprint.md | worktree-{nn}.md
       friction-log.md       ← how the *harness* performed; never what the work found
       _working/             ← throwaway scratch
     _log/
       YYYY-MM-DD-{name}.md  ← durable summary after cleanup
-  missions/                  ← lightweight units (often iterations against a campaign)
+  missions/                    ← lightweight units (often iterations against a campaign)
     index.md              ← portfolio index of active missions
     _log.md               ← durable record of every completed mission; never deleted
-    {name}/
-      index.md            ← mission record (assignment, checklist, handoff, lessons, friction)
+    {name}/                 ← deleted at completion, once logged
+      index.md            ← mission record (mission, checklist, handoff, lessons, friction)
   patrols/                ← recurring work, scheduled or on demand
     index.md              ← portfolio index of active patrols
     _log.md               ← durable record of every retired/abandoned patrol
     {name}/                 ← deleted at close, once logged
       index.md            ← purpose, trigger, guardrails, run log, self-improvement diary
-      _working/             ← scratch, for runs needing campaign-style handoffs
+      _working/             ← scratch, for runs needing workstream-style handoffs
   _harness/                 ← the harness's own feedback loop; never deleted
     friction.md           ← cross-run ledger of unresolved framework friction
   outputs/                  ← durable artifacts produced by campaigns (never deleted)
     index.md              ← index of all outputs, organized by campaign
-    {campaign-name}/       ← one folder per campaign that produced artifacts
+    {campaign-name}/    ← one folder per campaign that produced artifacts
       {artifact files}    ← slides, documents, configs, generated content, etc.
 ```
 
@@ -56,13 +56,13 @@ control-plane/
 
 **Intake** = unstructured capture. Ideas, notes, partial thoughts land here before triage. Lifecycle: `capture → triage → promote or discard`. Promoted items become responsibilities, campaigns, or missions; discarded leave no trace.
 
-**Responsibilities** (objectives, top tier) = the long-lived "why" — a role, a measured annual objective, a career goal. Carry structured progress tracking: Key Results, milestones, linked campaigns, a review cadence, health, and an append-only decisions log. One folder per responsibility. Lifecycle: `active` → `complete`; folders never deleted (the decisions log is the durable value). Driven by `objective.py`.
+**Responsibilities** (top tier) = the long-lived "why" — a role, a measured annual responsibility, a career goal. Carry structured progress tracking: Key Results, milestones, linked campaigns, a checkpoint patrol, health, and an append-only decisions log. One folder per responsibility. Lifecycle: `active` → `complete`; folders never deleted (the decisions log is the durable value). Driven by `objective.py`.
 
-**Campaigns** (workstreams, middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDPIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A campaign may be parented to a responsibility, or be standalone. Driven by `workstream.py`.
+**Campaigns** (middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDBIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A campaign may be parented to a responsibility, or be standalone. Driven by `workstream.py`.
 
-**Missions** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a campaign. A mission carries *proportional* admin only (assignment, checklist, handoff, lessons) — no phase machine, no progressive distillation. On completion the folder is deleted *after* a dated entry is written to `missions/_log.md`, which is the durable record: rescue anything real to `outputs/`, the vault or a project first, since nothing else survives. If a mission grows (multiple sessions, real research, design decisions), **promote it to a campaign** — before completing, since completing deletes the folder. Driven by `mission.py`.
+**Missions** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a campaign. A mission carries *proportional* admin only (mission, checklist, handoff, lessons) — no phase machine, no progressive distillation. If a mission grows (multiple sessions, real research, design decisions), **promote it to a campaign**. Driven by `mission.py`.
 
-**Patrols** = work defined by its **recurrence**, not its size — refresh sources into the vault, drain a cleanup queue, report portfolio status, auto-lint. May be mission-sized or campaign-sized; what makes it a patrol is that it runs again, scheduled or on demand. Carries a **self-improvement diary** so each run makes the next cheaper, and `_working/` for runs needing handoffs. Lifecycle: `active` → `paused` → `retired` (done or automated away) or `abandoned`; folder deleted once logged. Driven by `patrol.py`.
+**Patrols** = work defined by its **recurrence**, not its size — refresh sources into the vault, drain a cleanup queue, report portfolio status, auto-lint. May be mission-sized or workstream-sized; what makes it a patrol is that it runs again, scheduled or on demand. Carries a **self-improvement diary** so each run makes the next cheaper, and `_working/` for runs needing handoffs. Lifecycle: `active` → `paused` → `retired` (done or automated away) or `abandoned`; folder deleted once logged. Driven by `patrol.py`.
 
 **Outputs** = durable artifacts produced during campaign implementation. Written to `outputs/{campaign-name}/` — never inside the campaign folder. This guarantees cleanup (which deletes the campaign folder) cannot destroy produced artifacts. The `outputs/` tree is permanent.
 
@@ -71,13 +71,13 @@ control-plane/
 ## Hierarchy
 
 ```
-responsibility                <- long-lived strategy, measured
-    |-- campaign               <- heavy QRDPIV lifecycle, multi-session
-    |       \-- mission        <- spawned child unit
-    |-- mission                <- lightweight unit, standalone
+responsibility                     <- long-lived strategy, measured
+    |-- campaign            <- heavy QRDBIV lifecycle, multi-session
+    |       \-- mission           <- spawned child unit
+    |-- mission                  <- lightweight unit, standalone
     \-- patrol              <- recurring; runs again, scheduled or on demand
-            |-- mission        <- spawned by a run
-            \-- campaign       <- spawned by a bigger run
+            |-- mission          <- spawned by a run
+            \-- campaign    <- spawned by a bigger run
 ```
 
 **This is a spawn graph, not a strict tree.** Tier is chosen by *shape*, not size:
@@ -89,7 +89,7 @@ given run deserves: nothing at all for a small inline run, a mission for a bound
 one that needs real handoffs. **A spawned child runs its own lifecycle and closes into its own log**,
 so the parent holds the coordination, not the work.
 
-- A mission's `parent` may be `campaigns/{name}`, `patrols/{name}`, `objectives/{name}`, or `null`.
+- A mission's `parent` may be `workstreams/{name}`, `patrols/{name}`, `objectives/{name}`, or `null`.
 - A campaign's `parent` may be `objectives/{name}`, `patrols/{name}`, or `null`.
 - A patrol's `parent` may be `objectives/{name}` or `null`.
 - Responsibilities are the top tier; they are never children of another artifact.
@@ -104,7 +104,7 @@ These are **mechanisms, not tiers** — they say *how* a unit of work keeps goin
 | `/loop [interval]` | you stop it | a patrol run that polls |
 | `schedule` | its cron says otherwise | a patrol trigger |
 
-**`/goal` applies wherever the work has a verifiable end state inside a session.** That is an mission ("the checklist is complete and the gate reported GO"), a campaign *phase* ("every plan step is checked"), or a *single* patrol run ("the queue is drained"). It does **not** apply to an responsibility, which is measured in review cycles against Key Results and deliberately outlives any session, nor to a patrol itself, which by definition never completes.
+**`/goal` applies wherever the work has a verifiable end state inside a session.** That is a mission ("the checklist is complete and the gate reported GO"), a campaign *phase* ("every plan step is checked"), or a *single* patrol run ("the queue is drained"). It does **not** apply to a responsibility, which is measured in checkpoint cycles against Key Results and deliberately outlives any session, nor to a patrol itself, which by definition never completes.
 
 The evaluator judges the condition against **what has been surfaced in the conversation** — it does not run commands or read files — so a run must *print* its gate result for `"the gate passes"` to be usable. `/goal` also needs an accepted trust dialog and is unavailable under `disableAllHooks` or `allowManagedHooksOnly`, so anything depending on it should say so in its guardrails.
 
@@ -116,7 +116,7 @@ The evaluator judges the condition against **what has been surfaced in the conve
 2. Read `objectives/index.md`, `workstreams/index.md`, `missions/index.md`, and `patrols/index.md`
 3. If unstructured input needs triage, read `intake/index.md` first
 4. If a specific item is in scope, read its `index.md`
-5. Identify current phase (campaigns), review state (responsibilities), or assignment (missions)
+5. Identify current phase (campaigns), checkpoint state (responsibilities), or mission (missions)
 6. **State scope, phase/status, and intended next action before proceeding**
 
 ---
@@ -138,12 +138,12 @@ The evaluator judges the condition against **what has been surfaced in the conve
 
 ---
 
-## Campaign Framework (QRDPIV)
+## Campaign Framework (QRDBIV)
 
-**QRDPIV** (default): Questions → Research → Design → Plan → Implement → Validate → Cleanup
-**RPIV** (spec already clear): Research → Plan → Implement → Validate → Cleanup
+**QRDBIV** (default): Questions → Research → Design → Blueprint → Implement → Validate → Cleanup
+**RBIV** (spec already clear): Research → Blueprint → Implement → Validate → Cleanup
 
-Questions are cheap. Under-shaped work is expensive. Use the full QRDPIV the moment ambiguity, cross-system scope, or missing constraints surface. **Validate** runs the deterministic gate (`gate.py`) plus adversarial QA before cleanup — nothing is called done on faith.
+Questions are cheap. Under-shaped work is expensive. Use the full QRDBIV the moment ambiguity, cross-system scope, or missing constraints surface. **Validate** runs the deterministic gate (`gate.py`) plus adversarial QA before cleanup — nothing is called done on faith.
 
 Phase mechanics, artifact templates, and action-file routing live in the `campaign` skill. Missions do **not** use this framework — they are deliberately lightweight.
 
@@ -155,8 +155,8 @@ Phase mechanics, artifact templates, and action-file routing live in the `campai
 
 ```yaml
 workstream: kebab-case-name
-framework: rpiv | qrdpiv
-workstream_phase: questions | research | design | plan | implement | validate | complete | cleanup
+framework: rbiv | qrdbiv
+workstream_phase: questions | research | design | blueprint | implement | validate | complete | cleanup
 workstream_health: healthy | needs-questions | needs-design | under-shaped | blocked | stale
 status: active | complete | paused | abandoned
 started: YYYY-MM-DD
@@ -176,7 +176,7 @@ validated: YYYY-MM-DD
 tags: [mission/{name}]
 ```
 
-A mission's body holds, *proportionally*: **Assignment**, **Checklist**, **Handoff**, **Lessons**, **Cross-links**. Leave empty any section it doesn't need.
+A mission's body holds, *proportionally*: **Mission**, **Checklist**, **Handoff**, **Lessons**, **Cross-links**. Leave empty any section it doesn't need.
 
 ### Responsibility `index.md` frontmatter
 
@@ -184,10 +184,10 @@ A mission's body holds, *proportionally*: **Assignment**, **Checklist**, **Hando
 objective: kebab-case-name
 status: active | complete
 health: on-track | at-risk | blocked | stale
-cadence: "<review cadence>"
+cadence: "<checkpoint patrol>"
 created: YYYY-MM-DD
 completed: YYYY-MM-DD
-tags: [objective, ...]
+tags: [responsibility, ...]
 ```
 
 Responsibilities carry a **Key Results** table, a **Milestones** checklist, a **Campaigns** roster (linked via `link-campaign`), and an append-only **Key Decisions Log** — never truncated.

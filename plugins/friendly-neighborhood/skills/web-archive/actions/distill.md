@@ -70,7 +70,7 @@ confidence: medium
 ---
 ```
 
-**Preserve voice:** Do not sand first-party judgment into neutral source prose — the interpretive stance is the value. Drop only mission-specific scaffolding (links to a specific drill-in or `research-{module}.md`).
+**Preserve voice:** Do not sand first-party judgment into neutral source prose — the interpretive stance is the value. Drop only workstream-specific scaffolding (links to a specific drill-in or `research-{module}.md`).
 
 **Peer Review additions** (state these in the per-candidate briefing): require `provenance: first-party` and a `source_path` under `perspective/` — REJECT if absent (a first-party note without provenance is indistinguishable from source content). Confidence ceilings at `medium`; downgrade `high` unless an external source corroborates. On semantic dedup against an existing source-distilled note, MERGE but keep the first-party interpretive layer.
 
@@ -136,7 +136,7 @@ Batch no more than 3–4 source pages per subagent. If a section has more pages 
 **Each subagent receives:**
 
 ```
-You are a Distiller subagent for the web-archive pipeline.
+You are a Distiller subagent for the knowledge pipeline.
 
 Source: {source-slug}
 Section: {section-name}

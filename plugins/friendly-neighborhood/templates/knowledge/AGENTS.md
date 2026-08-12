@@ -5,7 +5,7 @@ tags: [knowledge, agents]
 
 # Knowledge Agent Roles
 
-Defines the five roles that operate in the `knowledge/` pipeline. Each role has a single responsibility, explicit allowed reads and writes, and a briefing template. Role enforcement is by task briefing (file-path gating in prompts), not by permissions infrastructure.
+Defines the five roles that operate in the `knowledge/` pipeline. Each role has a single responsibility, explicit allowed reads and writes, and a briefing template. Role enforcement is by mission briefing (file-path gating in prompts), not by permissions infrastructure.
 
 ---
 
@@ -16,7 +16,7 @@ Defines the five roles that operate in the `knowledge/` pipeline. Each role has 
 | Scout | `distillers/queue/`, `sources/verified/`, `perspective/` | `distillers/queue/{item}.md` (signal files only); `perspective/{domain}/{note}.md` (auto-routed first-party content only) |
 | Harvester | `sources/verified/`, `perspective/`, `distillers/queue/` | `distillers/staging/`; `perspective/{domain}/{note}.md` (auto-routed first-party content only) |
 | Peer Reviewer | `distillers/staging/`, `vault/` (read) | `distillers/staging/{note}-review.md` |
-| Synthesizer | `_working/`, workstream `research.md` | `distillers/staging/` (candidates surfaced to user, not auto-written); `perspective/{domain}/{note}.md` (first-party views, surfaced to user) |
+| Synthesizer | `_working/`, campaign `research.md` | `distillers/staging/` (candidates surfaced to user, not auto-written); `perspective/{domain}/{note}.md` (first-party views, surfaced to user) |
 | Cartographer | `vault/` (any subtree, read) | `vault/_graph/`, outbound wiki-links in existing vault notes |
 
 ---
@@ -58,7 +58,7 @@ When a single input mixes both (e.g. a `sources/field-intel/` note that quotes a
 note_type: perspective
 domain: <perspective/{domain} — e.g. industry-trends>
 captured_at: <ISO date the view was authored or landed>
-origin: <"direct" | workstream name | "harvested-from: sources/{path}">
+origin: <"direct" | campaign name | "harvested-from: sources/{path}">
 tags: [perspective/{domain}, ...]
 ---
 ```
@@ -174,24 +174,24 @@ You may NOT write to vault/ directly. On ADMIT, note the move instruction in the
 
 ### Synthesizer
 
-**Responsibility:** At workstream cleanup (opt-in), reads `_working/` files from a completed workstream research phase and surfaces reusable knowledge candidates to the user. Separates two kinds: externally-grounded concepts (→ `distillers/staging/`) and the user's own interpretive views (→ `perspective/{domain}/`). Never auto-writes to vault. User must explicitly confirm before any candidate is written.
+**Responsibility:** At campaign cleanup (opt-in), reads `_working/` files from a completed campaign research phase and surfaces reusable knowledge candidates to the user. Separates two kinds: externally-grounded concepts (→ `distillers/staging/`) and the user's own interpretive views (→ `perspective/{domain}/`). Never auto-writes to vault. User must explicitly confirm before any candidate is written.
 
-**Allowed Reads:** `_working/` files, workstream `research.md`
+**Allowed Reads:** `_working/` files, campaign `research.md`
 
 **Allowed Writes:** `distillers/staging/` and `perspective/{domain}/` — only after explicit user confirmation
 
 **Briefing Template:**
 ```
-You are Synthesizer. Your job is to surface reusable knowledge from workstream research — not to write anything automatically.
+You are Synthesizer. Your job is to surface reusable knowledge from campaign research — not to write anything automatically.
 
-1. Read `_working/` files and `research.md` from the completed workstream at `{workstream-path}`.
-2. Identify concepts that meet vault admission standards: complete, self-contained, generalizable beyond this workstream. Classify each (opinion-vs-source heuristic):
+1. Read `_working/` files and `research.md` from the completed campaign at `{campaign-path}`.
+2. Identify concepts that meet vault admission standards: complete, self-contained, generalizable beyond this campaign. Classify each (opinion-vs-source heuristic):
    - Externally-grounded concept → vault candidate (destined for `distillers/staging/`).
    - The user's own experience/interpretation/judgment → perspective input (destined for `perspective/{domain}/`). This is the layer that makes the vault uniquely theirs — capture it deliberately.
 3. Draft candidate notes for each (do not write yet). Use the perspective input schema for first-party items, the six-field vault-candidate schema for the rest.
 4. Present both lists to the user with a one-line summary of each, labeled by destination.
 5. Wait for user confirmation before writing anything.
-6. On confirmation: write vault candidates to `knowledge/distillers/staging/` (confidence: medium); write first-party items to `knowledge/perspective/{domain}/{note}.md` (perspective input schema, origin: <workstream name>).
+6. On confirmation: write vault candidates to `knowledge/distillers/staging/` (confidence: medium); write first-party items to `knowledge/perspective/{domain}/{note}.md` (perspective input schema, origin: <campaign name>).
 
 NEVER write to vault/ directly. NEVER auto-write without user confirmation. Your output is a proposal, not an action.
 ```

@@ -4,7 +4,7 @@ Create a new objective. Load this file only.
 
 ## When to Run
 
-User is starting a formal, review-cycle-measured goal. Signals:
+User is starting a formal, checkpoint-cycle-measured goal. Signals:
 - "This is one of my objectives this cycle"
 - "I'm being measured on this"
 - Work that will span multiple workstreams and multiple months
@@ -14,7 +14,7 @@ User is starting a formal, review-cycle-measured goal. Signals:
 
 ### 1. Name it
 
-Propose a `kebab-case-name` that matches or reflects the language used in the formal review process. Confirm with the user before creating anything.
+Propose a `kebab-case-name` that matches or reflects the language used in the formal checkpoint process. Confirm with the user before creating anything.
 
 ### 2. Create the folder and `index.md`
 
@@ -32,8 +32,8 @@ Ask the shaping questions (one focused message, 2–3 questions, wait for answer
 
 - What problem does this objective solve? (not what it is — what it enables)
 - Who are the stakeholders measuring it?
-- What does success look like at review time?
-- What's the cadence — when are formal reviews?
+- What does success look like at checkpoint time?
+- What's the cadence — when are formal checkpoints?
 
 Fill in the **Objective** section and **Success Criteria** once you have answers.
 

@@ -7,7 +7,7 @@ description: Manage the web-archive pipeline — a knowledge system that scouts 
 
 Governs the full `knowledge/` pipeline: source verification, candidate staging, vault admission, cross-vault enrichment, and upstream sync. Two raw-input zones feed one curated vault: `sources/` (external truth) and `perspective/` (first-party truth — the user's own experience, views, and judgment). Each action maps to one agent role defined in `knowledge/AGENTS.md`.
 
-The vault is **the Web** — a growing network of linked notes that is uniquely yours.
+The vault is a growing network of linked notes.
 
 ## When to use
 
@@ -18,7 +18,7 @@ The vault is **the Web** — a growing network of linked notes that is uniquely 
 - User says "cartograph the vault", "add cross-links", "run Cartographer"
 - User says "audit the vault", "lint the vault", "check vault health/consistency", "run vault-lint"
 - User says "sync sources", "refresh docs", "run docs-sync"
-- After a campaign's research phase completes and a queue signal has been written
+- After a campaign research phase completes and a queue signal has been written
 - Content surfaces that is the user's own opinion/view/experience — auto-route it to `perspective/{domain}/` (it becomes pipeline input)
 
 ## When NOT to use
@@ -45,7 +45,7 @@ Load exactly one action file per invocation.
 The pipeline distills from two peers; classify input before routing it (opinion-vs-source heuristic in `knowledge/AGENTS.md`):
 
 - **`sources/`** — external truth (verifiable against a published artifact). Distilled with `confidence: high`, carries `source_url`.
-- **`perspective/`** — first-party truth (the user's experience, views, judgment; not externally verifiable). The layer that makes the Web uniquely theirs. Distilled with `provenance: first-party`, `confidence: medium` ceiling, `source_path` into `perspective/`, landing at the content-appropriate vault subtree (never `vault/perspective/`).
+- **`perspective/`** — first-party truth (the user's experience, views, judgment; not externally verifiable). Distilled with `provenance: first-party`, `confidence: medium` ceiling, `source_path` into `perspective/`, landing at the content-appropriate vault subtree (never `vault/perspective/`).
 
 When Scout/Harvester/Synthesizer encounter first-party views inside otherwise-external material, they **auto-route** the interpretive part to `perspective/{domain}/` and report — they never silently consume it into the source pipeline.
 
@@ -60,7 +60,7 @@ When Scout/Harvester/Synthesizer encounter first-party views inside otherwise-ex
 
 ## Vault taxonomy
 
-The Web uses concept-domain subtrees. A typical starting layout:
+The vault uses concept-domain subtrees. A typical starting layout:
 
 - `vault/domain-knowledge/` — field-level domain expertise
 - `vault/reference/` — reference material and how-to guides

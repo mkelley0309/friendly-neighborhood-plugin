@@ -4,7 +4,7 @@ Close out an objective. Load this file only.
 
 ## Key Difference From Workstream Cleanup
 
-**Objective folders are NEVER deleted.** Completion is a status change and a summary entry, not a cleanup. The folder, its `index.md`, and its decisions log persist indefinitely — they are the record for review.
+**Objective folders are NEVER deleted.** Completion is a status change and a summary entry, not a cleanup. The folder, its `index.md`, and its decisions log persist indefinitely — they are the record for future checkpoints.
 
 ## When to Run
 
@@ -68,4 +68,4 @@ Tell the user:
 - Completion summary written
 - Any workstream logs that reference this objective remain valid
 
-Remind them: the folder is not deleted. It is referenced in future review cycles.
+Remind them: the folder is not deleted. It is referenced in future checkpoint cycles.

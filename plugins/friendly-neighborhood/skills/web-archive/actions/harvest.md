@@ -35,8 +35,8 @@ knowledge/distillers/queue/{signal-file}.md
 
 Extract:
 - `signal` — type of work (`research-complete` or `sync-complete`)
-- `workstream` — originating workstream (campaign) name (if research-driven)
-- `research_path` — path to the workstream's `research.md` (if research-driven; null for sync-driven)
+- `campaign` — originating campaign name (if research-driven)
+- `research_path` — path to the campaign's `research.md` (if research-driven; null for sync-driven)
 - `target_vault_subtrees` — list of vault subtrees this source maps to
 - Source slug — derive from signal filename or body context
 

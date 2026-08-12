@@ -1,6 +1,6 @@
 # Action: Validate
 
-> **Phase council** (QRDPIV: V) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `gwen` (run it — test functionality against the criteria); counsel `jameson` (adversarial); watch villains `mysterio` (claiming done without proof — the exact failure this phase exists to catch), `cat` (security holes left open), `electro` (fragile/cascading).
+> **Phase council** (QRDBIV: V) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `gwen` (run it — test functionality against the criteria); counsel `jameson` (adversarial); watch villains `mysterio` (claiming done without proof — the exact failure this phase exists to catch), `cat` (security holes left open), `electro` (fragile/cascading).
 
 Confirm the campaign's outputs are real before closing. A campaign does not advance to cleanup on faith.
 
@@ -18,21 +18,29 @@ Record the result (command run, exit code, what passed or failed) in `validate.m
 
 **If NO-GO:** stop. Document the failures in `validate.md` and surface them to the user. Return to `actions/implement.md` to remediate, then re-run the gate.
 
-### 2. Functional validation — spawn `gwen`
+### 2. Adversarial QA
 
-Hand the gate result and the campaign's completion criteria (from `plan.md`) to `gwen`. Her job: *exercise* the work — run it, drive each flow, probe the edges — and confirm it actually does what each completion criterion says, reporting evidence ("ran X, got Y, expected Z"), not opinion. `jameson` may be spawned alongside as the adversarial second pair of eyes on the framing.
+By default, hand the gate result and the campaign's completion criteria (from `blueprint.md`) to a Sonnet subagent with the prompt: "Red-team these deliverables against every completion criterion — find anything claimed done but not actually verified."
 
-`gwen` returns findings to main context (≤400 words). Record sign-off or objections in `validate.md`.
+The subagent returns findings to main context (≤400 words). Record sign-off or objections in `validate.md`.
 
-**If gwen raises objections:** resolve them before proceeding. Unresolved objections block advance to cleanup.
+**Main-context fallback.** If this session operates under a policy that forbids unrequested subagent spawns, run the same adversarial pass directly in main context instead — genuinely argue against your own completion claims, criterion by criterion, rather than restating them as done. The point of the subagent is adversarial distance from the work just finished; approximate that distance deliberately if a fresh context isn't available.
 
-### 3. Security red-team (when the surface warrants it) — spawn `cat`
+**If objections are raised:** resolve them before proceeding. Unresolved objections block advance to cleanup.
 
-If the work touches auth, secrets, input handling, or any external surface, spawn `cat` to red-team it. If Black Cat finds an open window — a hardcoded secret, a missing auth check, an injection surface — close it before advancing. Record findings in `friction-log.md` prefixed `[validate]`.
+### 3. Security red-team (when applicable)
+
+If the campaign's changes touch auth, secrets, input handling, or any external-facing
+surface, spawn `dissent` with `lens: cat` — the security red-team — before advancing. Her whole
+job is to find the open window; if she finds one, close it and re-run this step before
+proceeding.
+
+Record sign-off or findings in `validate.md`. If the change genuinely doesn't touch any of the
+above surfaces, skip this step and say so explicitly — don't skip silently.
 
 ### 4. Advance phase
 
-Only when the gate is GO, `gwen` signs off, **and** any `cat` findings are resolved:
+Only when the gate is GO **and** adversarial QA signs off:
 
 ```bash
 python -B tools/workstream.py complete <name>

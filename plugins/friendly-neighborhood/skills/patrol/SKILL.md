@@ -1,13 +1,13 @@
 ---
 name: patrol
-description: Recurring work — scheduled or on demand. Refresh sources into the knowledge base, drain a cleanup queue, report status across the portfolio, auto-lint, watch a CI run. Use when the defining feature of the work is that it runs again, whether it is small like a mission or large enough to need campaign-style handoffs. Tracks its own runs, carries a self-improvement diary so each run makes the next one cheaper, and retires or is abandoned rather than completing.
+description: Recurring work — scheduled or on demand. Refresh sources into the knowledge base, drain a cleanup queue, report status across the portfolio, auto-lint, watch a CI run. Use when the defining feature of the work is that it runs again, whether it is small like a mission or large enough to need workstream-style handoffs. Tracks its own runs, carries a self-improvement diary so each run makes the next one cheaper, and retires or is abandoned rather than completing.
 ---
 
 # Patrol — work that runs again
 
-The third thing that can be spawned under an objective, beside a **mission** (bounded, single-session) and a **campaign** (multi-session, subagent handoffs).
+The third thing that can be spawned under a responsibility, beside a **mission** (bounded, single-session) and a **campaign** (multi-session, subagent handoffs).
 
-**A patrol is defined by its recurrence, not its size.** Refreshing documentation into the vault, draining the knowledge cleanup queue, reporting status across objectives, auto-linting, watching a job. One patrol may be as small as a lint pass and another as large as a full research refresh. That difference does not matter. What matters is that it runs again.
+**A patrol is defined by its recurrence, not its size.** Refreshing documentation into the vault, draining the knowledge cleanup queue, reporting status across responsibilities, auto-linting, watching a job. One patrol may be as small as a lint pass and another as large as a full research refresh. That difference does not matter. What matters is that it runs again.
 
 It does **not** reinvent scheduling — it wires Claude Code's built-ins:
 
@@ -31,7 +31,7 @@ Two things follow from recurrence, and neither fits in a mission or a campaign:
 A patrol does **not** have to contain the work it triggers. Each run picks its own shape:
 
 - **Inline** — the run is small and self-contained (a lint pass, a status roll-up). Do it in place, using `_working/` for scratch if it needs any. Nothing else is created.
-- **Spawned** — the run is substantial enough to deserve its own record, so it launches a **mission** (bounded, single-session) or a **campaign** (multi-session, subagent handoffs) with `--parent patrols/{name}`. That child then runs its own lifecycle, closes into its own log, and deletes its own folder. Record it with `patrol.py run <name> --spawned missions/<child>` (or `campaigns/<child>`), which links it from the run log.
+- **Spawned** — the run is substantial enough to deserve its own record, so it launches a **mission** (bounded, single-session) or a **campaign** (multi-session, subagent handoffs) with `--parent patrols/{name}`. That child then runs its own lifecycle, closes into its own log, and deletes its own folder. Record it with `patrol.py run <name> --spawned missions/<child>` (or `workstreams/<child>`), which links it from the run log.
 
 This is what keeps a patrol from swelling into a parallel project system. **The patrol folder holds the recurrence — the trigger, the guardrails, the run log, the diary. It does not have to hold the work.** A quarterly refresh that turns into a real research effort should spawn a campaign, not grow a `research.md` inside the patrol.
 
@@ -42,7 +42,7 @@ Spawning is also how a patrol stays honest about size. If run after run spawns a
 Two different relationships, and conflating them produces a patrol that is really a campaign in disguise:
 
 - **Spawn — downward, many times.** The patrol is already running and delegates one run's work to a child. `patrol.py run <name> --spawned missions/<child>`.
-- **Promotion — upward, once.** An mission or campaign turns out to be worth repeating, so it *becomes* a patrol. `patrol.py create <name> --from missions/<origin>`. The originating work still closes normally into its own log, and the patrol is a new record pointing back at what proved the case, not a continuation of it.
+- **Promotion — upward, once.** A mission or campaign turns out to be worth repeating, so it *becomes* a patrol. `patrol.py create <name> --from missions/<origin>`. The originating work still closes normally into its own log, and the patrol is a new record pointing back at what proved the case, not a continuation of it.
 
 The test: **is the recurring thing already established, or is this the moment it became recurring?** The first is a spawn, the second is a promotion. A patrol created by promotion starts at zero runs like any other — the work that proved it does not count as run 1, because it closed under its own tier.
 

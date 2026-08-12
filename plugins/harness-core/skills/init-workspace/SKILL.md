@@ -31,7 +31,7 @@ This sets up a working, domain-neutral harness in the current project so the oth
    ```
    (e.g. `python3 -B "${CLAUDE_SKILL_DIR}/../../scripts/scaffold.py"`)
 
-4. **Set the concurrency budget.** Ask: *"How many subagents may run in flight at once? (soft budget — a cost/coordination guideline, not a safety cap. Default 2; raise it if your machine and quota allow.)"* Take the answer (a number, or "2" if they accept the default) and set it in the scaffolded contract: in `CLAUDE.md` -> Subagent Delegation, replace `up to \`max_concurrent_agents\` subagents in flight at once (default 2` with the chosen number. If they keep the default, leave it.
+4. **Set the concurrency budget.** Ask: *"How many subagents may run in flight at once? (soft budget — a cost/coordination guideline, not a safety cap. Default 2; raise it if your machine and quota allow.)"* Take the answer (a number, or "2" if they accept the default) and set it in the scaffolded contract: in `CLAUDE.md` → Subagent Delegation, replace `up to \`max_concurrent_agents\` subagents in flight at once (default 2` with the chosen number. If they keep the default, leave it.
 
 5. **Report** what it created vs. skipped, then point the user at next steps:
    - `CLAUDE.md` is the base contract and operating doctrine; subtree contracts auto-load via `.claude/rules/` as you work.

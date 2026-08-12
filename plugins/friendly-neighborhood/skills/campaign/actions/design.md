@@ -1,6 +1,6 @@
 # Action: Design
 
-> **Phase council** (QRDPIV: D) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `miguel`; counsel `uncle-ben`, `aunt-may`, `mj`, `madame-web`; watch villains `octavius`, `vulture`, `kraven`, `kingpin`.
+> **Phase council** (QRDBIV: D) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `miguel`; counsel `uncle-ben`, `aunt-may`, `mj`, `madame-web`; watch villains `octavius`, `vulture`, `kraven`, `kingpin`.
 
 Resolve decisions before planning. Covers two kinds, either or both: **architectural design** (how it works) and **structure outline** (what the deliverable is shaped like). Output: `design.md`, and `outline.md` when the deliverable structure warrants its own artifact.
 
@@ -29,9 +29,9 @@ Skip the phase entirely only if research is sufficient to plan directly.
 ### Close the phase
 
 ```bash
-python -B tools/workstream.py advance <name> plan
+python -B tools/workstream.py advance <name> blueprint
 ```
 
 **Claude Code:** for decisions requiring multi-option analysis, delegate per-option evaluation to Sonnet subagents and synthesize in main context.
 
-Next: `actions/plan.md`.
+Next: `actions/blueprint.md`.

@@ -2,8 +2,8 @@
 """Patrol (recurring work) state management — no phase machine, no LLM.
 
 A patrol is work defined by its *recurrence*, not its size: refresh docs into the
-knowledge base, drain the cleanup queue, report status across objectives, auto-lint.
-It may be mission-sized or campaign-sized. What makes it a patrol is that it runs
+knowledge base, drain the cleanup queue, report status across responsibilities, auto-lint.
+It may be mission-sized or workstream-sized. What makes it a patrol is that it runs
 again.
 
 Two things follow from that, and both are why it needs its own record:
@@ -375,7 +375,7 @@ def main():
 
     c = sub.add_parser("create", help="Create a new patrol")
     c.add_argument("name")
-    c.add_argument("--parent", help="objectives/<name> or campaigns/<name>")
+    c.add_argument("--parent", help="objectives/<name> or workstreams/<name>")
     c.add_argument("--title")
     c.add_argument("--trigger", help='e.g. "weekly", "nightly 02:00", "on-demand"')
     c.add_argument("--from", dest="origin", metavar="PATH",
@@ -391,7 +391,7 @@ def main():
     r.add_argument("--gate", help="gate result (GO / NO-GO / n/a)")
     r.add_argument("--learned", help="what would make the next run better")
     r.add_argument("--spawned", help="mission or campaign this run launched, "
-                                     "e.g. missions/refresh-fynapse-docs or campaigns/vault-reindex")
+                                     "e.g. missions/refresh-fynapse-docs or workstreams/vault-reindex")
 
     p = sub.add_parser("pause", help="Pause without closing")
     p.add_argument("name")

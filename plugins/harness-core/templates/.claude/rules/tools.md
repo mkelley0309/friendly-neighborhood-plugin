@@ -51,15 +51,15 @@ tools/
 
 The CLIs below use stdlib only (argparse, pathlib, datetime, re) — no third-party packages. They resolve their workspace root from `$WORKSPACE_ROOT` env var, falling back to `os.getcwd()`. Set `WORKSPACE_ROOT` to your repo root before running, or run them from the repo root. Run with `python -B` to skip `__pycache__` bytecode generation.
 
-These map to the **three tiers of work**: objectives (long-lived strategy), workstreams (the heavy QRDPIV lifecycle), and assignments (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
+These map to the **three tiers of work**: objectives (long-lived strategy), workstreams (the heavy QRDBIV lifecycle), and assignments (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
 
-### workstream.py — the heavy (QRDPIV) tier
+### workstream.py — the heavy (QRDBIV) tier
 
-Manages the heavy QRDPIV lifecycle at `control-plane/workstreams/{name}/index.md`.
+Manages the heavy QRDBIV lifecycle at `control-plane/workstreams/{name}/index.md`.
 
 ```
 python -B tools/workstream.py list
-python -B tools/workstream.py create <name> [--framework qrdpiv|rpiv] [--parent objectives/<name>] [--title "Title"]
+python -B tools/workstream.py create <name> [--framework qrdbiv|rbiv] [--parent objectives/<name>] [--title "Title"]
 python -B tools/workstream.py status <name>
 python -B tools/workstream.py next <name>
 python -B tools/workstream.py advance <name> <phase>
@@ -72,8 +72,8 @@ python -B tools/workstream.py archive <name> [--log-date YYYY-MM-DD] [--descript
 python -B tools/workstream.py delete <name>
 ```
 
-Valid phases: `questions research design plan implement validate complete cleanup`
-Frameworks: `qrdpiv` (default, all phases) · `rpiv` (clear-spec: research→plan→implement→validate→cleanup)
+Valid phases: `questions research design blueprint implement validate complete cleanup`
+Frameworks: `qrdbiv` (default, all phases) · `rbiv` (clear-spec: research→blueprint→implement→validate→cleanup)
 
 ### assignment.py — the lightweight tier
 
@@ -90,7 +90,7 @@ python -B tools/assignment.py delete <name>
 
 ### objective.py — the strategy tier
 
-Manages long-lived objectives with structured progress tracking at `control-plane/objectives/{name}/index.md` — Key Results, milestones, linked workstreams, a review cadence, health, and an append-only decisions log.
+Manages long-lived objectives with structured progress tracking at `control-plane/objectives/{name}/index.md` — Key Results, milestones, linked workstreams, a checkpoint cadence, health, and an append-only decisions log.
 
 ```
 python -B tools/objective.py list

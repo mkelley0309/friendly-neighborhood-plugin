@@ -43,8 +43,8 @@ don't support rules.
 
 | Phase | From | To |
 |---|---|---|
-| In-session | `_working/` | `research.md` / `design.md` / `plan.md` |
-| Workstream implement | plan step execution | `outputs/{workstream-name}/` (never inside the workstream folder) |
+| In-session | `_working/` | `research.md` / `design.md` / `blueprint.md` |
+| Workstream implement | blueprint step execution | `outputs/{workstream-name}/` (never inside the workstream folder) |
 | Workstream close | workstream folder | `control-plane/workstreams/_log/YYYY-MM-DD-{name}.md` |
 | Objective decisions | session | objective `index.md` → Key Decisions Log (append-only) |
 

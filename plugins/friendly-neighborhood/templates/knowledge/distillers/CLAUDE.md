@@ -1,6 +1,6 @@
 # Distillers
 
-Curation recipes: `knowledge/sources/` and `knowledge/perspective/` → `knowledge/vault/`. One subdirectory per source, plus one shared `perspective/` distiller for first-party input. Invoked via the `web-archive` skill (`/web-archive distill`) or directly.
+Curation recipes: `knowledge/sources/` and `knowledge/perspective/` → `knowledge/vault/`. One subdirectory per source, plus one shared `perspective/` distiller for first-party input. Invoked via the `web-archive` skill (`/friendly-neighborhood:web-archive distill`) or directly.
 
 ```
 distillers/
@@ -118,7 +118,7 @@ confidence: medium
 note_type: perspective
 domain: <perspective/{domain}>
 captured_at: <ISO date>
-origin: <"direct" | workstream name | "harvested-from: sources/{path}">
+origin: <"direct" | campaign name | "harvested-from: sources/{path}">
 tags: [perspective/{domain}, ...]
 ```
 

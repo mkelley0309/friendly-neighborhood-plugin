@@ -1,6 +1,6 @@
 # Action: Research
 
-Research is **mandatory** for every formal workstream — QRDPIV and RPIV alike. There is no path from Questions (or Initiate) directly to Design or Plan without a research.md. If source material is provided by the user, it still passes through the research protocol: write it to `_working/`, then distill from `_working/`.
+Research is **mandatory** for every formal workstream — QRDBIV and RBIV alike. There is no path from Questions (or Initiate) directly to Design or Blueprint without a research.md. If source material is provided by the user, it still passes through the research protocol: write it to `_working/`, then distill from `_working/`.
 
 ---
 
@@ -12,7 +12,7 @@ Research is **mandatory** for every formal workstream — QRDPIV and RPIV alike.
 
 **Limited token usage.** Each pass subagent returns ≤2k tokens to main context — a confirmation that the file was written and the key themes found, nothing more. The main context never reads raw pass output. After all passes are complete, the main context reads only `research.md`.
 
-**Semantic density.** `research.md` must earn its length. Every sentence must be load-bearing for Design or Plan. No recaps of what was asked, no meta-commentary about sources, no restating what the user already knows.
+**Semantic density.** `research.md` must earn its length. Every sentence must be load-bearing for Design or Blueprint. No recaps of what was asked, no meta-commentary about sources, no restating what the user already knows.
 
 ---
 
@@ -40,9 +40,11 @@ When the user provides source material directly (paste, file, link), treat it as
 2. Read `index.md` and `request.md` (if it exists). Do not read any other workstream file.
 3. Determine which passes to run from the table above.
 
-### Per Pass — Delegate to a Subagent (Sonnet)
+### Per Pass — Default to a Subagent (Sonnet)
 
-Each pass is a separate subagent call. The subagent's job is **write findings to disk and return a short confirmation** — not to produce a finished summary for main context consumption. Delegate each pass to a Sonnet subagent.
+Each pass is, by default, a separate subagent call. The subagent's job is **write findings to disk and return a short confirmation** — not to produce a finished summary for main context consumption.
+
+**Main-context fallback.** If this session operates under a policy that forbids unrequested subagent spawns, or delegation genuinely isn't available, run the pass directly in main context instead: write the same findings file, to the same path, with the same frontmatter and `## Sources` section, before moving on to the next pass or to distillation. The discipline that matters — findings on disk before distillation reads them, every finding sourced — is what this protocol actually protects; a subagent is the default way to get there, not the only one.
 
 Subagent instructions must include:
 - The specific question or scope for this pass
@@ -86,13 +88,15 @@ Run passes **sequentially, one at a time**. Do not run distillation until **all*
 
 ### Distillation — Fresh Subagent, Clean Context
 
-After all pass files are written, distillation runs as a **separate subagent** (Sonnet). This subagent must:
+After all pass files are written, distillation defaults to a **separate subagent** (Sonnet), for the fresh-context guarantee described above. This subagent must:
 - Be given only the paths to `_working/research-*.md` files — nothing else
 - Read those files and produce `research.md` using the template below
 - Have no reference to the conversation, the original request, or the pass subagent outputs
 
+**Main-context fallback.** Under the same conditions as the per-pass fallback above, distillation can run in main context instead — deliberately re-reading only the `_working/research-*.md` files (not the conversation or the original request) to approximate the fresh-context discipline a real subagent enforces automatically. State explicitly that this ran in main context so a later reader knows the guarantee was approximated, not native.
+
 Brief the distillation subagent with this structure:
-> "You are distilling research pass files into a self-contained research document. Read only the files at these paths: [list]. Write `research.md` at [path] using the template provided. Do not summarize what was asked or how you got here — synthesize only what is in those files, organized for downstream use in Design and Plan steps. Carry forward every source from the pass files: cite vault paths and URLs inline where the finding appears, and consolidate all sources in a `## Sources` section at the end of `research.md`. Omit any finding not backed by a source in the pass files."
+> "You are distilling research pass files into a self-contained research document. Read only the files at these paths: [list]. Write `research.md` at [path] using the template provided. Do not summarize what was asked or how you got here — synthesize only what is in those files, organized for downstream use in Design and Blueprint steps. Carry forward every source from the pass files: cite vault paths and URLs inline where the finding appears, and consolidate all sources in a `## Sources` section at the end of `research.md`. Omit any finding not backed by a source in the pass files."
 
 The distillation subagent returns ≤300 words to main context confirming the file was written and flagging any open questions it couldn't resolve.
 
@@ -122,9 +126,9 @@ Leave `target_vault_subtrees` empty — the Scout role will classify during queu
 After `research.md` is complete and read by main context:
 
 - → **design** if research surfaced architectural decisions or structural choices to make
-- → **plan** if research is sufficient to plan directly
+- → **blueprint** if research is sufficient to blueprint directly
 
-Update `index.md`: set `workstream_phase`, update the QRDPIV artifact status table, update `Last Active`.
+Update `index.md`: set `workstream_phase`, update the QRDBIV artifact status table, update `Last Active`.
 
 ---
 
@@ -163,7 +167,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 
 ## Decisions Implied by Research
 
-{Decisions the research surfaces that must be made in Design or Plan — be specific}
+{Decisions the research surfaces that must be made in Design or Blueprint — be specific}
 
 ## Open Questions
 
@@ -189,4 +193,4 @@ Before declaring research complete, verify:
 - [ ] `research.md` has a `## Sources` section carrying forward all pass sources
 - [ ] No finding in `research.md` is derived solely from model weights — every claim traces to a vault path, URL, codebase path, or user-provided material
 - [ ] Main context has not consumed raw pass output — only the `research.md` distillation
-- [ ] `index.md` QRDPIV artifact status table updated to reflect completed steps
+- [ ] `index.md` QRDBIV artifact status table updated to reflect completed steps

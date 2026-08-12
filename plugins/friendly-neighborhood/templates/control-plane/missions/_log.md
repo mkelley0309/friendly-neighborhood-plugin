@@ -17,9 +17,9 @@ Each entry carries four things at most: what the job **was**, what it actually *
 
 ## YYYY-MM-DD · mission-name
 
-*Parent: workstream or objective, if any*
+*Parent: campaign or responsibility, if any*
 
-**Was.** The assignment, in a sentence or two.
+**Was.** The mission, in a sentence or two.
 
 **Produced.** What actually came out, and where anything durable now lives.
 

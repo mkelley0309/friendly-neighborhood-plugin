@@ -9,7 +9,7 @@ Fill-in templates for campaign artifacts. Load this file only when creating a ne
 ```markdown
 # {Campaign Title}
 
-## Mission Status
+## Campaign Status
 
 | Field | Value |
 |---|---|
@@ -21,7 +21,7 @@ Fill-in templates for campaign artifacts. Load this file only when creating a ne
 
 {One paragraph: what this campaign is and what it delivers.}
 
-## QRDPIV Artifact Status   ← include for QRDPIV; omit for RPIV
+## QRDBIV Artifact Status   ← include for QRDBIV; omit for RBIV
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -31,12 +31,14 @@ Fill-in templates for campaign artifacts. Load this file only when creating a ne
 | Research — Codebase pass | `_working/research-code-*.md` | Not started |
 | Research — Distillation | `research.md` | Not started |
 | Design | `design.md` | Not started |
-| Plan | `plan.md` | Not started |
+| Blueprint | `blueprint.md` | Not started |
 | Worktrees | `worktree-{nn}.md` | Not started |
+| Validate | `validate.md` | Not started |
 
 ## Child Missions
 
-- {[mission-name](../../missions/{mission-name}/index.md)} — {one-line description}   ← or omit if none
+| Mission | Linked |
+|---|---|
 
 ## Cross-links
 
@@ -51,7 +53,7 @@ Fill-in templates for campaign artifacts. Load this file only when creating a ne
 ```markdown
 # {Campaign Name} — Request
 
-Refined specification produced at the QRDPIV Questions step. Replaces the original request as input to all downstream steps.
+Refined specification produced at the QRDBIV Questions step. Replaces the original request as input to all downstream steps.
 
 ## Original Request
 
@@ -75,7 +77,7 @@ Refined specification produced at the QRDPIV Questions step. Replaces the origin
 
 ## Success Definition
 
-{How we'll know this mission is done}
+{How we'll know this campaign is done}
 ```
 
 ---
@@ -91,7 +93,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 
 ### Knowledge
 
-{Distilled vault/sources knowledge relevant to this mission}
+{Distilled vault/sources knowledge relevant to this campaign}
 
 ### Web
 
@@ -105,7 +107,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 
 ## Decisions Implied by Research
 
-{Any decisions the research surfaces that need to be made in Design or Plan}
+{Any decisions the research surfaces that need to be made in Design or Blueprint}
 
 ## Open Questions
 
@@ -119,7 +121,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 ```markdown
 # {Campaign Name} — Design
 
-Architectural and structural decisions made before planning. Produced from `research.md` (and `request.md` if QRDPIV).
+Architectural and structural decisions made before blueprinting. Produced from `research.md` (and `request.md` if QRDBIV).
 
 ## Decision: {Title}
 
@@ -132,21 +134,21 @@ Architectural and structural decisions made before planning. Produced from `rese
 
 ...
 
-## Constraints Carried into Plan
+## Constraints Carried into Blueprint
 
-{What the plan must respect — architectural boundaries, interfaces, limits}
+{What the blueprint must respect — architectural boundaries, interfaces, limits}
 ```
 
 ---
 
 ## `outline.md` Template
 
-Written during Design when the deliverable's own structure needs agreement before planning (document section order, vault layout, API shape, deck arc). Fold into `design.md` instead when the structure is small enough not to be referenced repeatedly.
+Written during Design when the deliverable's own structure needs agreement before blueprinting (document section order, vault layout, API shape, deck arc). Fold into `design.md` instead when the structure is small enough not to be referenced repeatedly.
 
 ```markdown
 # {Campaign Name} — Outline
 
-Structure of the deliverable, agreed before planning. Authoritative over `research.md` where a `[D]` below supersedes it.
+Structure of the deliverable, agreed before blueprinting. Authoritative over `research.md` where a `[D]` below supersedes it.
 
 ## Structure
 
@@ -165,12 +167,12 @@ Structure of the deliverable, agreed before planning. Authoritative over `resear
 
 ---
 
-## `plan.md` Template
+## `blueprint.md` Template
 
 ```markdown
-# {Campaign Name} — Plan
+# {Campaign Name} — Blueprint
 
-## Objective
+## Responsibility
 
 {One sentence: what this campaign delivers}
 
@@ -204,7 +206,7 @@ Structure of the deliverable, agreed before planning. Authoritative over `resear
 
 ## Cross-links
 
-- {related responsibility, campaign, project, or knowledge section}
+- {related responsibility, project, or knowledge section}
 ```
 
 ---
@@ -225,7 +227,7 @@ tags: [workstream/{name}]
 # Friction Log — {name}
 
 How well the harness supported this campaign. **Not** a record of the work itself:
-findings go to `research.md`, decisions to `design.md`, progress to `plan.md`.
+findings go to `research.md`, decisions to `design.md`, progress to `blueprint.md`.
 
 Inclusion test: *would this note still be true and useful on a completely unrelated
 campaign?* If it names the subject matter, it belongs elsewhere. Record the rule,
@@ -254,7 +256,7 @@ Often empty — a run with no friction is a good run, not a gap to fill.
 
 ## Harness Friction Ledger (`control-plane/_harness/friction.md`)
 
-The cross-run aggregation point. Campaign cleanup, task complete, and objective review each
+The cross-run aggregation point. Campaign cleanup, mission complete, and responsibility review each
 append unresolved, generalizable friction here. **Permanent** — the campaign folder that
 produced an entry is deleted, so this is the only thing that survives to inform the next
 run. Create it on first use.
@@ -278,7 +280,7 @@ one annoyance is noise, the same annoyance three times is a defect.
 
 | Date | Tier | Source | Friction | Recurred |
 |---|---|---|---|---|
-| YYYY-MM-DD | campaign \| task \| objective | {name} | {the rule, one line} | 1 |
+| YYYY-MM-DD | campaign \| mission \| responsibility | {name} | {the rule, one line} | 1 |
 
 ## Resolved
 
@@ -295,7 +297,7 @@ one annoyance is noise, the same annoyance three times is a defect.
 
 ## What and Why
 
-{What the mission was and why it was initiated — 2–4 sentences}
+{What the campaign was and why it was initiated — 2–4 sentences}
 
 ## What Was Delivered
 
@@ -311,8 +313,8 @@ one annoyance is noise, the same annoyance three times is a defect.
 
 ## Durable Artifacts
 
-{Links to outputs, knowledge notes, project files, or systems that persist after the mission closes}
-- Produced artifacts → `control-plane/outputs/{mission-name}/` (slides, documents, configs, generated content)
+{Links to outputs, knowledge notes, project files, or systems that persist after the campaign closes}
+- Produced artifacts → `control-plane/outputs/{campaign-name}/` (slides, documents, configs, generated content)
 - Vault additions → `knowledge/vault/` paths
 - Code → `projects/{name}/` paths
 ← if none, write "None — {explanation}"
@@ -329,7 +331,7 @@ one annoyance is noise, the same annoyance three times is a defect.
 When adding to the Active table in `workstreams/index.md`:
 
 ```markdown
-| [{name}]({name}/index.md) | {one-line description} | {QRDPIV\|RPIV} | {phase} | {health} | [objectives/{parent}](../objectives/{parent}/index.md) |
+| [{name}]({name}/index.md) | {one-line description} | {QRDBIV\|RBIV} | {phase} | {health} | [objectives/{parent}](../objectives/{parent}/index.md) |
 ```
 
 When moving to Recently Completed:

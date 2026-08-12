@@ -3,13 +3,13 @@
 ## Decisions (LLM)
 
 1. **Name** — propose `kebab-case-name`, confirm before creating anything.
-2. **Framework** — QRDPIV unless spec is clear, well-scoped, single-domain → RPIV.
+2. **Framework** — QRDBIV unless spec is clear, well-scoped, single-domain → RBIV.
 3. **Parent** — check `control-plane/objectives/index.md`; standalone if no match. If strategic work warrants an objective that doesn't exist yet, suggest creating it first via the `/harness-core:objective` skill.
 
 ## Scaffold (tool)
 
 ```bash
-python -B tools/workstream.py create <name> [--framework rpiv] [--parent objectives/<name>] [--title "Title"]
+python -B tools/workstream.py create <name> [--framework rbiv] [--parent objectives/<name>] [--title "Title"]
 ```
 
 A parent objective is recorded as `parent: "objectives/{name}"` in the created `index.md`.
@@ -32,5 +32,5 @@ Leave the intake file(s) in place — they are **not** deleted at promotion. Cle
 
 ## Hand off
 
-- QRDPIV → `actions/questions.md`
-- RPIV → `actions/research.md`
+- QRDBIV → `actions/questions.md`
+- RBIV → `actions/research.md`

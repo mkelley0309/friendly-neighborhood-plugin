@@ -239,7 +239,7 @@ Cartographer may create this section if absent. Human authors should include it 
 
 The pipeline is the only sanctioned path into the vault:
 
-1. **Distillation** — via the `knowledge` skill, reading from `knowledge/sources/` or `knowledge/perspective/`. All distiller-produced notes must pass Peer Reviewer admission before writing. Perspective-distilled notes are marked `provenance: first-party` and land at the content-appropriate concept subtree (never `vault/perspective/`).
+1. **Distillation** — via the `web-archive` skill, reading from `knowledge/sources/` or `knowledge/perspective/`. All distiller-produced notes must pass Peer Reviewer admission before writing. Perspective-distilled notes are marked `provenance: first-party` and land at the content-appropriate concept subtree (never `vault/perspective/`).
 2. **Harvester → Peer Reviewer** — Harvester stages candidates; Peer Reviewer applies admission criteria (semantic density, single-concept, outbound links, dedup) before ADMIT. First-party content Harvester encounters is auto-routed to `perspective/` instead of staged.
 3. **Hand-authoring** — direct edits via Obsidian or filesystem tools. Hand-authored notes are exempt from the queue but must still comply with all conventions in this document. Peer Review is strongly recommended.
 
@@ -285,11 +285,11 @@ Inside the vault, use Obsidian wiki-links: `[[note-name]]` or `[[note-name|Displ
 
 - Raw vendor documentation → `knowledge/sources/`
 - Scripts, code, executable artifacts → `projects/` or `tools/`
-- Workstream scratch → `control-plane/workstreams/{name}/_working/`
-- Workstream logs → `control-plane/workstreams/_log/` (retained, but outside the vault)
-- Objectives → `control-plane/objectives/{name}/index.md` (outside the vault by design — control-plane state, not knowledge)
+- Campaign scratch → `control-plane/workstreams/{name}/_working/`
+- Campaign logs → `control-plane/workstreams/_log/` (retained, but outside the vault)
+- Responsibilities → `control-plane/objectives/{name}/index.md` (outside the vault by design — control-plane state, not knowledge)
 
-The sanctioned distillation path into the vault is via the `knowledge` skill.
+The sanctioned distillation path into the vault is via the `web-archive` skill.
 
 ---
 
