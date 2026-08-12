@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Workstream state management — QRDPIV phase machine, no LLM."""
+"""Workstream state management — QRDBIV phase machine, no LLM."""
 
 import argparse
 import os
@@ -17,25 +17,25 @@ WORKSTREAMS_DIR = WORKSPACE / "control-plane" / "workstreams"
 PORTFOLIO_INDEX = WORKSTREAMS_DIR / "index.md"
 
 VALID_PHASES = [
-    "questions", "research", "design", "plan",
+    "questions", "research", "design", "blueprint",
     "implement", "validate", "complete", "cleanup",
 ]
 
 PHASE_NEXT = {
     "questions":  "actions/questions.md  → advance: workstream advance <name> research",
-    "research":   "actions/research.md   → advance: workstream advance <name> design|plan",
-    "design":     "actions/design.md     → advance: workstream advance <name> plan",
-    "plan":       "actions/plan.md       → advance: workstream advance <name> implement",
+    "research":   "actions/research.md   → advance: workstream advance <name> design|blueprint",
+    "design":     "actions/design.md     → advance: workstream advance <name> blueprint",
+    "blueprint":  "actions/blueprint.md  → advance: workstream advance <name> implement",
     "implement":  "actions/implement.md  → check steps: workstream check-step <name> \"<step>\"",
     "validate":   "actions/validate.md   → advance: workstream advance <name> complete",
     "complete":   "actions/cleanup.md    → archive: workstream archive <name> --log-date YYYY-MM-DD",
     "cleanup":    "actions/cleanup.md    → delete: workstream delete <name>",
 }
 
-# rpiv framework starts at research (clear-spec: no questions/design)
+# rbiv framework starts at research (clear-spec: no questions/design)
 FRAMEWORK_START = {
-    "qrdpiv": "questions",
-    "rpiv":   "research",
+    "qrdbiv": "questions",
+    "rbiv":   "research",
 }
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -81,8 +81,8 @@ def md_cell(value):
     """Make a value safe to sit in a | Field | Value | cell.
 
     An unescaped pipe splits the row into extra cells, and the orphaned
-    fragment survives every later write. Plan step text routinely contains
-    pipes.
+    fragment survives every later write. Blueprint step text routinely
+    contains pipes.
     """
     return value.replace("|", "\\|").replace("\n", " ").strip()
 
@@ -105,7 +105,7 @@ def status_row_set(text, field, value):
 STEP_NUM_RE = re.compile(r"^\d+(?:\.\d+)*$")
 
 def step_matches(line, query):
-    """Match a plan step by number token, falling back to substring.
+    """Match a blueprint step by number token, falling back to substring.
 
     A bare substring test makes '1.1' match '1.10' — silently ticking the
     wrong step. When the query looks like a step number, match it as a whole
@@ -114,6 +114,13 @@ def step_matches(line, query):
     if STEP_NUM_RE.match(query):
         return re.search(rf"(?<![\d.]){re.escape(query)}(?![\d.])", line) is not None
     return query in line
+
+def blueprint_path(ws):
+    """blueprint.md is the current name; plan.md is the pre-rename name still in
+    use by workstreams opened before the blueprint rename (per the rename
+    policy, existing files are not rewritten)."""
+    p = ws / "blueprint.md"
+    return p if p.exists() else ws / "plan.md"
 
 def ensure_portfolio_index():
     if not PORTFOLIO_INDEX.exists():
@@ -235,9 +242,9 @@ def cmd_create(args):
         parent_link = "—"
 
     artifact_table = ""
-    if fw == "qrdpiv":
+    if fw == "qrdbiv":
         artifact_table = """
-## QRDPIV Artifact Status
+## QRDBIV Artifact Status
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -247,18 +254,18 @@ def cmd_create(args):
 | Research — Codebase | `_working/research-code-*.md` | Not started |
 | Research — Distillation | `research.md` | Not started |
 | Design | `design.md` | Not started |
-| Plan | `plan.md` | Not started |
+| Blueprint | `blueprint.md` | Not started |
 | Implement | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 """
-    elif fw == "rpiv":
+    elif fw == "rbiv":
         artifact_table = """
-## RPIV Artifact Status
+## RBIV Artifact Status
 
 | Step | Artifact | Status |
 |---|---|---|
 | Research | `research.md` | Not started |
-| Plan | `plan.md` | Not started |
+| Blueprint | `blueprint.md` | Not started |
 | Implement | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 """
@@ -437,9 +444,9 @@ def cmd_aside(args):
 
 def cmd_check_step(args):
     ws        = init_dir(args.name)
-    plan_path = ws / "plan.md"
+    plan_path = blueprint_path(ws)
     if not plan_path.exists():
-        die("plan.md not found")
+        die("blueprint.md not found")
 
     # keepends: rebuilding with "\n".join() drops the trailing newline, and
     # write_text re-translates every LF to CRLF on Windows — a one-line tick
@@ -483,7 +490,7 @@ def cmd_advance(args):
     idx_text = status_row_set(idx_text, "Last Active", today())
 
     if phase == "implement":
-        plan_path = init_dir(args.name) / "plan.md"
+        plan_path = blueprint_path(init_dir(args.name))
         if plan_path.exists():
             m = re.search(r"^[-*]\s*\[\s*\]\s*(.+)$", plan_path.read_text(encoding="utf-8"), re.MULTILINE)
             if m:
@@ -570,7 +577,7 @@ def cmd_delete(args):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    p = argparse.ArgumentParser(description="Workstream state management — QRDPIV")
+    p = argparse.ArgumentParser(description="Workstream state management — QRDBIV")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("list", help="List active workstreams")
@@ -586,8 +593,8 @@ def main():
 
     s = sub.add_parser("create", help="Create a new workstream")
     s.add_argument("name", help="Workstream name (kebab-case)")
-    s.add_argument("--framework", choices=["qrdpiv", "rpiv"], default="qrdpiv",
-                   help="qrdpiv (default, all phases) or rpiv (clear-spec: research→plan→implement→validate)")
+    s.add_argument("--framework", choices=["qrdbiv", "rbiv"], default="qrdbiv",
+                   help="qrdbiv (default, all phases) or rbiv (clear-spec: research→blueprint→implement→validate)")
     s.add_argument("--parent", metavar="objectives/<name>",
                    help="Parent path, e.g. objectives/my-objective")
     s.add_argument("--title", help="Human-readable title (defaults to title-cased name)")
@@ -605,7 +612,7 @@ def main():
     s.add_argument("--blocking", action="store_true",
                    help="the workstream cannot proceed until this is done")
 
-    s = sub.add_parser("check-step", help="Tick a plan.md checkbox and advance current_step")
+    s = sub.add_parser("check-step", help="Tick a blueprint.md checkbox and advance current_step")
     s.add_argument("name")
     s.add_argument("step", help="Substring matching the unchecked step text")
 

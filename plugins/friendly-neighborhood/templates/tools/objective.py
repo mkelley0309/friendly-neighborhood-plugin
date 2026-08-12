@@ -25,16 +25,16 @@ def die(msg):
     sys.exit(1)
 
 def ensure_portfolio_index():
-    """Create the objectives portfolio index if it's missing (header-agnostic insert anchors on the separator)."""
+    """Create the responsibilities portfolio index if it's missing (header-agnostic insert anchors on the separator)."""
     if not PORTFOLIO_INDEX.exists():
         OBJECTIVES_DIR.mkdir(parents=True, exist_ok=True)
         PORTFOLIO_INDEX.write_text(
-            "# Objectives\n\n"
+            "# Responsibilities\n\n"
             "## Active\n\n"
-            "| Objective | Description | Status |\n"
+            "| Responsibility | Description | Status |\n"
             "|---|---|---|\n\n"
             "## Complete\n\n"
-            "| Objective | Description | Completed | Key Outcome |\n"
+            "| Responsibility | Description | Completed | Key Outcome |\n"
             "|---|---|---|---|\n",
             encoding="utf-8",
         )
@@ -47,7 +47,7 @@ def kebab_ok(name):
 
 def obj_dir(name):
     if not kebab_ok(name):
-        die(f"invalid objective name '{name}' — must be kebab-case (a-z, 0-9, hyphens); no path separators")
+        die(f"invalid responsibility name '{name}' — must be kebab-case (a-z, 0-9, hyphens); no path separators")
     p = OBJECTIVES_DIR / name
     if not p.exists():
         die(f"objective '{name}' not found at {p}")
@@ -186,11 +186,11 @@ def index_insert_point(text, subgroup=None):
                 return i + 1
     return None
 
-def normalize_mission_ref(ref):
+def normalize_workstream_ref(ref):
     """Bare name → workstreams/<name>; explicit paths (incl. _log/ entries) pass through."""
     return ref if "/" in ref else f"workstreams/{ref}"
 
-def mission_ref_exists(ref):
+def workstream_ref_exists(ref):
     """True if the reference resolves on disk, as a folder index or a _log/ entry."""
     base = WORKSPACE / "control-plane" / ref
     return (base / "index.md").exists() or base.exists() or base.with_suffix(".md").exists()
@@ -307,11 +307,11 @@ def _render_milestone_section(items):
 # ---------------------------------------------------------------------------
 # Campaigns helpers
 # ---------------------------------------------------------------------------
-MISSIONS_HEADER = "## Campaigns"
-MISSIONS_SEP    = "|---|---|---|"
+WORKSTREAMS_HEADER = "## Campaigns"
+WORKSTREAMS_SEP    = "|---|---|---|"
 
-def _parse_missions(text):
-    sec = section_text(text, MISSIONS_HEADER)
+def _parse_workstreams(text):
+    sec = section_text(text, WORKSTREAMS_HEADER)
     if not sec:
         return []
     rows = []
@@ -323,11 +323,11 @@ def _parse_missions(text):
         if in_table and ln.startswith("|"):
             parts = [c.strip() for c in ln.strip("|").split("|")]
             if len(parts) >= 3 and "*(none yet)*" not in parts[0]:
-                rows.append({"campaign": parts[0], "status": parts[1], "linked": parts[2]})
+                rows.append({"workstream": parts[0], "status": parts[1], "linked": parts[2]})
     return rows
 
-def _render_missions_section(rows):
-    lines = [f"{MISSIONS_HEADER}\n", "\n",
+def _render_workstreams_section(rows):
+    lines = [f"{WORKSTREAMS_HEADER}\n", "\n",
              "| Campaign | Status | Linked |\n",
              "|---|---|---|\n"]
     if not rows:
@@ -378,7 +378,7 @@ def cmd_status(args):
         print(f"  [{mark}] {m['text']}")
 
     # Campaigns
-    campaigns = _parse_missions(text)
+    campaigns = _parse_workstreams(text)
     if campaigns:
         active = sum(1 for m in campaigns if m["status"] == "active")
         summary = f"{len(campaigns)}" + (f", {active} active" if active else "")
@@ -401,13 +401,21 @@ def cmd_status(args):
 def cmd_create(args):
     name = args.name
     if not kebab_ok(name):
-        die(f"invalid objective name '{name}' — must be kebab-case (a-z, 0-9, hyphens); no path separators")
+        die(f"invalid responsibility name '{name}' — must be kebab-case (a-z, 0-9, hyphens); no path separators")
     dest = OBJECTIVES_DIR / name
     if dest.exists():
         die(f"'{name}' already exists")
 
     title   = args.title or name.replace("-", " ").title()
     today_s = today()
+    origin  = getattr(args, "origin", None) or ""
+    origin_line = ""
+    if origin:
+        origin_line = (
+            f"*Promoted from* [{origin}](../../{origin}/index.md)*, which outgrew its tier. "
+            "That work keeps its original scope and closes itself out under this responsibility "
+            "rather than being rewritten — the promotion gives it a parent, it does not "
+            "change what it was for.*\n\n")
 
     index_md = f"""---
 objective: {name}
@@ -415,14 +423,15 @@ status: active
 health: on-track
 cadence: quarterly
 created: {today_s}
-tags: [objective]
+promoted_from: "{origin}"
+tags: [responsibility]
 ---
 
-# {title} — Objective Context
+# {title} — Responsibility Context
 
-## Objective
+## Responsibility
 
-*What this is and why it matters. Tie to strategy where relevant.*
+{origin_line}*What this is and why it matters. Tie to strategy where relevant.*
 
 ## Success Criteria
 
@@ -456,11 +465,11 @@ tags: [objective]
 
 ## Definition of Done
 
-*Specific conditions under which this objective closes.*
+*Specific conditions under which this responsibility closes.*
 
 ## Related Notes
 
-- *links to child workstreams, parent strategy, dependent objectives*
+- *links to child campaigns, parent strategy, dependent responsibilities*
 """
 
     dest.mkdir(parents=True)
@@ -486,38 +495,38 @@ tags: [objective]
     print(f"updated: {PORTFOLIO_INDEX}")
 
 
-def review_dir(name):
-    return obj_dir(name) / "reviews"
+def checkpoint_dir(name):
+    return obj_dir(name) / "checkpoints"
 
-def render_review(name, text, when):
-    """Build a review entry from the objective's current tracked state.
+def render_checkpoint(name, text, when):
+    """Build a checkpoint entry from the responsibility's current tracked state.
 
-    Read-only with respect to index.md — the review is a point-in-time snapshot,
+    Read-only with respect to index.md — the checkpoint is a point-in-time snapshot,
     written alongside the anchor rather than appended to it. This is what gives
     KRs a history: `update-kr` overwrites `current` in place, so without a dated
     snapshot the trajectory is lost on every update.
     """
     krs = _parse_kr_table(text)
     milestones = _parse_milestones(text)
-    campaigns = _parse_missions(text)
+    campaigns = _parse_workstreams(text)
     health = fm_get(text, "health") or "—"
     cadence = fm_get(text, "cadence") or "—"
     done = sum(1 for m in milestones if m["done"])
 
     out = [
         "---",
-        "note_type: objective-review",
+        "note_type: objective-checkpoint",
         f"objective: {name}",
-        f"review_date: {when}",
+        f"checkpoint_date: {when}",
         f"health: {health}",
         f"cadence: {cadence}",
-        f"tags: [objective/{name}, review]",
+        f"tags: [objective/{name}, checkpoint]",
         "---",
-        f"# {name} — Review {when}",
+        f"# {name} — Checkpoint {when}",
         "",
         f"Point-in-time snapshot. Health **{health}**, cadence **{cadence}**.",
         "",
-        "## Key Results at Review",
+        "## Key Results at Checkpoint",
         "",
     ]
     if krs:
@@ -531,41 +540,41 @@ def render_review(name, text, when):
     out += ([f"- [{'x' if m['done'] else ' '}] {m['text']}" for m in milestones]
             or ["*(none)*"])
     out += ["", "## Campaigns", ""]
-    out += ([f"- `{w['campaign']}` — {w['status']}" for w in workstreams]
+    out += ([f"- `{w['campaign']}` — {w['status']}" for w in campaigns]
             or ["*(none linked)*"])
     out += [
         "", "## Health Assessment", "",
         f"**{health}** — *state the evidence for this call; cite lines in `index.md` "
-        "or a linked workstream. A health value without evidence is an assertion.*",
-        "", "## Movement Since Last Review", "",
+        "or a linked campaign. A health value without evidence is an assertion.*",
+        "", "## Movement Since Last Checkpoint", "",
         "*What changed, what did not, and why. Compare against the previous entry in "
         "this folder.*",
         "", "## Decisions Taken", "",
-        "*Anything decided at this review. Material decisions also belong in the "
+        "*Anything decided at this checkpoint. Material decisions also belong in the "
         "objective's append-only `## Key Decisions Log`.*",
         "", "## Harness Friction", "",
-        "*Only how the objective machinery performed this cycle — a command that "
-        "misbehaved, an instruction that was wrong, a review step that could not be "
+        "*Only how the responsibility machinery performed this cycle — a command that "
+        "misbehaved, an instruction that was wrong, a checkpoint step that could not be "
         "carried out. Not progress, not blockers on the work itself. Would it still "
-        "be true for an unrelated objective? If not, it belongs above. Usually empty; "
+        "be true for an unrelated responsibility? If not, it belongs above. Usually empty; "
         "carry anything unresolved to `control-plane/_harness/friction.md`.*",
-        "", "## Next Review", "",
+        "", "## Next Checkpoint", "",
         f"*Per cadence `{cadence}`.*", "",
     ]
     return "\n".join(out)
 
-def cmd_review(args):
+def cmd_checkpoint(args):
     _, text = read_index(args.name)
     when = args.date or today()
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", when):
         die(f"invalid date '{when}' — expected YYYY-MM-DD")
-    rdir = review_dir(args.name)
-    rdir.mkdir(parents=True, exist_ok=True)
-    dest = rdir / f"{when}.md"
+    cdir = checkpoint_dir(args.name)
+    cdir.mkdir(parents=True, exist_ok=True)
+    dest = cdir / f"{when}.md"
     if dest.exists() and not args.force:
-        die(f"review already exists: {dest} — pass --force to overwrite")
-    dest.write_text(render_review(args.name, text, when), encoding="utf-8")
-    print(f"review written: {dest}")
+        die(f"checkpoint already exists: {dest} — pass --force to overwrite")
+    dest.write_text(render_checkpoint(args.name, text, when), encoding="utf-8")
+    print(f"checkpoint written: {dest}")
 
 
 def cmd_log_decision(args):
@@ -678,23 +687,23 @@ def cmd_check_milestone(args):
 
 VALID_LINK_STATUSES = ("active", "complete", "paused", "abandoned")
 
-def cmd_link_mission(args):
+def cmd_link_workstream(args):
     idx_path, idx_text = read_index(args.objective)
-    rows = _parse_missions(idx_text)
-    ref = normalize_mission_ref(args.workstream)
+    rows = _parse_workstreams(idx_text)
+    ref = normalize_workstream_ref(args.workstream)
     status = getattr(args, "status", None) or "active"
     if status not in VALID_LINK_STATUSES:
         die(f"invalid status '{status}' — must be one of: {', '.join(VALID_LINK_STATUSES)}")
-    if not mission_ref_exists(ref):
+    if not workstream_ref_exists(ref):
         die(f"workstream not found on disk: control-plane/{ref} — "
             "check the name, or pass an explicit path such as "
             "workstreams/_log/YYYY-MM-DD-name")
-    if any(r["campaign"] == ref for r in rows):
+    if any(r["workstream"] == ref for r in rows):
         print(f"already linked: {ref}")
         return
-    rows.append({"campaign": ref, "status": status,
+    rows.append({"workstream": ref, "status": status,
                  "linked": today()})
-    idx_text = replace_section(idx_text, MISSIONS_HEADER, _render_missions_section(rows))
+    idx_text = replace_section(idx_text, WORKSTREAMS_HEADER, _render_workstreams_section(rows))
     idx_path.write_text(idx_text, encoding="utf-8")
     print(f"linked campaign: {ref}")
 
@@ -716,14 +725,17 @@ def main():
     s = sub.add_parser("create")
     s.add_argument("name")
     s.add_argument("--title")
+    s.add_argument("--from", dest="origin", metavar="PATH",
+                   help="the campaign or cadence that outgrew its tier, e.g. "
+                        "workstreams/vault-reindex. Records the promotion.")
     s.add_argument("--group",
                    help="### subgroup of the Active table to insert into "
                         "(e.g. 'Infrastructure Builds'); defaults to the first")
 
-    s = sub.add_parser("review",
-                       help="scaffold a dated review entry in objectives/<name>/reviews/")
+    s = sub.add_parser("checkpoint",
+                       help="scaffold a dated checkpoint entry in objectives/<name>/checkpoints/")
     s.add_argument("name")
-    s.add_argument("--date", help="review date (YYYY-MM-DD); defaults to today")
+    s.add_argument("--date", help="checkpoint date (YYYY-MM-DD); defaults to today")
     s.add_argument("--force", action="store_true",
                    help="overwrite an existing entry for that date")
 
@@ -778,8 +790,8 @@ def main():
         "update-kr":       cmd_update_kr,
         "add-milestone":   cmd_add_milestone,
         "check-milestone": cmd_check_milestone,
-        "link-campaign":    cmd_link_mission,
-        "review":             cmd_review,
+        "link-campaign":    cmd_link_workstream,
+        "checkpoint":         cmd_checkpoint,
     }[args.cmd](args)
 
 

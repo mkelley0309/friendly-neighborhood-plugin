@@ -43,8 +43,8 @@ don't support rules.
 
 | Phase | From | To |
 |---|---|---|
-| In-session | `_working/` | `research.md` / `design.md` / `plan.md` |
-| Campaign implement | plan step execution | `outputs/{campaign-name}/` (never inside the campaign folder) |
+| In-session | `_working/` | `research.md` / `design.md` / `blueprint.md` |
+| Campaign implement | blueprint step execution | `outputs/{campaign-name}/` (never inside the campaign folder) |
 | Campaign close | campaign folder | `control-plane/workstreams/_log/YYYY-MM-DD-{name}.md` |
 | Responsibility decisions | session | responsibility `index.md` → Key Decisions Log (append-only) |
 
@@ -148,7 +148,7 @@ ceremony to the size of the work.
 1. **Three tiers of work.** *Responsibility* = the long-lived "why" — a role, a measured annual
    responsibility, a career goal — with structured tracking (Key Results, milestones, cadence) and an
    append-only decisions log. *Campaign* = complex work spanning multiple sessions and
-   handoffs, run through the heavy **QRDPIV** lifecycle. *Mission* = a lightweight unit or one
+   handoffs, run through the heavy **QRDBIV** lifecycle. *Mission* = a lightweight unit or one
    iteration against a campaign, carrying only *proportional* admin. Strategy, campaigns, and
    lightweight units each keep their own durable state — and you size the ceremony to the tier.
 
@@ -157,7 +157,7 @@ ceremony to the size of the work.
    fresh context, not the raw history. Two things happen at once, and both matter:
    - **Semantic density** — pack maximum meaning into minimum tokens through compact words and
      careful, unambiguous synonym choice. The goal is *clarity*, not mere compaction.
-   - **Prune process, keep outcome.** A handoff artifact (`request.md`, `design.md`, `plan.md`)
+   - **Prune process, keep outcome.** A handoff artifact (`request.md`, `design.md`, `blueprint.md`)
      carries the *decisions reached*, not the back-and-forth that reached them. An option raised
      in Questions and dropped, a design considered and reversed — these are not evidence to
      preserve in the next artifact; carrying them forward is stale context that competes with the
@@ -232,7 +232,7 @@ The three tiers are *defined* in Operating Principle 1 — here's their machiner
 | Tier | CLI | Lifecycle |
 |---|---|---|
 | **Responsibility** | `objective.py` | structured tracking (Key Results, milestones, cadence, health) + append-only decisions log; never deleted |
-| **Campaign** | `workstream.py` | heavy **QRDPIV** (Q→R→D→P→I→V→Cleanup; **RPIV** if the spec's already clear); deleted at cleanup, its log survives; may link child missions |
+| **Campaign** | `workstream.py` | heavy **QRDBIV** (Q→R→D→B→I→V→Cleanup; **RBIV** if the spec's already clear); deleted at cleanup, its log survives; may link child missions |
 | **Mission** | `mission.py` | proportional admin only (mission / checklist / handoff / lessons); promote to a campaign if it grows |
 
 ---
@@ -248,21 +248,21 @@ never passively.
 | Tier | Driver | Standing counsel | Standing watch |
 |---|---|---|---|
 | **Responsibility** | main context | ethics/consequence check, evidence review, real-need check | corner-cutting the goal to mark it done |
-| **Campaign** (QRDPIV) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
+| **Campaign** (QRDBIV) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
 | **Mission** (light) | the driver the unit's *nature* calls for (default: general-purpose driver) | repeatability | claiming done unverified |
 
 **Drivers follow the *nature* of the work, not the tier:** a mission takes the one driver its
 task calls for; a campaign routes per phase; a responsibility is stewarded from main context. A mission keeps the council *small on purpose* — pick the fitting driver, run the gate, watch
 for unverified claims. Don't convene a campaign's full council around a one-shot task.
 
-### The QRDPIV phase council (campaigns)
+### The QRDBIV phase council (campaigns)
 
 | Phase | Driver | Counsel | Watch for |
 |---|---|---|---|
 | **Questions** | default driver | constructive design questions, devil's-advocate grilling of poorly-shaped work, real-need check, scope discipline | under-shaped/formless work, wrong target, corner-cutting |
 | **Research** | lookup/recall, investigation | scope discipline, systems, evidence review | diminishing returns, won't-update, wrong target, resource greed |
 | **Design** | architecture/planning driver | constructive shaping, ethics check, scope discipline, real-need check, evidence review | over-engineering, security, won't-update, wrong target, resource greed |
-| **Plan** | architecture/planning driver | scope discipline, systems | over-engineering, resource greed |
+| **Blueprint** | architecture/planning driver | scope discipline, systems | over-engineering, resource greed |
 | **Implement** | build (fans out across independent worktrees), drive; refactor, debug within | systems | needless destruction, security, brute force, ends-justify-means |
 | **Validate** | run it (test functionality against criteria), catch coincidental/green-for-wrong-reason passes | adversarial review | faked verification, security, fragile/cascading change, spite |
 | **Cleanup** | default driver | systems, adversarial review | needless destruction, faked verification |

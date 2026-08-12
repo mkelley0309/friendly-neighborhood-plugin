@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Workstream state management — QRDPIV phase machine, no LLM."""
+"""Workstream state management — QRDBIV phase machine, no LLM."""
 
 import argparse
 import os
@@ -17,25 +17,25 @@ WORKSTREAMS_DIR = WORKSPACE / "control-plane" / "workstreams"
 PORTFOLIO_INDEX = WORKSTREAMS_DIR / "index.md"
 
 VALID_PHASES = [
-    "questions", "research", "design", "plan",
+    "questions", "research", "design", "blueprint",
     "implement", "validate", "complete", "cleanup",
 ]
 
 PHASE_NEXT = {
-    "questions":  "actions/questions.md  → advance: workstream advance <name> research",
-    "research":   "actions/research.md   → advance: workstream advance <name> design|plan",
-    "design":     "actions/design.md     → advance: workstream advance <name> plan",
-    "plan":       "actions/plan.md       → advance: workstream advance <name> implement",
-    "implement":  "actions/implement.md  → check steps: workstream check-step <name> \"<step>\"",
-    "validate":   "actions/validate.md   → advance: workstream advance <name> complete",
-    "complete":   "actions/cleanup.md    → archive: workstream archive <name> --log-date YYYY-MM-DD",
-    "cleanup":    "actions/cleanup.md    → delete: workstream delete <name>",
+    "questions":  "actions/questions.md  → advance: campaign advance <name> research",
+    "research":   "actions/research.md   → advance: campaign advance <name> design|blueprint",
+    "design":     "actions/design.md     → advance: campaign advance <name> blueprint",
+    "blueprint":  "actions/blueprint.md  → advance: campaign advance <name> implement",
+    "implement":  "actions/implement.md  → check steps: campaign check-step <name> \"<step>\"",
+    "validate":   "actions/validate.md   → advance: campaign advance <name> complete",
+    "complete":   "actions/cleanup.md    → archive: campaign archive <name> --log-date YYYY-MM-DD",
+    "cleanup":    "actions/cleanup.md    → delete: campaign delete <name>",
 }
 
-# rpiv framework starts at research (clear-spec: no questions/design)
+# rbiv framework starts at research (clear-spec: no questions/design)
 FRAMEWORK_START = {
-    "qrdpiv": "questions",
-    "rpiv":   "research",
+    "qrdbiv": "questions",
+    "rbiv":   "research",
 }
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -52,7 +52,7 @@ def kebab_ok(name):
 
 def init_dir(name):
     if not kebab_ok(name):
-        die(f"invalid workstream name '{name}' — must be kebab-case (a-z, 0-9, hyphens); no path separators")
+        die(f"invalid campaign name '{name}' — must be kebab-case (a-z, 0-9, hyphens); no path separators")
     p = WORKSTREAMS_DIR / name
     if not p.exists():
         die(f"workstream '{name}' not found at {p}")
@@ -81,8 +81,8 @@ def md_cell(value):
     """Make a value safe to sit in a | Field | Value | cell.
 
     An unescaped pipe splits the row into extra cells, and the orphaned
-    fragment survives every later write. Plan step text routinely contains
-    pipes.
+    fragment survives every later write. Blueprint step text routinely
+    contains pipes.
     """
     return value.replace("|", "\\|").replace("\n", " ").strip()
 
@@ -105,7 +105,7 @@ def status_row_set(text, field, value):
 STEP_NUM_RE = re.compile(r"^\d+(?:\.\d+)*$")
 
 def step_matches(line, query):
-    """Match a plan step by number token, falling back to substring.
+    """Match a blueprint step by number token, falling back to substring.
 
     A bare substring test makes '1.1' match '1.10' — silently ticking the
     wrong step. When the query looks like a step number, match it as a whole
@@ -115,16 +115,23 @@ def step_matches(line, query):
         return re.search(rf"(?<![\d.]){re.escape(query)}(?![\d.])", line) is not None
     return query in line
 
+def blueprint_path(ws):
+    """blueprint.md is the current name; plan.md is the pre-rename name still in
+    use by campaigns opened before the blueprint rename (per the rename
+    policy, existing files are not rewritten)."""
+    p = ws / "blueprint.md"
+    return p if p.exists() else ws / "plan.md"
+
 def ensure_portfolio_index():
     if not PORTFOLIO_INDEX.exists():
         WORKSTREAMS_DIR.mkdir(parents=True, exist_ok=True)
         PORTFOLIO_INDEX.write_text(
-            "# Workstreams\n\n"
+            "# Campaigns\n\n"
             "## Active\n\n"
-            "| Workstream | Description | Framework | Phase | Health | Parent |\n"
+            "| Campaign | Description | Framework | Phase | Health | Parent |\n"
             "|---|---|---|---|---|---|\n\n"
             "## Recently Completed\n\n"
-            "| Workstream | Description | Completed |\n"
+            "| Campaign | Description | Completed |\n"
             "|---|---|---|\n",
             encoding="utf-8",
         )
@@ -235,9 +242,9 @@ def cmd_create(args):
         parent_link = "—"
 
     artifact_table = ""
-    if fw == "qrdpiv":
+    if fw == "qrdbiv":
         artifact_table = """
-## QRDPIV Artifact Status
+## QRDBIV Artifact Status
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -247,18 +254,18 @@ def cmd_create(args):
 | Research — Codebase | `_working/research-code-*.md` | Not started |
 | Research — Distillation | `research.md` | Not started |
 | Design | `design.md` | Not started |
-| Plan | `plan.md` | Not started |
+| Blueprint | `blueprint.md` | Not started |
 | Implement | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 """
-    elif fw == "rpiv":
+    elif fw == "rbiv":
         artifact_table = """
-## RPIV Artifact Status
+## RBIV Artifact Status
 
 | Step | Artifact | Status |
 |---|---|---|
 | Research | `research.md` | Not started |
-| Plan | `plan.md` | Not started |
+| Blueprint | `blueprint.md` | Not started |
 | Implement | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 """
@@ -278,7 +285,7 @@ tags: [workstream/{name}]
 
 # {title}
 
-## Workstream Status
+## Campaign Status
 
 | Field | Value |
 |---|---|
@@ -288,7 +295,7 @@ tags: [workstream/{name}]
 | Blocker | — |
 | Last Active | {today_s} |
 
-*One paragraph: what this workstream is and what it will deliver.*
+*One paragraph: what this campaign is and what it will deliver.*
 {artifact_table}
 ## Child Tasks
 
@@ -331,16 +338,16 @@ tags: [workstream/{name}]
 
 
 def cmd_link(args):
-    workstream = args.workstream
+    campaign = args.workstream
     task       = args.task
 
-    idx_path, idx_text = read_index(workstream)
+    idx_path, idx_text = read_index(campaign)
 
     task_section = re.search(r"## Child Tasks\n\n[^\n]+\n[^\n]+\n((?:\|[^\n]+\n)*)", idx_text)
     if task_section:
         existing = task_section.group(1)
         if re.search(rf"\|\s*{re.escape(task)}\s*\|", existing):
-            print(f"already linked: {task} → {workstream}")
+            print(f"already linked: {task} → {campaign}")
             return
 
     new_row = f"| {task} | {today()} |"
@@ -350,11 +357,11 @@ def cmd_link(args):
         idx_text
     )
     idx_path.write_text(idx_text, encoding="utf-8")
-    print(f"linked: {task} → {workstream}")
+    print(f"linked: {task} → {campaign}")
 
 
 ASIDE_KINDS = {
-    "dependency": "an external dependency that must be unblocked before this workstream can proceed",
+    "dependency": "an external dependency that must be unblocked before this campaign can proceed",
     "harness":    "a harness or tooling defect that got in the way",
     "knowledge":  "a knowledge-pipeline action (cartograph, distill, refresh)",
     "followup":   "related work worth doing, but not now and not here",
@@ -362,16 +369,16 @@ ASIDE_KINDS = {
 
 
 def cmd_aside(args):
-    """Spawn an mission for something that came up mid-workstream.
+    """Spawn a mission for something that came up mid-campaign.
 
     The point is context hygiene: the remediation runs in its own session against
-    its own record, so it never intermingles with the workstream's context. The
-    workstream keeps only a roster line and, if it cannot proceed, a blocker.
+    its own record, so it never intermingles with the campaign's context. The
+    campaign keeps only a roster line and, if it cannot proceed, a blocker.
     """
     import subprocess
     ws = args.workstream
     name = args.name
-    idx_path, idx_text = read_index(ws)          # fails fast if the workstream is absent
+    idx_path, idx_text = read_index(ws)          # fails fast if the campaign is absent
     phase = fm_get(idx_text, "workstream_phase") or "unknown"
 
     created = subprocess.run(
@@ -389,10 +396,10 @@ def cmd_aside(args):
         blocking_line = (
             f"**{ws} is BLOCKED on this.** When it is done, tell that session so it can "
             "continue — report what changed and nothing else, so the fix does not leak "
-            "into the workstream's context."
+            "into the campaign's context."
             if args.blocking else
             f"**{ws} is NOT blocked on this.** It continues in parallel. Nothing needs to "
-            "be reported back unless the outcome changes that workstream's plan.")
+            "be reported back unless the outcome changes that campaign's plan.")
         body = (f"Spawned as an aside from [workstreams/{ws}](../../workstreams/{ws}/index.md) "
                 f"at the **{phase}** phase, so the work below stays out of that session's context.\n\n"
                 f"**What came up:** {args.reason}\n\n"
@@ -403,7 +410,7 @@ def cmd_aside(args):
             lambda m: m.group(1) + body, t, count=1)
         a_idx.write_text(t, encoding="utf-8")
 
-    # Roster line on the workstream (supports both the old and new section heading).
+    # Roster line on the campaign (supports both the old and new section heading).
     heading = "Child Missions" if "## Child Missions" in idx_text else "Child Tasks"
     if re.search(rf"\|\s*{re.escape(name)}\s*\|", idx_text):
         print(f"already linked: {name} → {ws}")
@@ -437,9 +444,9 @@ def cmd_aside(args):
 
 def cmd_check_step(args):
     ws        = init_dir(args.name)
-    plan_path = ws / "plan.md"
+    plan_path = blueprint_path(ws)
     if not plan_path.exists():
-        die("plan.md not found")
+        die("blueprint.md not found")
 
     # keepends: rebuilding with "\n".join() drops the trailing newline, and
     # write_text re-translates every LF to CRLF on Windows — a one-line tick
@@ -483,7 +490,7 @@ def cmd_advance(args):
     idx_text = status_row_set(idx_text, "Last Active", today())
 
     if phase == "implement":
-        plan_path = init_dir(args.name) / "plan.md"
+        plan_path = blueprint_path(init_dir(args.name))
         if plan_path.exists():
             m = re.search(r"^[-*]\s*\[\s*\]\s*(.+)$", plan_path.read_text(encoding="utf-8"), re.MULTILINE)
             if m:
@@ -523,7 +530,7 @@ def cmd_unblock(args):
     by = getattr(args, "by", None)
     print(f"unblocked: {args.name}" + (f"  (cleared by missions/{by})" if by else ""))
     if by:
-        print("resume from the workstream's own artifacts. Do not re-read the aside's "
+        print("resume from the campaign's own artifacts. Do not re-read the aside's "
               "record — the point of spawning it was to keep that out of this context.")
 
 
@@ -570,10 +577,10 @@ def cmd_delete(args):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    p = argparse.ArgumentParser(description="Workstream state management — QRDPIV")
+    p = argparse.ArgumentParser(description="Workstream state management — QRDBIV")
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("list", help="List active workstreams")
+    sub.add_parser("list", help="List active campaigns")
 
     for name_cmd in ("status", "next", "complete", "delete"):
         s = sub.add_parser(name_cmd)
@@ -581,43 +588,43 @@ def main():
 
     s = sub.add_parser("unblock", help="Clear a blocker and resume")
     s.add_argument("name")
-    s.add_argument("--by", metavar="ASSIGNMENT",
+    s.add_argument("--by", metavar="MISSION",
                    help="the mission that cleared it, if one did")
 
-    s = sub.add_parser("create", help="Create a new workstream")
+    s = sub.add_parser("create", help="Create a new campaign")
     s.add_argument("name", help="Workstream name (kebab-case)")
-    s.add_argument("--framework", choices=["qrdpiv", "rpiv"], default="qrdpiv",
-                   help="qrdpiv (default, all phases) or rpiv (clear-spec: research→plan→implement→validate)")
+    s.add_argument("--framework", choices=["qrdbiv", "rbiv"], default="qrdbiv",
+                   help="qrdbiv (default, all phases) or rbiv (clear-spec: research→blueprint→implement→validate)")
     s.add_argument("--parent", metavar="objectives/<name>",
-                   help="Parent path, e.g. objectives/my-objective")
+                   help="Parent path, e.g. objectives/my-responsibility")
     s.add_argument("--title", help="Human-readable title (defaults to title-cased name)")
 
-    s = sub.add_parser("link", help="Register a child mission under this workstream")
+    s = sub.add_parser("link", help="Register a child mission under this campaign")
     s.add_argument("workstream", help="Workstream name")
     s.add_argument("task", metavar="mission", help="Mission name to link")
 
-    s = sub.add_parser("aside", help="Spawn an mission for something that came up mid-workstream")
+    s = sub.add_parser("aside", help="Spawn a mission for something that came up mid-campaign")
     s.add_argument("workstream", help="Workstream the aside came up in")
     s.add_argument("name", help="Mission name (kebab-case)")
     s.add_argument("--reason", required=True, help="what came up")
     s.add_argument("--kind", choices=sorted(ASIDE_KINDS), default="followup",
                    help="dependency | harness | knowledge | followup (default)")
     s.add_argument("--blocking", action="store_true",
-                   help="the workstream cannot proceed until this is done")
+                   help="the campaign cannot proceed until this is done")
 
-    s = sub.add_parser("check-step", help="Tick a plan.md checkbox and advance current_step")
+    s = sub.add_parser("check-step", help="Tick a blueprint.md checkbox and advance current_step")
     s.add_argument("name")
     s.add_argument("step", help="Substring matching the unchecked step text")
 
-    s = sub.add_parser("advance", help="Advance workstream to the next phase")
+    s = sub.add_parser("advance", help="Advance campaign to the next phase")
     s.add_argument("name")
     s.add_argument("phase", choices=VALID_PHASES)
 
-    s = sub.add_parser("block", help="Mark workstream blocked")
+    s = sub.add_parser("block", help="Mark campaign blocked")
     s.add_argument("name")
     s.add_argument("reason")
 
-    s = sub.add_parser("archive", help="Move workstream from Active to Recently Completed in portfolio")
+    s = sub.add_parser("archive", help="Move campaign from Active to Recently Completed in portfolio")
     s.add_argument("name")
     s.add_argument("--log-date")
     s.add_argument("--description")

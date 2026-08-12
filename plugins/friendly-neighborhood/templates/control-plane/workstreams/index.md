@@ -1,11 +1,11 @@
 ---
 note_type: portfolio-index
-scope: workstreams
+scope: campaigns
 ---
 
 # Campaigns
 
-Portfolio index of campaigns — complex, multi-session work run through the heavy QRDPIV lifecycle. See [../CLAUDE.md](../CLAUDE.md) for the framework.
+Portfolio index of multi-session discrete efforts. See [../CLAUDE.md](../CLAUDE.md) for the framework.
 
 ## Active
 

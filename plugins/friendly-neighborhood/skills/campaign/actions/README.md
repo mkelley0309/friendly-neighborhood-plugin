@@ -8,10 +8,10 @@ Routing table lives in `../SKILL.md`.
 |---|---|
 | `initiate.md` | New campaign — create folder, `index.md`, frontmatter, parent link |
 | `assess.md` | Existing campaign — orient, report phase/health, recommend next step |
-| `questions.md` | QRDPIV Questions step — shape ambiguous request into `request.md` |
+| `questions.md` | QRDBIV Questions step — shape ambiguous request into `request.md` |
 | `research.md` | Research step — run knowledge/web/codebase passes, distill to `research.md` |
 | `design.md` | Design step — architectural decisions before planning |
-| `plan.md` | Plan step — produce executable `plan.md` with steps and completion criteria |
-| `implement.md` | Implement step — execute the plan; check off steps; update `index.md` |
+| `blueprint.md` | Blueprint step — produce executable `blueprint.md` with steps and completion criteria |
+| `implement.md` | Implement step — execute the blueprint; check off steps; update `index.md` |
 | `validate.md` | Validate step — run gate + adversarial QA before closing |
 | `cleanup.md` | Campaign complete — write log, delete folder, update portfolio index |

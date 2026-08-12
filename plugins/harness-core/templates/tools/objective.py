@@ -495,13 +495,13 @@ tags: [objective]
     print(f"updated: {PORTFOLIO_INDEX}")
 
 
-def review_dir(name):
-    return obj_dir(name) / "reviews"
+def checkpoint_dir(name):
+    return obj_dir(name) / "checkpoints"
 
-def render_review(name, text, when):
-    """Build a review entry from the objective's current tracked state.
+def render_checkpoint(name, text, when):
+    """Build a checkpoint entry from the objective's current tracked state.
 
-    Read-only with respect to index.md — the review is a point-in-time snapshot,
+    Read-only with respect to index.md — the checkpoint is a point-in-time snapshot,
     written alongside the anchor rather than appended to it. This is what gives
     KRs a history: `update-kr` overwrites `current` in place, so without a dated
     snapshot the trajectory is lost on every update.
@@ -515,18 +515,18 @@ def render_review(name, text, when):
 
     out = [
         "---",
-        "note_type: objective-review",
+        "note_type: objective-checkpoint",
         f"objective: {name}",
-        f"review_date: {when}",
+        f"checkpoint_date: {when}",
         f"health: {health}",
         f"cadence: {cadence}",
-        f"tags: [objective/{name}, review]",
+        f"tags: [objective/{name}, checkpoint]",
         "---",
-        f"# {name} — Review {when}",
+        f"# {name} — Checkpoint {when}",
         "",
         f"Point-in-time snapshot. Health **{health}**, cadence **{cadence}**.",
         "",
-        "## Key Results at Review",
+        "## Key Results at Checkpoint",
         "",
     ]
     if krs:
@@ -546,35 +546,35 @@ def render_review(name, text, when):
         "", "## Health Assessment", "",
         f"**{health}** — *state the evidence for this call; cite lines in `index.md` "
         "or a linked workstream. A health value without evidence is an assertion.*",
-        "", "## Movement Since Last Review", "",
+        "", "## Movement Since Last Checkpoint", "",
         "*What changed, what did not, and why. Compare against the previous entry in "
         "this folder.*",
         "", "## Decisions Taken", "",
-        "*Anything decided at this review. Material decisions also belong in the "
+        "*Anything decided at this checkpoint. Material decisions also belong in the "
         "objective's append-only `## Key Decisions Log`.*",
         "", "## Harness Friction", "",
         "*Only how the objective machinery performed this cycle — a command that "
-        "misbehaved, an instruction that was wrong, a review step that could not be "
+        "misbehaved, an instruction that was wrong, a checkpoint step that could not be "
         "carried out. Not progress, not blockers on the work itself. Would it still "
         "be true for an unrelated objective? If not, it belongs above. Usually empty; "
         "carry anything unresolved to `control-plane/_harness/friction.md`.*",
-        "", "## Next Review", "",
+        "", "## Next Checkpoint", "",
         f"*Per cadence `{cadence}`.*", "",
     ]
     return "\n".join(out)
 
-def cmd_review(args):
+def cmd_checkpoint(args):
     _, text = read_index(args.name)
     when = args.date or today()
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", when):
         die(f"invalid date '{when}' — expected YYYY-MM-DD")
-    rdir = review_dir(args.name)
-    rdir.mkdir(parents=True, exist_ok=True)
-    dest = rdir / f"{when}.md"
+    cdir = checkpoint_dir(args.name)
+    cdir.mkdir(parents=True, exist_ok=True)
+    dest = cdir / f"{when}.md"
     if dest.exists() and not args.force:
-        die(f"review already exists: {dest} — pass --force to overwrite")
-    dest.write_text(render_review(args.name, text, when), encoding="utf-8")
-    print(f"review written: {dest}")
+        die(f"checkpoint already exists: {dest} — pass --force to overwrite")
+    dest.write_text(render_checkpoint(args.name, text, when), encoding="utf-8")
+    print(f"checkpoint written: {dest}")
 
 
 def cmd_log_decision(args):
@@ -732,10 +732,10 @@ def main():
                    help="### subgroup of the Active table to insert into "
                         "(e.g. 'Infrastructure Builds'); defaults to the first")
 
-    s = sub.add_parser("review",
-                       help="scaffold a dated review entry in objectives/<name>/reviews/")
+    s = sub.add_parser("checkpoint",
+                       help="scaffold a dated checkpoint entry in objectives/<name>/checkpoints/")
     s.add_argument("name")
-    s.add_argument("--date", help="review date (YYYY-MM-DD); defaults to today")
+    s.add_argument("--date", help="checkpoint date (YYYY-MM-DD); defaults to today")
     s.add_argument("--force", action="store_true",
                    help="overwrite an existing entry for that date")
 
@@ -791,7 +791,7 @@ def main():
         "add-milestone":   cmd_add_milestone,
         "check-milestone": cmd_check_milestone,
         "link-workstream":    cmd_link_workstream,
-        "review":             cmd_review,
+        "checkpoint":         cmd_checkpoint,
     }[args.cmd](args)
 
 

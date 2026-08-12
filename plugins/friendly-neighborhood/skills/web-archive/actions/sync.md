@@ -8,7 +8,7 @@ Refresh upstream sources via your **source-sync mechanism**, then write a queue 
 
 - User says "sync sources", "refresh docs", "pull the latest", or names a specific source
 - Before a distillation pass when sources may be stale
-- On a regular cadence to keep `knowledge/sources/` current
+- On a regular patrol to keep `knowledge/sources/` current
 
 ## Steps
 

@@ -26,7 +26,7 @@ tools/
 - Domain-specific logic → `projects/{name}/`
 - Prompt assets → `prompts/`
 - Knowledge content → `knowledge/`
-- One-off scratch → workstream `_working/`
+- One-off scratch → campaign `_working/`
 
 ---
 
@@ -51,20 +51,20 @@ tools/
 
 The CLIs below use stdlib only (argparse, pathlib, datetime, re) — no third-party packages. They resolve their workspace root from `$WORKSPACE_ROOT` env var, falling back to `os.getcwd()`. Set `WORKSPACE_ROOT` to your repo root before running, or run them from the repo root. Run with `python -B` to skip `__pycache__` bytecode generation.
 
-These map to the **three tiers of work**: objectives (long-lived strategy), workstreams = campaigns (the heavy QRDPIV lifecycle), and missions (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
+These map to the **three tiers of work**: responsibilities (long-lived strategy), campaigns (the heavy QRDBIV lifecycle), and missions (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
 
-### workstream.py — the campaign (heavy) tier
+### workstream.py — the heavy (QRDBIV) tier
 
-Manages the heavy QRDPIV lifecycle at `control-plane/workstreams/{name}/index.md`.
+Manages the heavy QRDBIV lifecycle at `control-plane/workstreams/{name}/index.md`.
 
 ```
 python -B tools/workstream.py list
-python -B tools/workstream.py create <name> [--framework qrdpiv|rpiv] [--parent objectives/<name>] [--title "Title"]
+python -B tools/workstream.py create <name> [--framework qrdbiv|rbiv] [--parent objectives/<name>] [--title "Title"]
 python -B tools/workstream.py status <name>
 python -B tools/workstream.py next <name>
 python -B tools/workstream.py advance <name> <phase>
 python -B tools/workstream.py check-step <name> "<step text>"
-python -B tools/workstream.py link <workstream> <mission>     # register a child mission
+python -B tools/workstream.py link <campaign> <mission>     # register a child mission
 python -B tools/workstream.py block <name> "<reason>"
 python -B tools/workstream.py unblock <name>
 python -B tools/workstream.py complete <name>
@@ -72,25 +72,25 @@ python -B tools/workstream.py archive <name> [--log-date YYYY-MM-DD] [--descript
 python -B tools/workstream.py delete <name>
 ```
 
-Valid phases: `questions research design plan implement validate complete cleanup`
-Frameworks: `qrdpiv` (default, all phases) · `rpiv` (clear-spec: research→plan→implement→validate→cleanup)
+Valid phases: `questions research design blueprint implement validate complete cleanup`
+Frameworks: `qrdbiv` (default, all phases) · `rbiv` (clear-spec: research→blueprint→implement→validate→cleanup)
 
-### mission.py — the mission (light) tier
+### mission.py — the lightweight tier
 
-Manages lightweight, often-repeatable units at `control-plane/missions/{name}/index.md`. No phase machine — a mission carries just enough admin (assignment, checklist, handoff, lessons) to be resumable and handed off.
+Manages lightweight, often-repeatable units at `control-plane/missions/{name}/index.md`. No phase machine — a mission carries just enough admin (mission, checklist, handoff, lessons) to be resumable and handed off.
 
 ```
 python -B tools/mission.py list
-python -B tools/mission.py create <name> [--parent workstreams/<campaign>|objectives/<obj>] [--title "Title"]
+python -B tools/mission.py create <name> [--parent workstreams/<name>|objectives/<name>] [--title "Title"]
 python -B tools/mission.py status <name>
 python -B tools/mission.py validate <name>     # stamp validated: <today> after the work is confirmed
 python -B tools/mission.py complete <name>
 python -B tools/mission.py delete <name>
 ```
 
-### objective.py — the objective (strategy) tier
+### objective.py — the strategy tier
 
-Manages long-lived objectives with structured progress tracking at `control-plane/objectives/{name}/index.md` — Key Results, milestones, linked campaigns, a review cadence, health, and an append-only decisions log.
+Manages long-lived responsibilities with structured progress tracking at `control-plane/objectives/{name}/index.md` — Key Results, milestones, linked campaigns, a checkpoint patrol, health, and an append-only decisions log.
 
 ```
 python -B tools/objective.py list
@@ -102,14 +102,14 @@ python -B tools/objective.py add-kr <name> "<result>" "<target>"
 python -B tools/objective.py update-kr <name> "<result>" "<current>"
 python -B tools/objective.py add-milestone <name> "<text>"
 python -B tools/objective.py check-milestone <name> "<text>"
-python -B tools/objective.py link-campaign <objective> <workstream>     # link a child campaign
+python -B tools/objective.py link-campaign <responsibility> <campaign>     # link a child campaign
 python -B tools/objective.py log-decision <name> "<decision>" "<rationale>"
 python -B tools/objective.py complete <name>
 ```
 
 ### gate.py — the deterministic go/no-go gate
 
-Runs measurable checks (tests, lint, build) and returns a hard GO / NO-GO. Used at the campaign **validate** phase and to close a mission. Soft, qualitative judgment is a separate concern — that is villain dissent, not a number.
+Runs measurable checks (tests, lint, build) and returns a hard GO / NO-GO. Used at the campaign **validate** phase and to close a mission.
 
 ```
 python -B tools/gate.py init                 # write a gate.json template

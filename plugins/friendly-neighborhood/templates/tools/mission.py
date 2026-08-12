@@ -120,7 +120,7 @@ def cmd_create(args):
     today_s = today()
     parent_q = f'"{parent}"' if parent != "null" else "null"
     if parent != "null":
-        _rel = parent if "/" in parent else f"campaigns/{parent}"
+        _rel = parent if "/" in parent else f"workstreams/{parent}"
         parent_link = f"[{_rel}](../../{_rel}/index.md)"
     else:
         parent_link = "—"
@@ -171,7 +171,7 @@ names the subject matter it is a Lesson, not Friction. Usually empty.*
     ensure_portfolio_index()
     portfolio = PORTFOLIO_INDEX.read_text(encoding="utf-8")
     if parent != "null":
-        rel = parent if "/" in parent else f"campaigns/{parent}"
+        rel = parent if "/" in parent else f"workstreams/{parent}"
         parent_col = f"[{rel}](../{rel}/index.md)"
     else:
         parent_col = "—"
@@ -291,8 +291,8 @@ def main():
 
     s = sub.add_parser("create", help="Create a new mission")
     s.add_argument("name", help="Mission name (kebab-case)")
-    s.add_argument("--parent", metavar="campaigns/<name>|objectives/<name>",
-                   help="Parent path, e.g. campaigns/my-campaign")
+    s.add_argument("--parent", metavar="workstreams/<name>|objectives/<name>",
+                   help="Parent path, e.g. workstreams/my-campaign")
     s.add_argument("--title", help="Human-readable title (defaults to title-cased name)")
 
     for name_cmd in ("status", "validate", "complete", "delete"):

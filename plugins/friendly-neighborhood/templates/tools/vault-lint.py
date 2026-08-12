@@ -266,7 +266,7 @@ def check_c1(path, fm, body):
     All notes need `note_type`.
     `vault-note` additionally needs: source_path, source_url, synced_at,
     distilled_at, confidence, tags.
-    `knowledge` type does NOT require tags.
+    `web-archive` type does NOT require tags.
     Auto-fix: vault-note missing source_url → add `source_url: na`.
     """
     findings = []

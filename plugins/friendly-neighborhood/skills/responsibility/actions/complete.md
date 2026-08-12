@@ -2,9 +2,9 @@
 
 Close out a responsibility. Load this file only.
 
-## Key Difference From Mission Cleanup
+## Key Difference From Campaign Cleanup
 
-**Responsibility folders are NEVER deleted.** Completion is a status change and a summary entry, not a cleanup. The folder, its `index.md`, and its decisions log persist indefinitely — they are the record for review.
+**Responsibility folders are NEVER deleted.** Completion is a status change and a summary entry, not a cleanup. The folder, its `index.md`, and its decisions log persist indefinitely — they are the record for future checkpoints.
 
 ## When to Run
 
@@ -12,7 +12,7 @@ Close out a responsibility. Load this file only.
 - All Definition of Done conditions satisfied
 - User confirms they are ready to close
 
-If any child campaign or mission is still active, do not close the responsibility — either complete or explicitly abandon those first.
+If any child campaign is still active, do not close the responsibility — either complete or explicitly abandon those first.
 
 ## Steps
 
@@ -20,13 +20,13 @@ If any child campaign or mission is still active, do not close the responsibilit
 
 Read `control-plane/objectives/{name}/index.md`. For each item in Success Criteria, confirm it's actually met. If any are not: stop, report the gap, do not close.
 
-### 2. Check linked campaigns and missions
+### 2. Check child campaigns
 
-Run `python -B tools/objective.py status {name}` — the Campaigns section lists linked workstreams. Any active workstream (campaign or mission) tied to this responsibility must be resolved first: completed, or explicitly abandoned with a decision logged.
+Read `control-plane/workstreams/index.md` — any active campaign with `parent: "objectives/{name}"` must be resolved first (completed via `campaign` skill's cleanup or explicitly paused/abandoned).
 
 ### 3. Write a Completion Summary section
 
-Use the Edit tool to append a new top-level section to the responsibility's `index.md`, immediately before the `## Related Notes` section (or at the end if no Related Notes). The structured sections (Key Results, Milestones, Campaigns) remain in place — they are the completion record.
+Use the Edit tool to append a new top-level section to the responsibility's `index.md`, immediately before the `## Related Notes` section (or at the end if no Related Notes):
 
 ```markdown
 ## Completion Summary
@@ -37,14 +37,13 @@ Use the Edit tool to append a new top-level section to the responsibility's `ind
 
 {2–4 sentences on what was achieved vs. the Responsibility statement. Honest — if scope changed, say so.}
 
-### Success Criteria Resolution
+### Key Results Resolution
 
-- ✅ {criterion} — {how it was met}
-- ✅ {criterion} — {how it was met}
+{For each KR, note the final value achieved vs. the target.}
 
 ### What Lives On After Close
 
-{Where the work continues — systems folder, ongoing operational workflow, spawned responsibilities, etc.}
+{Where the work continues — systems, ongoing workflows, spawned responsibilities, etc.}
 
 ### Lessons Learned
 
@@ -59,32 +58,14 @@ Run:
 python -B tools/objective.py complete {name}
 ```
 
-Or edit frontmatter directly:
-
-```yaml
-status: complete           # was: active
-completed: {YYYY-MM-DD}    # add this field
-```
-
 Do NOT remove other frontmatter fields. Do NOT truncate the decisions log.
 
-### 5. Update portfolio index
-
-In `control-plane/objectives/index.md`:
-
-- Remove the row from Active table
-- Add to Complete table:
-
-```markdown
-| [{name}]({name}/index.md) | {one-line description} | {YYYY-MM-DD} | {1-line key outcome} |
-```
-
-### 6. Report
+### 5. Report
 
 Tell the user:
 - Responsibility closed, folder retained at `control-plane/objectives/{name}/`
 - Decisions log preserved
 - Completion summary written
-- Any child campaign or mission logs that reference this responsibility remain valid
+- Any campaign logs that reference this responsibility remain valid
 
-Remind them: the folder is not deleted. It is referenced in future review cycles.
+Remind them: the folder is not deleted. It is referenced in future checkpoint cycles.

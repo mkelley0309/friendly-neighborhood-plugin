@@ -21,7 +21,7 @@ Fill-in templates for workstream artifacts. Load this file only when creating a 
 
 {One paragraph: what this workstream is and what it delivers.}
 
-## QRDPIV Artifact Status   ← include for QRDPIV; omit for RPIV
+## QRDBIV Artifact Status   ← include for QRDBIV; omit for RBIV
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -31,7 +31,7 @@ Fill-in templates for workstream artifacts. Load this file only when creating a 
 | Research — Codebase pass | `_working/research-code-*.md` | Not started |
 | Research — Distillation | `research.md` | Not started |
 | Design | `design.md` | Not started |
-| Plan | `plan.md` | Not started |
+| Blueprint | `blueprint.md` | Not started |
 | Worktrees | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 
@@ -53,7 +53,7 @@ Fill-in templates for workstream artifacts. Load this file only when creating a 
 ```markdown
 # {Workstream Name} — Request
 
-Refined specification produced at the QRDPIV Questions step. Replaces the original request as input to all downstream steps.
+Refined specification produced at the QRDBIV Questions step. Replaces the original request as input to all downstream steps.
 
 ## Original Request
 
@@ -107,7 +107,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 
 ## Decisions Implied by Research
 
-{Any decisions the research surfaces that need to be made in Design or Plan}
+{Any decisions the research surfaces that need to be made in Design or Blueprint}
 
 ## Open Questions
 
@@ -121,7 +121,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 ```markdown
 # {Workstream Name} — Design
 
-Architectural and structural decisions made before planning. Produced from `research.md` (and `request.md` if QRDPIV).
+Architectural and structural decisions made before blueprinting. Produced from `research.md` (and `request.md` if QRDBIV).
 
 ## Decision: {Title}
 
@@ -134,21 +134,21 @@ Architectural and structural decisions made before planning. Produced from `rese
 
 ...
 
-## Constraints Carried into Plan
+## Constraints Carried into Blueprint
 
-{What the plan must respect — architectural boundaries, interfaces, limits}
+{What the blueprint must respect — architectural boundaries, interfaces, limits}
 ```
 
 ---
 
 ## `outline.md` Template
 
-Written during Design when the deliverable's own structure needs agreement before planning (document section order, vault layout, API shape, deck arc). Fold into `design.md` instead when the structure is small enough not to be referenced repeatedly.
+Written during Design when the deliverable's own structure needs agreement before blueprinting (document section order, vault layout, API shape, deck arc). Fold into `design.md` instead when the structure is small enough not to be referenced repeatedly.
 
 ```markdown
 # {Workstream Name} — Outline
 
-Structure of the deliverable, agreed before planning. Authoritative over `research.md` where a `[D]` below supersedes it.
+Structure of the deliverable, agreed before blueprinting. Authoritative over `research.md` where a `[D]` below supersedes it.
 
 ## Structure
 
@@ -167,10 +167,10 @@ Structure of the deliverable, agreed before planning. Authoritative over `resear
 
 ---
 
-## `plan.md` Template
+## `blueprint.md` Template
 
 ```markdown
-# {Workstream Name} — Plan
+# {Workstream Name} — Blueprint
 
 ## Objective
 
@@ -227,7 +227,7 @@ tags: [workstream/{name}]
 # Friction Log — {name}
 
 How well the harness supported this workstream. **Not** a record of the work itself:
-findings go to `research.md`, decisions to `design.md`, progress to `plan.md`.
+findings go to `research.md`, decisions to `design.md`, progress to `blueprint.md`.
 
 Inclusion test: *would this note still be true and useful on a completely unrelated
 workstream?* If it names the subject matter, it belongs elsewhere. Record the rule,
@@ -331,7 +331,7 @@ one annoyance is noise, the same annoyance three times is a defect.
 When adding to the Active table in `workstreams/index.md`:
 
 ```markdown
-| [{name}]({name}/index.md) | {one-line description} | {QRDPIV\|RPIV} | {phase} | {health} | [objectives/{parent}](../objectives/{parent}/index.md) |
+| [{name}]({name}/index.md) | {one-line description} | {QRDBIV\|RBIV} | {phase} | {health} | [objectives/{parent}](../objectives/{parent}/index.md) |
 ```
 
 When moving to Recently Completed:

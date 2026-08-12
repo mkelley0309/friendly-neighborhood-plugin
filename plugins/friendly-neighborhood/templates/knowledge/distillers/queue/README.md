@@ -1,17 +1,17 @@
 # distillers/queue/
 
-Signal files for pending Scout and Harvester work. Written by the `workstream` skill's research action when a research phase completes. Consumed by Scout at session start.
+Signal files for pending Scout and Harvester work. Written by the `campaign` skill's research action when a research phase completes. Consumed by Scout at session start.
 
 ---
 
 ## Queue File Schema
 
-One file per signal: `queue/{workstream}-{YYYYMMDD}.md`
+One file per signal: `queue/{campaign}-{YYYYMMDD}.md`
 
 ```yaml
 ---
 signal: research-complete
-workstream: <kebab-case workstream name>
+workstream: <kebab-case campaign name>
 research_path: control-plane/workstreams/<name>/research.md
 target_vault_subtrees: [<list of vault subtrees>]
 queued_at: <ISO datetime>

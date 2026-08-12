@@ -52,15 +52,15 @@ Create when:
 - Is domain-specific enough to warrant isolated tooling or tests
 
 Do not create for:
-- One-off workstream deliverables (those are workstream artifacts)
+- One-off campaign deliverables (those are campaign artifacts)
 - Generic utilities with no stable contract (those are `tools/`)
-- Pure knowledge tasks (those are `knowledge/` work)
+- Pure knowledge missions (those are `knowledge/` work)
 
 ---
 
 ## Subagent Delegation
 
-Projects may use subagents during execution. For model selection, see root `CLAUDE.md` -> Subagent Delegation. Distill subagent outputs before integrating into main context.
+Projects may use subagents during execution. For model selection, see root `CLAUDE.md` → Subagent Delegation. Distill subagent outputs before integrating into main context.
 
 ---
 

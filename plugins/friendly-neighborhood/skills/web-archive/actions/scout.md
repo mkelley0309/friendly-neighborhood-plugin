@@ -1,6 +1,6 @@
 # Action: Scout
 
-Session-start health check for the web-archive pipeline. Reads the distiller queue, verifies referenced sources, registers first-party perspective inputs, updates queue status, and surfaces stale staging items.
+Session-start health check for the knowledge pipeline. Reads the distiller queue, verifies referenced sources, registers first-party perspective inputs, updates queue status, and surfaces stale staging items.
 
 ## When to run
 

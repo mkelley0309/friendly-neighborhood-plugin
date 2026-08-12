@@ -27,7 +27,7 @@ Portfolio: `python -B tools/workstream.py list`
 | `questions` | `actions/questions.md` |
 | `research` | `actions/research.md` |
 | `design` | `actions/design.md` |
-| `plan` | `actions/plan.md` (draft) or `actions/implement.md` (execute) |
+| `blueprint` | `actions/blueprint.md` (draft) or `actions/implement.md` (execute) |
 | `implement` | `actions/implement.md` |
 | `validate` | `actions/validate.md` |
 | `complete` | `actions/cleanup.md` |

@@ -27,9 +27,9 @@ Skip the phase entirely only if research is sufficient to plan directly.
 ### Close the phase
 
 ```bash
-python -B tools/workstream.py advance <name> plan
+python -B tools/workstream.py advance <name> blueprint
 ```
 
 **Claude Code:** for decisions requiring multi-option analysis, delegate per-option evaluation to Sonnet subagents and synthesize in main context.
 
-Next: `actions/plan.md`.
+Next: `actions/blueprint.md`.

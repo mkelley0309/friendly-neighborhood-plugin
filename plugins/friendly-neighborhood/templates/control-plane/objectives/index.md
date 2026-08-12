@@ -1,11 +1,11 @@
 ---
 note_type: portfolio-index
-scope: objectives
+scope: responsibilities
 ---
 
 # Responsibilities
 
-Portfolio index of long-lived, review-cycle-measured responsibilities. See [../CLAUDE.md](../CLAUDE.md) for lifecycle.
+Portfolio index of long-lived, checkpoint-cycle-measured responsibilities. See [../CLAUDE.md](../CLAUDE.md) for lifecycle.
 
 ## Active
 
