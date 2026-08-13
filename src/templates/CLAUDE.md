@@ -338,7 +338,7 @@ loaded as a skill page:
 
 Silk and Miguel have no custom system prompt, so they cannot narrate to the observation deck
 themselves. **Whoever invokes them logs on their behalf** — one line via
-`bash .claude/scripts/agent-log.sh silk "<what you're delegating>"` (or `miguel`) immediately
+`bash .claude/scripts/roster-log.sh silk "<what you're delegating>"` (or `miguel`) immediately
 before or after the call — so the deck still shows their turn even though the voice is borrowed.
 
 ---

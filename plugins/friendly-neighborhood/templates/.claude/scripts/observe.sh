@@ -9,7 +9,7 @@
 #         bash scripts/observe.sh spideys    # follow one group
 set -u
 ROOT="${WORKSPACE_ROOT:-$PWD}"
-LOGDIR="$ROOT/.claude/logs/agents"
+LOGDIR="$ROOT/.claude/logs/roster"
 mkdir -p "$LOGDIR"
 for g in spideys support villains; do : >> "$LOGDIR/$g.log"; done
 

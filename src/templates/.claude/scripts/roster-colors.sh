@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Friendly Neighborhood — agent color themes for the observation deck.
+# Friendly Neighborhood — roster color themes for the observation deck.
 #
-# One palette per character, keyed to their canon colors. Sourced by agent-log.sh.
+# One palette per character, keyed to their canon colors. Sourced by roster-log.sh.
 # 24-bit ("truecolor") ANSI — works in VS Code's integrated terminal and most modern
 # terminals. If a terminal can't do truecolor it degrades to the nearest color; the
 # text is still readable.
 #
 # Two functions are exported:
-#   agent_group <name>   -> spideys | support | villains | unknown
-#   agent_paint <name>   -> prints the SGR escape prefix for that character (no reset)
+#   roster_group <name>   -> spideys | support | villains | unknown
+#   roster_paint <name>   -> prints the SGR escape prefix for that character (no reset)
 #
-# The BLACK SUIT (symbiote) override is applied by agent-log.sh, not here.
+# The BLACK SUIT (symbiote) override is applied by roster-log.sh, not here.
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 # fg R G B  -> truecolor foreground escape
@@ -19,7 +19,7 @@ _fg() { printf '\033[38;2;%s;%s;%sm' "$1" "$2" "$3"; }
 _bg() { printf '\033[48;2;%s;%s;%sm' "$1" "$2" "$3"; }
 _bold() { printf '\033[1m'; }
 
-agent_group() {
+roster_group() {
   case "$1" in
     peter|miles|gwen|noir|miguel|ben-reilly|silk|peni|ham|jessica|punk) echo spideys ;;
     uncle-ben|aunt-may|mj|ned|jameson|madame-web|robbie) echo support ;;
@@ -30,7 +30,7 @@ agent_group() {
 
 # Print the color prefix for a character. Distinct hue per spidey + per villain;
 # support shares one minimalist muted scheme on purpose (complementary, not loud).
-agent_paint() {
+roster_paint() {
   case "$1" in
     # ── Spideys — each a distinct on-character hue ──
     peter)       _bold; _fg 227 38 54 ;;     # classic web-red

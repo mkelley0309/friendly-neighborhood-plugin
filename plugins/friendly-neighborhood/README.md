@@ -78,7 +78,7 @@ Invoke as `/friendly-neighborhood:<name>`.
 
 Assigned by **function**, not vibe. Model/effort tiers implement the Everyman budget.
 
-The cast splits three ways, mirroring the dissent council — **spideys** (drivers), **support** (advisors), **villains** (critics). All live in `agents/`; the grouping is carried by the creed, `agent_group`, and the three observation-deck streams.
+The cast splits three ways, mirroring the dissent council — **spideys** (drivers), **support** (advisors), **villains** (critics). All live in `agents/`; the grouping is carried by the creed, `roster_group`, and the three observation-deck streams.
 
 **Spideys** (the drivers; **all are symbiote-eligible**): `peter` (default/home base) · `silk` (recall & lookups, eidetic memory) · `noir` (debugging & root-cause) · `miles` (minimal-diff / surgical fixes) · `peni` (builder — fans out SP//dr units across worktrees) · `gwen` (functional testing & validation) · `ham` (adversarial validation — catches passes that are *right by accident*) · `ben-reilly` (refactors & dedup, drift-flagged) · `jessica` (root-cause investigation on failures) · `punk` (anti-ceremony dissent — over-built *process*) · `miguel` (**the architect** — opus plan-mode; his native opus isn't a symbiote, but he can escalate *effort* as one).
 
@@ -100,7 +100,7 @@ Watch your agents work in real time, each in their character colors. The main wi
 
 **Open it:** Terminal → Run Task → **🕷 Observation Deck** (wired by the scaffolded `.vscode/tasks.json`). Outside VS Code, `bash .claude/scripts/observe.sh` follows all three in one terminal.
 
-**How it works:** each agent narrates one line per significant step via `.claude/scripts/agent-log.sh`, routed to `.claude/logs/agents/{spideys,support,villains}.log` in that character's color; the `SubagentStop` hook posts exits and auto-sheds the suit. Granularity is per-action — Claude Code subagents don't stream raw tokens — so the deck reads as "who's doing what right now." **Full edition only.**
+**How it works:** each caller narrates one line per significant step via `.claude/scripts/roster-log.sh`, routed to `.claude/logs/roster/{spideys,support,villains}.log` in that character's color; the `SubagentStop` hook posts exits and auto-sheds the suit. Granularity is per-action — Claude Code subagents don't stream raw tokens — so the deck reads as "who's doing what right now." **Full edition only.**
 
 ---
 
