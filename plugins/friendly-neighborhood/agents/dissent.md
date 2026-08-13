@@ -54,7 +54,7 @@ Narrate your work so the operator can watch you live. At the **start of your tas
 significant action or handoff**, log one short line, using the resolved lens id as your speaker
 name:
 
-`bash .claude/scripts/agent-log.sh <lens-id> "<what you're doing>"`
+`bash .claude/scripts/roster-log.sh <lens-id> "<what you're doing>"`
 
 One line per real step — a heading, not raw narration. Log when your finding actually triggers;
 a clean pass can log once, quietly.

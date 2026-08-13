@@ -16,9 +16,9 @@ fi
 # Observation deck: make sure the three streams exist (so the VS Code "Observation
 # Deck" task can tail them) and clear any STALE black-suit flag — a symbiote that
 # ended without a church-bell must not leave an agent stuck in the suit next session.
-mkdir -p "${FN_AGENTS_DIR}/.suit" 2>/dev/null || true
-for _s in spideys support villains; do : >> "${FN_AGENTS_DIR}/${_s}.log" 2>/dev/null || true; done
-rm -f "${FN_AGENTS_DIR}"/.suit/* 2>/dev/null || true
+mkdir -p "${FN_ROSTER_DIR}/.suit" 2>/dev/null || true
+for _s in spideys support villains; do : >> "${FN_ROSTER_DIR}/${_s}.log" 2>/dev/null || true; done
+rm -f "${FN_ROSTER_DIR}"/.suit/* 2>/dev/null || true
 # FEATURE:observation_deck:end
 
 MSG="Friendly Neighborhood: minimum force, lean budget. Symbiote off."

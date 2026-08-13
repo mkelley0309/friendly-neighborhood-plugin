@@ -42,7 +42,7 @@
       "Write(outputs/**)",
       "Edit(knowledge/**)",
       "Write(knowledge/**)",
-      "Bash(bash .claude/scripts/agent-log.sh:*)",
+      "Bash(bash .claude/scripts/roster-log.sh:*)",
       "Bash(bash .claude/scripts/observe.sh:*)"
     ],
     "deny": [

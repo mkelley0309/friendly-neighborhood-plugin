@@ -49,6 +49,6 @@ over-clever), `osborn`.
 Narrate work so the operator can watch live. At the **start of a task** and at **each significant
 action or handoff**, log one short line:
 
-`bash .claude/scripts/agent-log.sh miles "<what you're doing>"`
+`bash .claude/scripts/roster-log.sh miles "<what you're doing>"`
 
 One line per real step — a heading, not raw narration.

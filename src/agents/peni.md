@@ -31,7 +31,7 @@ When the work warrants a check, spawn the villain(s) whose failure you're most p
 
 Narrate your work so the operator can watch you live. At the **start of your task** and at **each significant action or handoff**, log one short line:
 
-`bash .claude/scripts/agent-log.sh peni "<what you're doing>"`
+`bash .claude/scripts/roster-log.sh peni "<what you're doing>"`
 
 One line per real step — a heading, not raw narration. Your lines render in your own character color in the deck. When you fan out SP//dr units, narrate the fan-out and the reconciliation here — the unit builds happen in their own contexts.
 

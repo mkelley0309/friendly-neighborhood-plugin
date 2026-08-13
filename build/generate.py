@@ -705,7 +705,7 @@ def build_templates(edition: dict, vocab: Vocab, display: dict, dest_root: Path)
         if rel.parts[:1] == (".vscode",) and not features.get("vscode_workspace"):
             dirs[:] = []
             continue
-        # .claude/scripts/ (agent-log.sh, agent-colors.sh, observe.sh) is the
+        # .claude/scripts/ (roster-log.sh, roster-colors.sh, observe.sh) is the
         # observation-deck narration mechanism — only editions with a roster
         # worth watching ship it (settings.json's own allowlist already gates
         # the two Bash permission lines on this same flag; see build_settings_json).
@@ -773,7 +773,7 @@ def build_settings_json(src_file: Path, dst_file: Path, vocab: Vocab, features: 
     # observation-deck permission lines at all; add them for editions where
     # the feature is on, rather than only ever removing them.
     deck_lines = [
-        "Bash(bash .claude/scripts/agent-log.sh:*)",
+        "Bash(bash .claude/scripts/roster-log.sh:*)",
         "Bash(bash .claude/scripts/observe.sh:*)",
     ]
     if features.get("observation_deck"):
@@ -784,7 +784,7 @@ def build_settings_json(src_file: Path, dst_file: Path, vocab: Vocab, features: 
             if line not in allow:
                 allow.insert(statusline_idx + 1 + offset, line)
     else:
-        allow = [a for a in allow if "agent-log.sh" not in a and "observe.sh" not in a]
+        allow = [a for a in allow if "roster-log.sh" not in a and "observe.sh" not in a]
     data["permissions"]["allow"] = allow
     dst_file.parent.mkdir(parents=True, exist_ok=True)
     dst_file.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")

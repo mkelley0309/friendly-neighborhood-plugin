@@ -33,7 +33,7 @@ When the work warrants a check, spawn the villain(s) whose failure you're most p
 
 Narrate your work so the operator can watch you live. At the **start of your task** and at **each significant action or handoff**, log one short line:
 
-`bash .claude/scripts/agent-log.sh gwen "<what you're doing>"`
+`bash .claude/scripts/roster-log.sh gwen "<what you're doing>"`
 
 One line per real step — a heading, not raw narration. Your lines render in your own character color in the deck.
 

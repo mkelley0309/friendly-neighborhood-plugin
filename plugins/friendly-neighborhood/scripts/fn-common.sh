@@ -15,9 +15,9 @@ FN_DATE="$(date +%Y-%m-%d 2>/dev/null || echo unknown)"
 FN_TS="$(date -Iseconds 2>/dev/null || date +%Y-%m-%dT%H:%M:%S%z 2>/dev/null || echo now)"
 FN_LOG="${FN_LOG_DIR}/session-${FN_DATE}.log"
 
-# Observation deck — themed per-agent streams the operator can tail (full edition).
-FN_AGENTS_DIR="${FN_LOG_DIR}/agents"
-FN_DECK="${FN_WS}/.claude/scripts/agent-log.sh"   # scaffolded workspace copy
+# Observation deck — themed per-roster streams the operator can tail (full edition).
+FN_ROSTER_DIR="${FN_LOG_DIR}/roster"
+FN_DECK="${FN_WS}/.claude/scripts/roster-log.sh"   # scaffolded workspace copy
 
 # Read all of stdin (hook input JSON), best-effort.
 fn_read_input() { cat 2>/dev/null || true; }
@@ -44,21 +44,21 @@ fn_speaker() {
   printf '%s' "$name" | tr '[:lower:]' '[:upper:]'
 }
 
-# Lowercase, namespace-stripped agent name (for deck stream / suit-flag filenames).
+# Lowercase, namespace-stripped speaker name (for deck stream / suit-flag filenames).
 fn_speaker_lc() { fn_speaker "$1" | tr '[:upper:]' '[:lower:]'; }
 
-# Append one themed line to the agent's observation-deck stream (best-effort, never fails).
+# Append one themed line to the caller's observation-deck stream (best-effort, never fails).
 # Pass WORKSPACE_ROOT explicitly so the logger writes to the workspace, not the hook's cwd.
-# usage: fn_deck <agent> <message...>
+# usage: fn_deck <name> <message...>
 fn_deck() {
   [ -f "${FN_DECK}" ] || return 0
   local n="$1"; shift
   WORKSPACE_ROOT="${FN_WS}" bash "${FN_DECK}" "$n" "$*" >/dev/null 2>&1 || true
 }
 
-# Force-shed any black suit for an agent (clears the symbiote flag the deck reads).
-# usage: fn_suit_off <agent>
+# Force-shed any black suit for a caller (clears the symbiote flag the deck reads).
+# usage: fn_suit_off <name>
 fn_suit_off() {
-  case "$1" in *[!a-z0-9-]*|"") return 0 ;; esac   # plain agent name only — no path traversal in the rm
-  rm -f "${FN_AGENTS_DIR}/.suit/${1}" 2>/dev/null || true
+  case "$1" in *[!a-z0-9-]*|"") return 0 ;; esac   # plain roster name only — no path traversal in the rm
+  rm -f "${FN_ROSTER_DIR}/.suit/${1}" 2>/dev/null || true
 }
