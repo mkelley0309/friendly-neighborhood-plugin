@@ -12,13 +12,13 @@
       "name": "harness-core",
       "source": "./plugins/harness-core",
       "description": "An opinionated workflow + knowledge harness with four structural differentiators: (1) three-tier work model — objective (long-lived why, Key Results, milestones, decisions log) → workstream (heavy QRDBIV lifecycle, multi-session) → assignment (lightweight unit, proportional admin); (2) progressive distillation — research broadly, then compress at every handoff to the fewest, most precise words (semantic density: dense meaning per token via careful word choice, not just fewer tokens), keeping the decisions reached and dropping the back-and-forth that reached them, proportional to work size and targeted at the next phase's needs; (3) peer-reviewed knowledge pipeline — scout → harvest → distill → cartograph → audit → sync, vault grows only by admission, nothing rewrites itself unsupervised; (4) a deterministic verification gate (tools/gate.py, GO/NO-GO exit code) for hard measurable concerns, leaving soft judgments qualitative and recorded; plus determinism for the repeatable — any assignment done twice becomes a CLI. No agent personas, no theme — just the capabilities.",
-      "version": "0.3.0"
+      "version": "0.4.0"
     },
     {
       "name": "friendly-neighborhood",
       "source": "./plugins/friendly-neighborhood",
       "description": "An opinionated Claude Code harness for serious, long-horizon work, re-themed Spider-Man. Three tiers of work (responsibility → campaign → mission), a peer-reviewed knowledge-vault pipeline, progressive distillation at every handoff, and a decision mechanic that splits hard signals (a deterministic gate) from soft ones (affirmative villain dissent). Plus a Spider-cast of agents, the symbiote (disciplined, turn-limited model escalation), a live per-character observation deck, and native autonomous looping. Cheap by default; ceremony scaled to the work.",
-      "version": "0.3.0"
+      "version": "0.4.0"
     }
   ]
 }

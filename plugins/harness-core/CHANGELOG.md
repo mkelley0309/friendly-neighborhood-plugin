@@ -3,6 +3,18 @@
 All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-08-13
+
+### Changed
+- **Single-source generation.** Both editions now generate from one canonical `src/` plus `vocabulary/{data-model,display}.yml` and `editions/*.yml` (`build/generate.py`), instead of being maintained as separately-drifting trees. `build/difflint.py` diffs generated output against shipped `plugins/*` on demand.
+- **Two editions, not three.** Dropped `friendly-neighborhood-lite` — once the cast became lens/register data instead of 32 separate agent definitions, the curated-roster tier no longer earned its cost.
+- **`review` → `checkpoint`** (objective action) and **`plan` → `blueprint`** (workstream-tier phase), including the CLI subcommand, frontmatter enum value, and filenames. Historical `reviews/*.md` and `_log/*.md` entries are unchanged.
+- Allowlist now matches every shipped CLI exactly (`patrol.py` was shipped but unlisted); removed `Bash(cat|grep|find:*)`, which made the discouraged path the frictionless one.
+- `marketplace.json` and both READMEs are now generated from `editions/*.yml`, not hand-written — closes a standing drift where published metadata described a vocabulary neither edition actually used.
+
+### Fixed
+- **Promotion gap**: this edition had drifted from `build/_generated/*` since the single-source rework began — stale `review`/`plan` action filenames, hand-drifted skill and template prose. Reconciled and promoted; this edition now matches generated output except a short documented exception list (hand-maintained top-level metadata, and `scripts/fn-*.sh`, where the generator still leaks themed content into this untethemed edition — a known generator gap recorded in `build/README.md`, not yet fixed).
+
 ## [0.3.0] — 2026-07-30
 
 ### Added
