@@ -3,6 +3,21 @@
 All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-08-13
+
+### Changed
+- **Cast collapsed from 32 separate villain agents to one `dissent` agent + a 26-lens library.** `dissent` is invoked with a lens id (`lens: cat`, `lens: kraven`, …); it reads that lens's criteria at call time and reports whether the failure mode is present. **Normal polarity** — a finding means the failure mode *is* present; the old inverted form ("if I'd approve, that's the smell") is gone. Added 5 new lenses (Jackal, Chameleon, Silver Sable, Spider-Slayers, Tinkerer) and Agent Venom as a doctrine line; roster is now 38 characters, all resolving to a lens, register, real delegation, or doctrine line — no vocabulary was dropped.
+- **`symbiote`, `church-bell`, `spider-sense`, `creed` retired as skills**; each is now a doctrine line in `CLAUDE.md` naming its native mechanism directly (a higher-effort `Agent()` call, `TaskStop`, the `PreToolUse` deny-list, `CLAUDE.md` itself).
+- **`noir`/`jessica` tool permissions swapped** — they were inverted: `jessica` (told to reproduce before theorizing) had no `Write`; `noir` (told the fix is secondary) had full write access. `noir` now owns incident forensics with `Write` scoped to reproductions and probes; `jessica` is read-only counterintelligence.
+- **Single-source generation.** Both editions now generate from one canonical `src/` plus `vocabulary/{data-model,display}.yml` and `editions/*.yml` (`build/generate.py`), instead of being maintained as separately-drifting trees.
+- **Two editions, not three.** Dropped `friendly-neighborhood-lite` — once the cast became lens/register data instead of 32 separate agent definitions, the curated-roster tier no longer earned its cost.
+- **`review` → `checkpoint`** (responsibility action) and **`plan` → `blueprint`** (campaign-tier phase), including the CLI subcommand, frontmatter enum value, and filenames. Historical `_log/*.md` entries are unchanged.
+- `marketplace.json` and both READMEs are now generated from `editions/*.yml`, not hand-written.
+
+### Fixed
+- **Promotion gap**: this edition had drifted furthest from `build/_generated/*` — it was still shipping the entire pre-rework 32-agent roster (14 separate villain agents, inverted `dissent` polarity) plus all 4 retired skills, alongside the correctly-generated tier skills. Reconciled and promoted.
+- **`dissent` and its 26-file `lenses/` library had never actually shipped in any edition** — a generator gap found while doing this promotion: the roster-driven agent copy only ever looked at *character* names, and `dissent` is the delegation the lenses are applied through, not a character, so it was silently skipped. `templates/CLAUDE.md`'s own doctrine ("spawn `dissent` with `lens: cat`") pointed at nothing until now.
+
 ## [0.3.0] — 2026-07-30
 
 ### Added
