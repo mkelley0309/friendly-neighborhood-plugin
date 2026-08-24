@@ -63,7 +63,7 @@ Invoke as `/friendly-neighborhood:<name>`.
 | `creed` | Loads the operating doctrine (great power / great responsibility, the Everyman budget, the three mechanics, the powers vocabulary). |
 | `origin-story` | Scaffolds a fresh workspace from the bundled templates. Run this first. |
 | `responsibility` | A long-lived, review-cycle objective with structured tracking — Key Results, milestones, linked campaigns, cadence, health, and an append-only decisions log. |
-| `campaign` | Complex, multi-session work run through the heavy **QRDPIV** lifecycle (questions → research → design → plan → implement → validate → cleanup; or **RPIV** when the spec is clear). May link child missions. |
+| `campaign` | Complex, multi-session work run through the heavy **QRDBIV** lifecycle (questions → research → design → blueprint → implement → validate → cleanup; or **RBIV** when the spec is clear). May link child missions. |
 | `mission` | A lightweight unit or one iteration against a campaign — proportional admin only (assignment, checklist, handoff, lessons). Promote to a campaign if it grows. |
 | `web-archive` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → audit → sync. |
 | `spider-sense` | A manual pre-flight danger check before a risky operation (companion to the automatic hook). |
