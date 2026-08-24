@@ -70,6 +70,8 @@ control-plane/
 
 ## Hierarchy
 
+**Every tier is a Payload Relay.** The tiers differ in how many legs the relay has, not in kind. A campaign is the full relay — most legs, most handoffs. A mission is the same relay with fewer legs, because the body of work is smaller. A patrol is a relay that runs again; each run is its own sequence. A responsibility spawning a campaign or mission is passing payload to another relay sequence. Read the spawn graph below as payload movement between sequences, not as a separate mechanism.
+
 ```
 responsibility                     <- long-lived strategy, measured
     |-- campaign            <- heavy Payload Relay lifecycle, multi-session
