@@ -8,7 +8,7 @@ Routing table lives in `../SKILL.md`.
 |---|---|
 | `initiate.md` | New workstream — create folder, `index.md`, frontmatter, parent link |
 | `assess.md` | Existing workstream — orient, report phase/health, recommend next step |
-| `questions.md` | QRDBIV Questions step — shape ambiguous request into `request.md` |
+| `questions.md` | Payload Relay Questions step — shape ambiguous request into `request.md` |
 | `research.md` | Research step — run knowledge/web/codebase passes, distill to `research.md` |
 | `design.md` | Design step — architectural decisions before planning |
 | `blueprint.md` | Blueprint step — produce executable `blueprint.md` with steps and completion criteria |

@@ -1,6 +1,6 @@
 # Action: Questions
 
-> **Phase council** (QRDBIV: Q) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `peter`; counsel `robbie` (constructive design questions), `jameson` (devil's-advocate grilling of poorly-shaped work), `mj`, `aunt-may`; watch villains `sandman` (under-shaped/formless work), `kraven`, `osborn`.
+> **Phase council** (Relay: Q) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `peter`; counsel `robbie` (constructive design questions), `jameson` (devil's-advocate grilling of poorly-shaped work), `mj`, `aunt-may`; watch villains `sandman` (under-shaped/formless work), `kraven`, `osborn`.
 
 Turn an ambiguous request into a precise spec. Output: `request.md`.
 

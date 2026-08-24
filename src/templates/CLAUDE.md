@@ -149,7 +149,7 @@ ceremony to the size of the work.
 1. **Three tiers of work.** *Objective* = the long-lived "why" — a role, a measured annual
    objective, a career goal — with structured tracking (Key Results, milestones, cadence) and an
    append-only decisions log. *Workstream* = complex work spanning multiple sessions and
-   handoffs, run through the heavy **QRDBIV** lifecycle. *Assignment* = a lightweight unit or one
+   handoffs, run through the heavy **Payload Relay** lifecycle. *Assignment* = a lightweight unit or one
    iteration against a workstream, carrying only *proportional* admin. Strategy, workstreams, and
    lightweight units each keep their own durable state — and you size the ceremony to the tier.
 
@@ -233,7 +233,7 @@ The three tiers are *defined* in Operating Principle 1 — here's their machiner
 | Tier | CLI | Lifecycle |
 |---|---|---|
 | **Objective** | `objective.py` | structured tracking (Key Results, milestones, cadence, health) + append-only decisions log; never deleted |
-| **Workstream** | `workstream.py` | heavy **QRDBIV** (Q→R→D→B→I→V→Cleanup; **RBIV** if the spec's already clear); deleted at cleanup, its log survives; may link child assignments |
+| **Workstream** | `workstream.py` | heavy **Payload Relay** (Q→R→D→B→I→V→Cleanup; **Short Relay** if the spec's already clear); deleted at cleanup, its log survives; may link child assignments |
 | **Assignment** | `assignment.py` | proportional admin only (assignment / checklist / handoff / lessons); promote to a workstream if it grows |
 
 ---
@@ -249,7 +249,7 @@ never passively.
 | Tier | Driver | Standing counsel | Standing watch |
 |---|---|---|---|
 | **Objective** | main context | ethics/consequence check, evidence review, real-need check | corner-cutting the goal to mark it done |
-| **Workstream** (QRDBIV) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
+| **Workstream** (Payload Relay) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
 | **Assignment** (light) | the driver the unit's *nature* calls for (default: general-purpose driver) | repeatability | claiming done unverified |
 
 **Drivers follow the *nature* of the work, not the tier:** an assignment takes the one driver its
@@ -257,7 +257,7 @@ task calls for; a workstream routes per phase; an objective is stewarded from ma
 assignment keeps the council *small on purpose* — pick the fitting driver, run the gate, watch
 for unverified claims. Don't convene a workstream's full council around a one-shot task.
 
-### The QRDBIV phase council (workstreams)
+### The Payload Relay phase council (workstreams)
 
 | Phase | Driver | Counsel | Watch for |
 |---|---|---|---|

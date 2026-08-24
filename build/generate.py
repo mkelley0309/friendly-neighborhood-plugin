@@ -441,7 +441,7 @@ def tier_dest_name(tier: str, vocab: Vocab, data_model: dict, display: dict) -> 
 #    future one under a different plugin name still wouldn't need its own
 #    copy of these strings).
 
-PHASE_QRDBIV = {
+PHASE_RELAY = {
     "questions.md": "Q",
     "research.md": "R",
     "design.md": "D",
@@ -511,13 +511,13 @@ def _format_name_list(entries: list[tuple[str, str | None]]) -> str:
 
 def render_phase_council_line(filename: str, council: dict, plugin_slug: str) -> str:
     entry = council[filename]
-    qrdbiv = PHASE_QRDBIV[filename]
+    relay = PHASE_RELAY[filename]
     counsel, watch = entry["counsel"], entry["watch"]
     counsel_clause = "none" if not counsel else _format_name_list(counsel)
     watch_label = "watch villain" if len(watch) == 1 else "watch villains"
     watch_clause = _format_name_list(watch)
     return (
-        f"> **Phase council** (QRDBIV: {qrdbiv}) — consult only when the concern is live "
+        f"> **Phase council** (Relay: {relay}) — consult only when the concern is live "
         f"(full map in `/{plugin_slug}:creed`): {entry['driver']}; counsel {counsel_clause}; "
         f"{watch_label} {watch_clause}.{entry['trailer']}"
     )

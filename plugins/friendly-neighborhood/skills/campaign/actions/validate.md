@@ -1,6 +1,6 @@
 # Action: Validate
 
-> **Phase council** (QRDBIV: V) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `gwen` (run it — test functionality against the criteria); counsel `jameson` (adversarial); watch villains `mysterio` (claiming done without proof — the exact failure this phase exists to catch), `cat` (security holes left open), `electro` (fragile/cascading).
+> **Phase council** (Relay: V) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `gwen` (run it — test functionality against the criteria); counsel `jameson` (adversarial); watch villains `mysterio` (claiming done without proof — the exact failure this phase exists to catch), `cat` (security holes left open), `electro` (fragile/cascading).
 
 Confirm the campaign's outputs are real before closing. A campaign does not advance to cleanup on faith.
 

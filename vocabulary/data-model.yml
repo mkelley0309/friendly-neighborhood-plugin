@@ -1,6 +1,6 @@
 # vocabulary/data-model.yml — PINNED
 #
-# Folder names, CLI filenames, and YAML frontmatter keys for the four QRDBIV
+# Folder names, CLI filenames, and YAML frontmatter keys for the four Payload Relay
 # tiers. Everything in this file is a literal identifier a generator may
 # copy verbatim but must never run through the display-vocabulary
 # substitution in `display.yml`.
@@ -92,7 +92,7 @@ tiers:
 # to avoid implying they vary.
 pinned_filenames:
   - index.md      # portfolio index (all tiers) and per-item index (workstream, objective, assignment/mission, cadence/patrol)
-  - blueprint.md   # workstream QRDBIV blueprint artifact
+  - blueprint.md   # workstream Payload Relay blueprint artifact
   - design.md
   - research.md
   - request.md

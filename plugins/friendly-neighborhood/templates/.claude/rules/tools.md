@@ -51,15 +51,15 @@ tools/
 
 The CLIs below use stdlib only (argparse, pathlib, datetime, re) — no third-party packages. They resolve their workspace root from `$WORKSPACE_ROOT` env var, falling back to `os.getcwd()`. Set `WORKSPACE_ROOT` to your repo root before running, or run them from the repo root. Run with `python -B` to skip `__pycache__` bytecode generation.
 
-These map to the **three tiers of work**: responsibilities (long-lived strategy), campaigns (the heavy QRDBIV lifecycle), and missions (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
+These map to the **three tiers of work**: responsibilities (long-lived strategy), campaigns (the heavy Payload Relay lifecycle), and missions (lightweight units). `gate.py` is the deterministic go/no-go check used at validate.
 
-### workstream.py — the heavy (QRDBIV) tier
+### workstream.py — the heavy (Payload Relay) tier
 
-Manages the heavy QRDBIV lifecycle at `control-plane/workstreams/{name}/index.md`.
+Manages the heavy Payload Relay lifecycle at `control-plane/workstreams/{name}/index.md`.
 
 ```
 python -B tools/workstream.py list
-python -B tools/workstream.py create <name> [--framework qrdbiv|rbiv] [--parent objectives/<name>] [--title "Title"]
+python -B tools/workstream.py create <name> [--framework payload-relay|short-relay] [--parent objectives/<name>] [--title "Title"]
 python -B tools/workstream.py status <name>
 python -B tools/workstream.py next <name>
 python -B tools/workstream.py advance <name> <phase>
@@ -73,7 +73,7 @@ python -B tools/workstream.py delete <name>
 ```
 
 Valid phases: `questions research design blueprint implement validate complete cleanup`
-Frameworks: `qrdbiv` (default, all phases) · `rbiv` (clear-spec: research→blueprint→implement→validate→cleanup)
+Frameworks: `payload-relay` (default, all phases) · `short-relay` (clear-spec: research→blueprint→implement→validate→cleanup)
 
 ### mission.py — the lightweight tier
 

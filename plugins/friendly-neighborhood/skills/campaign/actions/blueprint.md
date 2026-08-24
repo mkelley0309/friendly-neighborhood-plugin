@@ -1,12 +1,12 @@
 # Action: Blueprint
 
-> **Phase council** (QRDBIV: B) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `miguel`; counsel `uncle-ben`, `aunt-may`, `madame-web`; watch villains `octavius`, `kraven`, `kingpin`, `vulture`.
+> **Phase council** (Relay: B) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `miguel`; counsel `uncle-ben`, `aunt-may`, `madame-web`; watch villains `octavius`, `kraven`, `kingpin`, `vulture`.
 
 Produce the executable blueprint. Output: `blueprint.md`. The blueprint must be self-contained — an implementer must not need to read any prior artifact to execute it.
 
 ## Steps
 
-1. Read `research.md`, and `design.md` if it exists. Also `request.md` if QRDBIV.
+1. Read `research.md`, and `design.md` if it exists. Also `request.md` if Payload Relay.
 2. Write `blueprint.md` using the template in `framework-templates.md`. Frontmatter: `note_type: workstream-blueprint`.
 3. If the blueprint defines worktrees, write each `worktree-{nn}.md` in the same session. Each must be fully self-contained.
 4. Present the blueprint to user. Do not advance to implement until they confirm.
