@@ -82,7 +82,7 @@ Pass types and their scopes:
 - `research-codebase-{n}.md` — project code and config; use the general-purpose subagent (Sonnet)
 - `research-provided-{n}.md` — user-supplied material; write verbatim or lightly structured to disk before proceeding
 
-**Do not use the Explore subagent for any pass.** Explore is read-only — it has no Write tool — so it cannot write its own pass file, which the protocol above requires. Having the orchestrator write the file on Explore's behalf is not a workaround: it would put raw pass output through main context, violating the rule that main context never reads raw pass output.
+**Do not use the Explore subagent for any pass.** Explore is read-only — it has no Write tool — so it cannot write its own pass file, which the protocol above requires. Each pass file must be written by the subagent that produced it, using a subagent with Write access; main context never reads raw pass output, so routing it through the orchestrator to write on Explore's behalf would violate that rule too.
 
 Run passes **sequentially, one at a time**. Do not run distillation until **all** pass files exist on disk. Certainty of completion takes priority over speed — a stalled or half-written pass file leaves the workstream in an unrecoverable state.
 
