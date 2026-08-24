@@ -228,6 +228,10 @@ manual look, not an automatic pass.
 
 ## Known gaps — discovered during 3.5, not fixed
 
+Numbering is stable across removals — closed records
+(`build/diff-classification.md`) cite these item numbers. A removed item
+leaves a gap rather than shifting the rest.
+
 These surfaced empirically (by diffing generated output against shipped
 `plugins/*`) and are real, but fixing them would mean either inventing new
 content (not this step's job) or building a materially bigger mechanism
@@ -249,20 +253,7 @@ fix.
    divergence is left as-is (src holds full's content; core's generated
    output differs from core's shipped copy in the ways described).
    `fn-session-start.sh` and `fn-subagent-stop.sh` are fully closed (byte-
-   identical to shipped for all three editions, once you account for
-   `plugins/friendly-neighborhood-lite/scripts/scaffold.py`'s own bug, item
-   6 below).
-
-2. **Agent files (`src/agents/*.md`) carry an observation-deck-gated "Voice"
-   + "Observation deck" section that lite's shipped copies omit.** E.g.
-   `peter.md`: full has ~20 extra lines full editions get and lite doesn't.
-   This wasn't one of the three named gaps and would need the same
-   marker mechanism extended into every one of the 32 agent files — a
-   bigger lift than this step's scope, and not attempted. Full edition
-   agents match shipped byte-for-byte (confirmed for `peter.md`, spot-check
-   passed); lite's 7 agents are missing this section in generated output
-   the same way they're present in full but this generator doesn't strip
-   it for lite specifically.
+   identical to shipped for both editions).
 
 3. **`mission`/`patrol` skills are structurally different from
    `assignment`/`cadence`, not just renamed.** `src/skills/assignment/` (and
@@ -290,15 +281,6 @@ fix.
    never part of `src/`'s scope (not mentioned anywhere in `src/README.md`'s
    provenance table). The generator doesn't produce them; difflint reports
    them as "removed."
-
-6. **`plugins/friendly-neighborhood-lite/scripts/scaffold.py`'s "Start
-   work" onboarding line has a real, pre-existing bug**: it omits the
-   `campaign` skill entirely and mislabels `mission` as "(a campaign)". The
-   generator produces the correct, complete line (all four skills, correct
-   labels) — sourced from full's structure with lite's own plugin slug
-   substituted in — so this shows up as a "changed" diff. Not fixed in
-   `plugins/*` (read-only reference tree); flagged for 3.6 as a genuine bug
-   in the shipped file, not a generator defect.
 
 7. **`plugin.json`'s `author` object formatting is cosmetically different**
    (shipped: `{ "name": "Matt" }` on one line; generated: pretty-printed
