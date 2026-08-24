@@ -22,7 +22,7 @@ control-plane/
     {name}/
       index.md            ← responsibility anchor (Key Results, milestones, campaigns, decisions log)
       {supporting files}    ← retained after completion; never deleted
-  workstreams/              ← the heavy QRDBIV lifecycle: complex, multi-session work
+  workstreams/              ← the heavy Payload Relay lifecycle: complex, multi-session work
     index.md              ← portfolio index of active campaigns
     {name}/
       index.md            ← campaign status anchor (phase, health)
@@ -58,7 +58,7 @@ control-plane/
 
 **Responsibilities** (top tier) = the long-lived "why" — a role, a measured annual responsibility, a career goal. Carry structured progress tracking: Key Results, milestones, linked campaigns, a checkpoint patrol, health, and an append-only decisions log. One folder per responsibility. Lifecycle: `active` → `complete`; folders never deleted (the decisions log is the durable value). Driven by `objective.py`.
 
-**Campaigns** (middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **QRDBIV** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A campaign may be parented to a responsibility, or be standalone. Driven by `workstream.py`.
+**Campaigns** (middle tier) = complex work that spans multiple sessions and handoffs, run through the heavy **Payload Relay** lifecycle. On cleanup the folder is deleted *after* a durable log entry is written to `workstreams/_log/`. A campaign may be parented to a responsibility, or be standalone. Driven by `workstream.py`.
 
 **Missions** (bottom tier) = lightweight, often-repeatable units — add a source, refresh data, lint an area, or run one iteration against a campaign. A mission carries *proportional* admin only (mission, checklist, handoff, lessons) — no phase machine, no progressive distillation. If a mission grows (multiple sessions, real research, design decisions), **promote it to a campaign**. Driven by `mission.py`.
 
@@ -72,7 +72,7 @@ control-plane/
 
 ```
 responsibility                     <- long-lived strategy, measured
-    |-- campaign            <- heavy QRDBIV lifecycle, multi-session
+    |-- campaign            <- heavy Payload Relay lifecycle, multi-session
     |       \-- mission           <- spawned child unit
     |-- mission                  <- lightweight unit, standalone
     \-- patrol              <- recurring; runs again, scheduled or on demand
@@ -138,12 +138,12 @@ The evaluator judges the condition against **what has been surfaced in the conve
 
 ---
 
-## Campaign Framework (QRDBIV)
+## Campaign Framework (Payload Relay)
 
-**QRDBIV** (default): Questions → Research → Design → Blueprint → Implement → Validate → Cleanup
-**RBIV** (spec already clear): Research → Blueprint → Implement → Validate → Cleanup
+**Payload Relay** (default): Questions → Research → Design → Blueprint → Implement → Validate → Cleanup
+**Short Relay** (spec already clear): Research → Blueprint → Implement → Validate → Cleanup
 
-Questions are cheap. Under-shaped work is expensive. Use the full QRDBIV the moment ambiguity, cross-system scope, or missing constraints surface. **Validate** runs the deterministic gate (`gate.py`) plus adversarial QA before cleanup — nothing is called done on faith.
+Questions are cheap. Under-shaped work is expensive. Use the full Payload Relay the moment ambiguity, cross-system scope, or missing constraints surface. **Validate** runs the deterministic gate (`gate.py`) plus adversarial QA before cleanup — nothing is called done on faith.
 
 Phase mechanics, artifact templates, and action-file routing live in the `campaign` skill. Missions do **not** use this framework — they are deliberately lightweight.
 
@@ -155,7 +155,7 @@ Phase mechanics, artifact templates, and action-file routing live in the `campai
 
 ```yaml
 workstream: kebab-case-name
-framework: rbiv | qrdbiv
+framework: short-relay | payload-relay
 workstream_phase: questions | research | design | blueprint | implement | validate | complete | cleanup
 workstream_health: healthy | needs-questions | needs-design | under-shaped | blocked | stale
 status: active | complete | paused | abandoned

@@ -31,7 +31,7 @@ description: >
 |---|---|
 | New campaign — nothing exists yet | `actions/initiate.md` |
 | Existing campaign — need to understand state or advise | `actions/assess.md` |
-| QRDBIV Questions step — refining an ambiguous request | `actions/questions.md` |
+| Payload Relay Questions step — refining an ambiguous request | `actions/questions.md` |
 | Research step — running distillation passes | `actions/research.md` |
 | Design step — architectural decisions | `actions/design.md` |
 | Blueprint step — producing `blueprint.md` | `actions/blueprint.md` |
@@ -41,10 +41,10 @@ description: >
 
 ## Framework at a Glance
 
-**QRDBIV** (default): Questions → Research → Design? → Blueprint → Implement → Validate → Cleanup
-**RBIV** (clear-spec): Research → Blueprint → Implement → Validate → Cleanup
+**Payload Relay** (default): Questions → Research → Design? → Blueprint → Implement → Validate → Cleanup
+**Short Relay** (clear-spec): Research → Blueprint → Implement → Validate → Cleanup
 
-Default to QRDBIV. Questions are cheap; under-shaped blueprints are expensive.
+Default to Payload Relay. Questions are cheap; under-shaped blueprints are expensive.
 
 **Research is mandatory.** There is no shortcut from Questions or Initiate to Design or Blueprint without a `research.md`. Even when the user provides source material directly, that material must be written to `_working/` and distilled through the research protocol before proceeding.
 

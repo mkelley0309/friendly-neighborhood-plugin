@@ -1,6 +1,6 @@
 # Action: Implement
 
-> **Phase council** (QRDBIV: I) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `peter` / `miles` (route each step to the right Spider-variant — see Delegation); counsel `ned`; watch villains `carnage`, `cat` (security), `rhino`, `osborn`. Functional validation happens in `validate` — `gwen` drives it, with `mysterio` and `cat` on watch.
+> **Phase council** (Relay: I) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `peter` / `miles` (route each step to the right Spider-variant — see Delegation); counsel `ned`; watch villains `carnage`, `cat` (security), `rhino`, `osborn`. Functional validation happens in `validate` — `gwen` drives it, with `mysterio` and `cat` on watch.
 
 Execute the blueprint step by step.
 

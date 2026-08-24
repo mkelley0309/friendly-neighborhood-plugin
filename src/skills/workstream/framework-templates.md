@@ -21,7 +21,7 @@ Fill-in templates for workstream artifacts. Load this file only when creating a 
 
 {One paragraph: what this workstream is and what it delivers.}
 
-## QRDBIV Artifact Status   ← include for QRDBIV; omit for RBIV
+## Payload Relay Artifact Status   ← include for Payload Relay; omit for Short Relay
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -53,7 +53,7 @@ Fill-in templates for workstream artifacts. Load this file only when creating a 
 ```markdown
 # {Workstream Name} — Request
 
-Refined specification produced at the QRDBIV Questions step. Replaces the original request as input to all downstream steps.
+Refined specification produced at the Payload Relay Questions step. Replaces the original request as input to all downstream steps.
 
 ## Original Request
 
@@ -121,7 +121,7 @@ Distilled from {n} knowledge pass(es), {n} web pass(es), {n} codebase pass(es). 
 ```markdown
 # {Workstream Name} — Design
 
-Architectural and structural decisions made before blueprinting. Produced from `research.md` (and `request.md` if QRDBIV).
+Architectural and structural decisions made before blueprinting. Produced from `research.md` (and `request.md` if Payload Relay).
 
 ## Decision: {Title}
 
@@ -331,7 +331,7 @@ one annoyance is noise, the same annoyance three times is a defect.
 When adding to the Active table in `workstreams/index.md`:
 
 ```markdown
-| [{name}]({name}/index.md) | {one-line description} | {QRDBIV\|RBIV} | {phase} | {health} | [objectives/{parent}](../objectives/{parent}/index.md) |
+| [{name}]({name}/index.md) | {one-line description} | {Payload Relay\|Short Relay} | {phase} | {health} | [objectives/{parent}](../objectives/{parent}/index.md) |
 ```
 
 When moving to Recently Completed:

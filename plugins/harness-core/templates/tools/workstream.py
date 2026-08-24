@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Workstream state management — QRDBIV phase machine, no LLM."""
+"""Workstream state management — Payload Relay phase machine, no LLM."""
 
 import argparse
 import os
@@ -32,10 +32,10 @@ PHASE_NEXT = {
     "cleanup":    "actions/cleanup.md    → delete: workstream delete <name>",
 }
 
-# rbiv framework starts at research (clear-spec: no questions/design)
+# short-relay framework starts at research (clear-spec: no questions/design)
 FRAMEWORK_START = {
-    "qrdbiv": "questions",
-    "rbiv":   "research",
+    "payload-relay": "questions",
+    "short-relay":   "research",
 }
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -242,9 +242,9 @@ def cmd_create(args):
         parent_link = "—"
 
     artifact_table = ""
-    if fw == "qrdbiv":
+    if fw == "payload-relay":
         artifact_table = """
-## QRDBIV Artifact Status
+## Payload Relay Artifact Status
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -258,9 +258,9 @@ def cmd_create(args):
 | Implement | `worktree-{nn}.md` | Not started |
 | Validate | `validate.md` | Not started |
 """
-    elif fw == "rbiv":
+    elif fw == "short-relay":
         artifact_table = """
-## RBIV Artifact Status
+## Short Relay Artifact Status
 
 | Step | Artifact | Status |
 |---|---|---|
@@ -577,7 +577,7 @@ def cmd_delete(args):
 # ── main ──────────────────────────────────────────────────────────────────────
 
 def main():
-    p = argparse.ArgumentParser(description="Workstream state management — QRDBIV")
+    p = argparse.ArgumentParser(description="Workstream state management — Payload Relay")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("list", help="List active workstreams")
@@ -593,8 +593,8 @@ def main():
 
     s = sub.add_parser("create", help="Create a new workstream")
     s.add_argument("name", help="Workstream name (kebab-case)")
-    s.add_argument("--framework", choices=["qrdbiv", "rbiv"], default="qrdbiv",
-                   help="qrdbiv (default, all phases) or rbiv (clear-spec: research→blueprint→implement→validate)")
+    s.add_argument("--framework", choices=["payload-relay", "short-relay"], default="payload-relay",
+                   help="payload-relay (default, all phases) or short-relay (clear-spec: research→blueprint→implement→validate)")
     s.add_argument("--parent", metavar="objectives/<name>",
                    help="Parent path, e.g. objectives/my-objective")
     s.add_argument("--title", help="Human-readable title (defaults to title-cased name)")

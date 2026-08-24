@@ -148,7 +148,7 @@ ceremony to the size of the work.
 1. **Three tiers of work.** *Responsibility* = the long-lived "why" — a role, a measured annual
    responsibility, a career goal — with structured tracking (Key Results, milestones, cadence) and an
    append-only decisions log. *Campaign* = complex work spanning multiple sessions and
-   handoffs, run through the heavy **QRDBIV** lifecycle. *Mission* = a lightweight unit or one
+   handoffs, run through the heavy **Payload Relay** lifecycle. *Mission* = a lightweight unit or one
    iteration against a campaign, carrying only *proportional* admin. Strategy, campaigns, and
    lightweight units each keep their own durable state — and you size the ceremony to the tier.
 
@@ -232,7 +232,7 @@ The three tiers are *defined* in Operating Principle 1 — here's their machiner
 | Tier | CLI | Lifecycle |
 |---|---|---|
 | **Responsibility** | `objective.py` | structured tracking (Key Results, milestones, cadence, health) + append-only decisions log; never deleted |
-| **Campaign** | `workstream.py` | heavy **QRDBIV** (Q→R→D→B→I→V→Cleanup; **RBIV** if the spec's already clear); deleted at cleanup, its log survives; may link child missions |
+| **Campaign** | `workstream.py` | heavy **Payload Relay** (Q→R→D→B→I→V→Cleanup; **Short Relay** if the spec's already clear); deleted at cleanup, its log survives; may link child missions |
 | **Mission** | `mission.py` | proportional admin only (mission / checklist / handoff / lessons); promote to a campaign if it grows |
 
 ---
@@ -248,14 +248,14 @@ never passively.
 | Tier | Driver | Standing counsel | Standing watch |
 |---|---|---|---|
 | **Responsibility** | main context | ethics/consequence check, evidence review, real-need check | corner-cutting the goal to mark it done |
-| **Campaign** (QRDBIV) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
+| **Campaign** (Payload Relay) | per-phase council below | scope discipline, systems/repeatability | per-phase council below |
 | **Mission** (light) | the driver the unit's *nature* calls for (default: general-purpose driver) | repeatability | claiming done unverified |
 
 **Drivers follow the *nature* of the work, not the tier:** a mission takes the one driver its
 task calls for; a campaign routes per phase; a responsibility is stewarded from main context. A mission keeps the council *small on purpose* — pick the fitting driver, run the gate, watch
 for unverified claims. Don't convene a campaign's full council around a one-shot task.
 
-### The QRDBIV phase council (campaigns)
+### The Payload Relay phase council (campaigns)
 
 | Phase | Driver | Counsel | Watch for |
 |---|---|---|---|

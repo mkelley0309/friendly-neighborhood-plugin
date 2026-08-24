@@ -12,7 +12,7 @@ Templates (index.md, request.md, research.md, design.md, blueprint.md, log entry
 
 ```yaml
 workstream: kebab-case-name
-framework: rbiv | qrdbiv
+framework: short-relay | payload-relay
 workstream_phase: questions | research | design | blueprint | implement | validate | complete | cleanup
 workstream_health: healthy | needs-questions | needs-design | under-shaped | blocked | stale
 current_step: "Phase N — Step X: description"   # only during blueprint/implement; omit otherwise
@@ -37,7 +37,7 @@ tags: [workstream/{name}]
 ```yaml
 note_type: workstream-log
 workstream: kebab-case-name
-framework: rbiv | qrdbiv
+framework: short-relay | payload-relay
 completed: YYYY-MM-DD
 parent: null | "objectives/{name}"
 tags: [workstream/{name}]

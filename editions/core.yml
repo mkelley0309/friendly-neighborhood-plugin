@@ -11,7 +11,7 @@ plugin:
   description: >
     An opinionated workflow + knowledge harness with four structural
     differentiators: (1) three-tier work model — objective (long-lived why,
-    Key Results, milestones, decisions log) → workstream (heavy QRDBIV
+    Key Results, milestones, decisions log) → workstream (heavy Payload Relay
     lifecycle, multi-session) → assignment (lightweight unit, proportional
     admin); (2) progressive distillation — research broadly, then compress at
     every handoff to the fewest, most precise words (semantic density: dense

@@ -30,7 +30,7 @@ Not a campaign (those have defined completion states and are deleted on cleanup)
 
 ```
 responsibility   (control-plane/objectives/)
-  └── campaign  (control-plane/workstreams/)   ← heavy QRDBIV lifecycle
+  └── campaign  (control-plane/workstreams/)   ← heavy Payload Relay lifecycle
         └── mission  (control-plane/missions/)          ← lightweight unit
 ```
 

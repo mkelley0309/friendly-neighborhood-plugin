@@ -1,6 +1,6 @@
 # Action: Cleanup
 
-> **Phase council** (QRDBIV: Cleanup) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `peter`; counsel `ned`, `jameson`; watch villains `carnage`, `mysterio`.
+> **Phase council** (Relay: Cleanup) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `peter`; counsel `ned`, `jameson`; watch villains `carnage`, `mysterio`.
 
 Write the log entry, delete all working files, remove the folder.
 

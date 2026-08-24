@@ -1,6 +1,6 @@
 # Action: Design
 
-> **Phase council** (QRDBIV: D) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `miguel`; counsel `uncle-ben`, `aunt-may`, `mj`, `madame-web`; watch villains `octavius`, `vulture`, `kraven`, `kingpin`.
+> **Phase council** (Relay: D) — consult only when the concern is live (full map in `/friendly-neighborhood:creed`): driver `miguel`; counsel `uncle-ben`, `aunt-may`, `mj`, `madame-web`; watch villains `octavius`, `vulture`, `kraven`, `kingpin`.
 
 Resolve decisions before planning. Covers two kinds, either or both: **architectural design** (how it works) and **structure outline** (what the deliverable is shaped like). Output: `design.md`, and `outline.md` when the deliverable structure warrants its own artifact.
 

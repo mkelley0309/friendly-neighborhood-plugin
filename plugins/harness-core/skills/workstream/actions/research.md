@@ -1,6 +1,6 @@
 # Action: Research
 
-Research is **mandatory** for every formal workstream — QRDBIV and RBIV alike. There is no path from Questions (or Initiate) directly to Design or Blueprint without a research.md. If source material is provided by the user, it still passes through the research protocol: write it to `_working/`, then distill from `_working/`.
+Research is **mandatory** for every formal workstream — Payload Relay and Short Relay alike. There is no path from Questions (or Initiate) directly to Design or Blueprint without a research.md. If source material is provided by the user, it still passes through the research protocol: write it to `_working/`, then distill from `_working/`.
 
 ---
 
@@ -128,7 +128,7 @@ After `research.md` is complete and read by main context:
 - → **design** if research surfaced architectural decisions or structural choices to make
 - → **blueprint** if research is sufficient to blueprint directly
 
-Update `index.md`: set `workstream_phase`, update the QRDBIV artifact status table, update `Last Active`.
+Update `index.md`: set `workstream_phase`, update the Payload Relay artifact status table, update `Last Active`.
 
 ---
 
@@ -193,4 +193,4 @@ Before declaring research complete, verify:
 - [ ] `research.md` has a `## Sources` section carrying forward all pass sources
 - [ ] No finding in `research.md` is derived solely from model weights — every claim traces to a vault path, URL, codebase path, or user-provided material
 - [ ] Main context has not consumed raw pass output — only the `research.md` distillation
-- [ ] `index.md` QRDBIV artifact status table updated to reflect completed steps
+- [ ] `index.md` Payload Relay artifact status table updated to reflect completed steps

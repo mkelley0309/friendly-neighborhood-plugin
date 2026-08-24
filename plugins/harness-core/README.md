@@ -8,7 +8,7 @@ The **un-themed** edition: all the capabilities, none of the costume. If you wan
 
 Most harnesses track assignments. This one tracks *why the work exists* and enforces how it closes:
 
-- **Three tiers, not a flat list.** Objective (the long-lived why — a role, an annual goal, a career goal, with Key Results and a decisions log) → Workstream (heavy QRDBIV lifecycle, multi-session) → Assignment (lightweight, proportional admin only). Each tier has durable state; objectives carry an append-only decisions log that survives completion.
+- **Three tiers, not a flat list.** Objective (the long-lived why — a role, an annual goal, a career goal, with Key Results and a decisions log) → Workstream (heavy Payload Relay lifecycle, multi-session) → Assignment (lightweight, proportional admin only). Each tier has durable state; objectives carry an append-only decisions log that survives completion.
 - **Progressive distillation.** Every phase boundary produces a compressed artifact handed to a fresh context — light on short work, hard on long work. Keeps understanding high and token cost low across multi-session efforts.
 - **Peer-reviewed knowledge pipeline.** New content is scouted, harvested, and staged; it enters the vault only by review. Nothing auto-updates itself. The vault grows by admission, not accumulation.
 - **A deterministic gate.** Hard, measurable concerns — tests, lint, budget, deny-list — run through `tools/gate.py` (exit-code GO/NO-GO). Soft judgments stay qualitative and recorded. No workstream closes on faith.
@@ -16,9 +16,9 @@ Most harnesses track assignments. This one tracks *why the work exists* and enfo
 
 ## What you get
 
-- **Three-tier orchestration** — `objective` → `workstream` → `assignment` (long-lived goal → heavy QRDBIV lifecycle → lightweight unit), each with a backing Python CLI and an auditable lifecycle.
+- **Three-tier orchestration** — `objective` → `workstream` → `assignment` (long-lived goal → heavy Payload Relay lifecycle → lightweight unit), each with a backing Python CLI and an auditable lifecycle.
 - **A knowledge-vault pipeline** (`knowledge`) — scout → harvest → distill → cartograph → audit → sync, into a linked markdown vault. No database, no lock-in, no Obsidian required (it's just markdown).
-- **Workstream lifecycle** — a QRDBIV/RBIV framework (questions → research → design → blueprint → implement → validate → cleanup) with mandatory progressive distillation, fresh-context research handoffs, and a verification gate before close.
+- **Workstream lifecycle** — a Payload Relay/Short Relay framework (questions → research → design → blueprint → implement → validate → cleanup) with mandatory progressive distillation, fresh-context research handoffs, and a verification gate before close.
 - **Observational hooks** — session/tool/stop logging + a recovery breadcrumb on failure, to `.claude/logs/`.
 - **A statusline** surfacing the active workstream + phase and tier counts.
 - **A workspace scaffolder** (`init-workspace`) that drops a complete, domain-neutral harness into your project.
@@ -50,7 +50,7 @@ Invoke as `/harness-core:<name>`.
 | Skill | What it does |
 |---|---|
 | `init-workspace` | Scaffolds a fresh workspace from the bundled templates. Run this first. |
-| `workstream` | Heavy QRDBIV lifecycle (questions → research → design → blueprint → implement → validate → cleanup) for complex multi-session work. |
+| `workstream` | Heavy Payload Relay lifecycle (questions → research → design → blueprint → implement → validate → cleanup) for complex multi-session work. |
 | `assignment` | Lightweight unit with proportional admin (assignment/checklist/handoff/lessons). Promote to a workstream if it grows. |
 | `objective` | Long-lived, review-cycle goal with Key Results, milestones, linked workstreams, and an append-only decisions log. |
 | `knowledge` | The knowledge pipeline + linked vault: scout → harvest → distill → cartograph → audit → sync. |

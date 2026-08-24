@@ -30,7 +30,7 @@ Not a workstream (those have defined completion states and are deleted on cleanu
 
 ```
 objective   (control-plane/objectives/)
-  └── workstream  (control-plane/workstreams/)   ← heavy QRDBIV lifecycle
+  └── workstream  (control-plane/workstreams/)   ← heavy Payload Relay lifecycle
         └── assignment  (control-plane/assignments/)          ← lightweight unit
 ```
 
