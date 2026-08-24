@@ -70,6 +70,8 @@ control-plane/
 
 ## Hierarchy
 
+**Every tier is a Payload Relay.** The tiers differ in how many legs the relay has, not in kind. A workstream is the full relay — most legs, most handoffs. An assignment is the same relay with fewer legs, because the body of work is smaller. A cadence is a relay that runs again; each run is its own sequence. An objective spawning a workstream or assignment is passing payload to another relay sequence. Read the spawn graph below as payload movement between sequences, not as a separate mechanism.
+
 ```
 objective                     <- long-lived strategy, measured
     |-- workstream            <- heavy Payload Relay lifecycle, multi-session
