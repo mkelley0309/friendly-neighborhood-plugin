@@ -84,7 +84,7 @@ The guardrails matter *more* here, because nobody is watching each run:
 
 This has a sharp, silent failure mode if built ad hoc: on a machine where `claude` on `PATH` resolves through the VS Code extension shim (`~/.local/bin/claude`, a Bash script with a shebang line), PowerShell's `&` call operator cannot execute it — a shebang script is not a Win32 application. The failure can be *completely silent*: a 0-byte log, Task Scheduler reporting exit code 0, and no trace anywhere that a run was ever attempted. A patrol can go weeks believing it's running when it never has.
 
-**Do not write a bespoke `run.ps1` that calls `& claude` directly.** Every local-trigger patrol's `run.ps1` must be a thin wrapper delegating to a shared `tools/cadence-run.ps1` helper (the name stays `cadence-run.ps1` even in this edition — it's a tool, not a themed artifact), which:
+**Do not write a bespoke `run.ps1` that calls `& claude` directly.** Every local-trigger patrol's `run.ps1` must be a thin wrapper delegating to a shared `tools/cadence-run.ps1` helper, which:
 
 - invokes the shim through Git Bash by its **full resolved path** — never bare `bash` on `PATH`, which resolves to the WSL launcher (a different environment where `claude` isn't on `PATH` at all)
 - writes to a timestamped log under the patrol's `_working/`
