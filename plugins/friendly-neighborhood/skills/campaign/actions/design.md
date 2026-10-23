@@ -18,6 +18,7 @@ Skip the phase entirely only if research is sufficient to plan directly.
 1. Read `research.md` — focus on Decisions Implied and Open Questions.
 2. For each decision: evaluate options, make a call, document rationale. Surface to user if tradeoffs are significant.
 3. Write `design.md` using the template in `framework-templates.md`. Frontmatter: `note_type: workstream-artifact`, `workstream: {name}`, `tags: [workstream/{name}]`.
+   - **Decisions vs data split.** When the deliverable is data-heavy (inventory, tracker, matrix), do not copy row data into `design.md`. Carry the decisions in `design.md` and add a **Data Inputs** section naming each `research.md` section or table that Blueprint and Implement will consume as row data. Reading a named data input is planned, not a gap in `design.md` or `blueprint.md`. Reading anything not named still is.
 
 ### Structure outline
 

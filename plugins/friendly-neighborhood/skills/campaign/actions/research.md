@@ -88,6 +88,10 @@ Pass types and their scopes:
 
 Run passes **sequentially, one at a time**. Do not run distillation until **all** pass files exist on disk. Certainty of completion takes priority over speed — a stalled or half-written pass file leaves the campaign in an unrecoverable state.
 
+**Chained passes.** A later pass may read an earlier pass file when it needs that pass's output as input (e.g. a coverage pass rating the item list an inventory pass produced). Sequential execution makes this safe. Brief it explicitly: name the earlier file path and the section or table it may use. Unnamed files and sections stay off limits. Main context still never reads either file.
+
+**Knowledge-pass write exception.** A knowledge pass reads `knowledge/` but writes its pass file to `control-plane/workstreams/{name}/_working/` — a deliberate break from one-subtree scoping. Brief it as: read-only in `knowledge/` (no writes there), exactly one write path (its pass file). Nothing else outside `knowledge/` is read or written.
+
 ### Distillation — Fresh Subagent, Clean Context
 
 After all pass files are written, distillation defaults to a **separate subagent** (Sonnet), for the fresh-context guarantee described above. This subagent must:

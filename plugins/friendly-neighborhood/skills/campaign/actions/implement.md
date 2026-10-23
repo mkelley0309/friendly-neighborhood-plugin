@@ -16,6 +16,8 @@ After writing output files: update `control-plane/outputs/index.md` to add a row
 
 Read `index.md` and `blueprint.md`. Confirm `workstream_health: healthy`. If not, load `actions/assess.md`.
 
+A step that consumes row data may read the `research.md` sections named in `design.md`'s Data Inputs — that is planned input, not escalation past `blueprint.md`.
+
 `friction-log.md` already exists (created at initiate; see SKILL.md → *Friction Log*). If it doesn't, create it from the template in `framework-templates.md`.
 
 Do **not** build a step-status table anywhere. `blueprint.md` checkboxes and `index.md` `current_step` are the progress record, and `check-step` maintains both together.
