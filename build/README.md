@@ -188,6 +188,15 @@ generated output gets this right; the shipped file doesn't. That's a
 `bug-to-fix-everywhere` candidate for 3.6, not something I patched in
 `plugins/*` (out of scope, read-only reference tree).
 
+## External filenames
+
+`EXTERNAL_FILENAMES` in `generate.py` lists workspace tools the plugin names but does not ship
+(they live in the user's own `tools/`), so their on-disk name is fixed. `Vocab.apply()` masks
+them before any substitution and restores them after, so `cadence-run.ps1` never becomes
+`patrol-run.ps1`. Shipped tier files (`cadence.py` -> `patrol.py`) are renamed with their own
+file and stay out of this list. Add a name here whenever src/ references an unshipped file
+containing a tier or skill word.
+
 ## The `cadence` counter-landmine
 
 `vocabulary/data-model.yml`'s header calls this out by name: the word

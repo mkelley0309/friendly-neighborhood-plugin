@@ -126,6 +126,13 @@ def fix_articles(text: str, target_words: set[str]) -> str:
     return pattern.sub(repl, text)
 
 
+# Filenames of workspace tools the plugin references but does not ship
+# (they live in the user's own `tools/`, outside any edition's tree). Their
+# real name is fixed on disk, so no tier/skill substitution may touch them —
+# e.g. `cadence-run.ps1` must not become `patrol-run.ps1` in themed prose.
+EXTERNAL_FILENAMES = ("cadence-run.ps1",)
+
+
 class Vocab:
     """Builds and applies the display-vocabulary substitution for one edition."""
 
@@ -307,6 +314,15 @@ class Vocab:
         (dict keys, f-strings, variable names), so that file gets a wholesale
         exemption instead of relying on the guards alone.
         """
+        # mask EXTERNAL_FILENAMES so nothing below can rewrite them; restored at return
+        for i, name in enumerate(EXTERNAL_FILENAMES):
+            text = text.replace(name, f"\x00EXT{i}\x00")
+        text = self._apply(text, skip_nonpinned, own_tier_file)
+        for i, name in enumerate(EXTERNAL_FILENAMES):
+            text = text.replace(f"\x00EXT{i}\x00", name)
+        return text
+
+    def _apply(self, text: str, skip_nonpinned: frozenset, own_tier_file: bool) -> str:
         target_words = set()
         for core_word, ed_word in self.nonpinned_pairs:
             if core_word in skip_nonpinned:
