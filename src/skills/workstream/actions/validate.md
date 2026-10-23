@@ -14,6 +14,8 @@ This executes your defined checks (tests, lint, types — set them once with `ga
 
 Record the result (command run, exit code, what passed or failed) in `validate.md` — that is the work record. Only record it in `friction-log.md` if the *gate itself* misbehaved (no checks configured, the skill gave no usable instruction, the runner failed for reasons unrelated to the deliverables).
 
+**If GO on a row-based deliverable** (inventory, tracker, table): still spot-check ≥10 rows by hand, sampled across the table, and record them in `validate.md`. Count and required-field gates miss content defects — self-referencing evidence, pointers to unrendered columns.
+
 **If NO-GO:** stop. Document the failures in `validate.md` and surface them to the user. Return to `actions/implement.md` to remediate, then re-run the gate.
 
 ### 2. Adversarial QA
