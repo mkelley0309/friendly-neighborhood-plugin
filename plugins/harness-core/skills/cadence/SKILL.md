@@ -77,3 +77,30 @@ The guardrails matter *more* here, because nobody is watching each run:
 - **Hard safety still enforced** — the `.claude/settings.json` deny-list blocks destructive ops even unattended.
 - **Watch the cost** — cheap-per-run × many runs adds up. Keep each run lean, and pause a cadence that is not earning its tokens.
 - **Report friction** — where a run needed correction, or asked for approval repeatedly, append the rule to `control-plane/_harness/friction.md`. High approval rates on a recurring job are the clearest signal that setup needs fixing.
+
+## Local unattended trigger (Windows Task Scheduler)
+
+`schedule` (cloud cron routines) can't see local-only paths — no cloud routine can read or write a workspace that only exists on one machine's disk. When a cadence's trigger needs to fire against local-only content, the unattended mechanism is a **Windows Task Scheduler task running `claude -p` headless**, not `schedule`. Say so explicitly in the cadence's Trigger section.
+
+This has a sharp, silent failure mode if built ad hoc: on a machine where `claude` on `PATH` resolves through the VS Code extension shim (`~/.local/bin/claude`, a Bash script with a shebang line), PowerShell's `&` call operator cannot execute it — a shebang script is not a Win32 application. The failure can be *completely silent*: a 0-byte log, Task Scheduler reporting exit code 0, and no trace anywhere that a run was ever attempted. A cadence can go weeks believing it's running when it never has.
+
+**Do not write a bespoke `run.ps1` that calls `& claude` directly.** Every local-trigger cadence's `run.ps1` must be a thin wrapper delegating to a shared `tools/cadence-run.ps1` helper, which:
+
+- invokes the shim through Git Bash by its **full resolved path** — never bare `bash` on `PATH`, which resolves to the WSL launcher (a different environment where `claude` isn't on `PATH` at all)
+- writes to a timestamped log under the cadence's `_working/`
+- checks the log is non-empty and the exit code is 0 after the run, and if either check fails, writes a `FAILED-*.flag` file and exits non-zero — so a no-op run leaves visible evidence instead of masquerading as success
+
+A cadence's own `run.ps1` should do nothing but resolve its prompt file and call the helper:
+
+```powershell
+$workspace = "C:\Users\<you>\Workspace"
+& (Join-Path $workspace "tools\cadence-run.ps1") `
+    -CadenceName "<cadence-name>" `
+    -PromptFile (Join-Path $workspace "control-plane\cadences\<cadence-name>\prompt.md") `
+    -WorkspaceRoot $workspace
+```
+
+Two things this does **not** fix, and both need a deliberate decision when wiring the Task Scheduler task, not a default:
+
+- **Logon type.** `LogonType=Interactive` (the New-ScheduledTaskPrincipal default when authored in-session) only fires if the user already has an active interactive session at trigger time — on a laptop, that's a real gap at midnight/overnight. `LogonType=S4U` runs whether logged on or not (no stored password) and survives a locked screen, but changing a task's principal requires an elevated/admin session — expect this step to need the user, not the agent.
+- **Sleep/wake.** Neither logon type fires while the OS itself is asleep. `WakeToRun` would, but forcing a laptop to wake unattended (e.g. in a bag) is a physical-safety tradeoff — treat this as the user's call, never a silent default.
