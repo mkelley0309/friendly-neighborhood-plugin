@@ -125,3 +125,11 @@ One-time PowerShell script to set API keys as persistent user-level environment 
 ```powershell
 .\tools\setup-keys.ps1 -AnthropicKey "sk-ant-..." -OpenRouterKey "sk-or-..."
 ```
+
+### patrol-run.ps1
+
+Shared unattended-run helper for patrols triggered by Windows Task Scheduler. Runs `claude -p` through Git Bash (the PowerShell `&` operator can't run the `claude` shell shim, and fails silently), logs to the patrol's `_working/`, and writes a `FAILED-*.flag` on a 0-byte log or non-zero exit. A patrol's own `run.ps1` only calls this — see the patrol skill → *Local unattended trigger*.
+
+```powershell
+.\tools\patrol-run.ps1 -CadenceName "<name>" -PromptFile "control-plane\patrols\<name>\prompt.md" -PermissionFlag "--permission-mode acceptEdits" [-Model <model>]
+```

@@ -84,19 +84,21 @@ The guardrails matter *more* here, because nobody is watching each run:
 
 This has a sharp, silent failure mode if built ad hoc: on a machine where `claude` on `PATH` resolves through the VS Code extension shim (`~/.local/bin/claude`, a Bash script with a shebang line), PowerShell's `&` call operator cannot execute it — a shebang script is not a Win32 application. The failure can be *completely silent*: a 0-byte log, Task Scheduler reporting exit code 0, and no trace anywhere that a run was ever attempted. A patrol can go weeks believing it's running when it never has.
 
-**Do not write a bespoke `run.ps1` that calls `& claude` directly.** Every local-trigger patrol's `run.ps1` must be a thin wrapper delegating to a shared `tools/cadence-run.ps1` helper, which:
+**Do not write a bespoke `run.ps1` that calls `& claude` directly.** Every local-trigger patrol's `run.ps1` must be a thin wrapper delegating to the `tools/patrol-run.ps1` helper (scaffolded by `origin-story`; re-run it to add the helper to an existing workspace — existing files are never overwritten), which:
 
 - invokes the shim through Git Bash by its **full resolved path** — never bare `bash` on `PATH`, which resolves to the WSL launcher (a different environment where `claude` isn't on `PATH` at all)
 - writes to a timestamped log under the patrol's `_working/`
 - checks the log is non-empty and the exit code is 0 after the run, and if either check fails, writes a `FAILED-*.flag` file and exits non-zero — so a no-op run leaves visible evidence instead of masquerading as success
+- requires an explicit `-PermissionFlag` (e.g. `"--permission-mode acceptEdits"`) — nobody is there to approve prompts, so choose deliberately; `-Model` is optional and defaults to Claude Code's own default
 
 A patrol's own `run.ps1` should do nothing but resolve its prompt file and call the helper:
 
 ```powershell
 $workspace = "C:\Users\<you>\Workspace"
-& (Join-Path $workspace "tools\cadence-run.ps1") `
+& (Join-Path $workspace "tools\patrol-run.ps1") `
     -CadenceName "<patrol-name>" `
     -PromptFile (Join-Path $workspace "control-plane\patrols\<patrol-name>\prompt.md") `
+    -PermissionFlag "--permission-mode acceptEdits" `
     -WorkspaceRoot $workspace
 ```
 

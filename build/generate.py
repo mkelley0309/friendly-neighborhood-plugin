@@ -128,9 +128,10 @@ def fix_articles(text: str, target_words: set[str]) -> str:
 
 # Filenames of workspace tools the plugin references but does not ship
 # (they live in the user's own `tools/`, outside any edition's tree). Their
-# real name is fixed on disk, so no tier/skill substitution may touch them —
-# e.g. `cadence-run.ps1` must not become `patrol-run.ps1` in themed prose.
-EXTERNAL_FILENAMES = ("cadence-run.ps1",)
+# real name is fixed on disk, so no tier/skill substitution may touch them.
+# Empty now: `cadence-run.ps1`, the original entry, ships in templates/tools/
+# and so renames with its own file (-> `patrol-run.ps1`), like `cadence.py`.
+EXTERNAL_FILENAMES: tuple[str, ...] = ()
 
 
 class Vocab:
