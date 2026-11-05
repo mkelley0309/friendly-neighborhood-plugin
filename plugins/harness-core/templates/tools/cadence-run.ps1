@@ -30,7 +30,8 @@
 # run's own commit, so a tracked log always dirties the tree. _working/.gitignore
 # keeps them out of git. A RUNNING flag marks each run in progress. If the wrapper
 # is killed, nothing after the native call runs, so the next run renames the
-# leftover flag to FAILED and the kill leaves evidence.
+# leftover flag to FAILED and the kill leaves evidence. Each flag names its owner
+# process, so an overlapping run leaves a live run's flag alone.
 
 param(
     [Parameter(Mandatory)][string]$CadenceName,
@@ -88,13 +89,26 @@ if (-not (Test-Path $ignoreFile)) {
     Set-Content -Path $ignoreFile -Value @("run-*.log", "RUNNING-*.flag") -Encoding ascii
 }
 
+# PID plus start time, so a reused PID cannot pass for the original owner.
+function Test-FlagOwnerAlive($path) {
+    $text = Get-Content -Raw -Path $path -ErrorAction SilentlyContinue
+    if ($text -notmatch 'owner=(\d+)@(\S+)') { return $false }  # no owner line: treat as dead
+    $wanted = $Matches[2]
+    $proc = Get-Process -Id ([int]$Matches[1]) -ErrorAction SilentlyContinue
+    if (-not $proc -or -not $proc.StartTime) { return $false }
+    return ($proc.StartTime.ToString("o") -eq $wanted)
+}
+
+# Tolerate a vanished flag: an overlapping run may finish or sweep it first.
 Get-ChildItem -Path $logDir -Filter "RUNNING-*.flag" | ForEach-Object {
-    Rename-Item -Path $_.FullName -NewName ($_.Name -replace '^RUNNING-', 'FAILED-')
+    if (-not (Test-FlagOwnerAlive $_.FullName)) {
+        Rename-Item -Path $_.FullName -NewName ($_.Name -replace '^RUNNING-', 'FAILED-') -ErrorAction SilentlyContinue
+    }
 }
 
 # Written last, so an early Fail() above cannot leave a false kill signal.
 $runFlag = Join-Path $logDir "RUNNING-$stamp.flag"
-Set-Content -Path $runFlag -Value "cadence-run.ps1 started '$CadenceName' at $(Get-Date -Format o). If this file was renamed to FAILED, the wrapper was killed before finishing. The run's work may still have landed: check its commits."
+Set-Content -Path $runFlag -Value "cadence-run.ps1 started '$CadenceName' at $(Get-Date -Format o). If this file was renamed to FAILED, the wrapper was killed before finishing. The run's work may still have landed: check its commits. owner=$PID@$((Get-Process -Id $PID).StartTime.ToString("o"))"
 
 # Windows PowerShell 5.1 turns any native stderr line into a terminating error
 # under EAP=Stop when redirected - so a harmless claude warning (e.g. the
@@ -105,8 +119,8 @@ $ErrorActionPreference = "Continue"
 & $gitBash $claudeShim @claudeArgs *> $logFile
 $exitCode = $LASTEXITCODE
 $ErrorActionPreference = "Stop"
-# Tolerate a missing flag: an overlapping run renames any flag it finds, and
-# this run must still reach its own checks below.
+# Tolerate a missing flag: an overlapping run may sweep a flag whose owner it
+# reads as dead, and this run must still reach its own checks below.
 Remove-Item -Path $runFlag -Force -ErrorAction SilentlyContinue
 
 if (-not (Test-Path $logFile) -or (Get-Item $logFile).Length -eq 0) {

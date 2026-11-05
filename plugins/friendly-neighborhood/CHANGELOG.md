@@ -3,6 +3,14 @@
 All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.5.2] — 2026-11-05
+
+### Fixed
+- **An overlapping run no longer marks a live run `FAILED`.** Each `RUNNING-*.flag` from `patrol-run.ps1` now names its owner (PID plus start time), and the next run skips a flag whose owner is still alive. Both runs still run: this is not a lock. A leftover flag with a dead owner or no owner line still becomes `FAILED-*.flag`, so a kill still leaves evidence. The 0.5.1 advice to check for overlap still applies to flag-only `FAILED` files written before you upgrade.
+
+### Upgrading
+Existing workspaces keep their current `tools/` files, because the scaffolder never overwrites. To get this fix, copy `tools/patrol-run.ps1` from the plugin's `templates/` by hand.
+
 ## [0.5.1] — 2026-11-05
 
 ### Fixed

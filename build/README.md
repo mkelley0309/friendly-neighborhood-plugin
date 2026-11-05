@@ -69,6 +69,18 @@ VAULT_LINT_TOOLS=build/_generated/friendly-neighborhood/templates/tools python -
 `test_workstream.py` and `test_cadence.py` run the same way. `test_cadence.py` uses `patrol.py` when
 the tools directory is a themed edition's.
 
+`test_cadence_run.ps1` runs the wrapper end to end on Windows against a fake claude shim in a temp
+workspace, so it never calls the real claude or a real cadence. It needs Git Bash, takes about 30
+seconds, and exits 1 if any case fails. It tests `src/templates/tools/cadence-run.ps1` by default.
+Pass `-Wrapper` to test another copy. A wrapper named `patrol-run.ps1` is read as a themed edition's,
+so the test looks in `control-plane\patrols\`:
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File build/tests/test_cadence_run.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File build/tests/test_cadence_run.ps1 -Wrapper build/_generated/harness-core/templates/tools/cadence-run.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File build/tests/test_cadence_run.ps1 -Wrapper build/_generated/friendly-neighborhood/templates/tools/patrol-run.ps1
+```
+
 ## How it works
 
 1. Load `vocabulary/data-model.yml` (pinned identifiers), `vocabulary/display.yml`
