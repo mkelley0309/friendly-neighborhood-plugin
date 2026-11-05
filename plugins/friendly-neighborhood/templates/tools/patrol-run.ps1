@@ -25,6 +25,12 @@
 # "--dangerously-skip-permissions", ...). The .claude/settings.json deny-list
 # still applies either way. -Model is optional; omitted, Claude Code's default
 # model is used.
+#
+# Run logs are local scratch: claude writes its text output at exit, after the
+# run's own commit, so a tracked log always dirties the tree. _working/.gitignore
+# keeps them out of git. A RUNNING flag marks each run in progress. If the wrapper
+# is killed, nothing after the native call runs, so the next run renames the
+# leftover flag to FAILED and the kill leaves evidence.
 
 param(
     [Parameter(Mandatory)][string]$CadenceName,
@@ -77,6 +83,19 @@ $claudeArgs = @("-p", $prompt) + ($PermissionFlag -split '\s+' | Where-Object { 
 if ($Model) { $claudeArgs += @("--model", $Model) }
 $claudeArgs += @("--output-format", "text")
 
+$ignoreFile = Join-Path $logDir ".gitignore"
+if (-not (Test-Path $ignoreFile)) {
+    Set-Content -Path $ignoreFile -Value @("run-*.log", "RUNNING-*.flag") -Encoding ascii
+}
+
+Get-ChildItem -Path $logDir -Filter "RUNNING-*.flag" | ForEach-Object {
+    Rename-Item -Path $_.FullName -NewName ($_.Name -replace '^RUNNING-', 'FAILED-')
+}
+
+# Written last, so an early Fail() above cannot leave a false kill signal.
+$runFlag = Join-Path $logDir "RUNNING-$stamp.flag"
+Set-Content -Path $runFlag -Value "patrol-run.ps1 started '$CadenceName' at $(Get-Date -Format o). If this file was renamed to FAILED, the wrapper was killed before finishing. The run's work may still have landed: check its commits."
+
 # Windows PowerShell 5.1 turns any native stderr line into a terminating error
 # under EAP=Stop when redirected - so a harmless claude warning (e.g. the
 # workspace-trust notice) kills the script before the log is written or Fail()
@@ -86,6 +105,7 @@ $ErrorActionPreference = "Continue"
 & $gitBash $claudeShim @claudeArgs *> $logFile
 $exitCode = $LASTEXITCODE
 $ErrorActionPreference = "Stop"
+Remove-Item -Path $runFlag -Force
 
 if (-not (Test-Path $logFile) -or (Get-Item $logFile).Length -eq 0) {
     Fail "claude produced a 0-byte log (exit code $exitCode) - the run almost certainly no-op'd. Check that Git Bash and the claude shim are still valid, and that the task's logon type lets it run at trigger time."

@@ -355,7 +355,7 @@ def cmd_abandon(args):
 def cmd_delete(args):
     path = patrol_dir(args.name)
     work = path / "_working"
-    leftovers = [p for p in work.rglob("*") if p.is_file() and p.name != ".gitkeep"] if work.exists() else []
+    leftovers = [p for p in work.rglob("*") if p.is_file() and p.name not in (".gitkeep", ".gitignore")] if work.exists() else []
     if leftovers and not args.force:
         print(f"error: {len(leftovers)} file(s) still in _working/ — rescue or discard them first:",
               file=sys.stderr)

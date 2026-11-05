@@ -87,7 +87,8 @@ This has a sharp, silent failure mode if built ad hoc: on a machine where `claud
 **Do not write a bespoke `run.ps1` that calls `& claude` directly.** Every local-trigger cadence's `run.ps1` must be a thin wrapper delegating to the `tools/cadence-run.ps1` helper (scaffolded by `init-workspace`; re-run it to add the helper to an existing workspace — existing files are never overwritten), which:
 
 - invokes the shim through Git Bash by its **full resolved path** — never bare `bash` on `PATH`, which resolves to the WSL launcher (a different environment where `claude` isn't on `PATH` at all)
-- writes to a timestamped log under the cadence's `_working/`
+- writes to a timestamped log under the cadence's `_working/`. Run logs are local scratch: `_working/.gitignore` ignores them and they are not committed
+- marks each run with a `RUNNING-*.flag`, removed when claude exits. A killed run leaves that flag behind and the next run renames it to `FAILED-*.flag`, so a kill leaves evidence. The killed run's work may still have landed, so check its commits
 - checks the log is non-empty and the exit code is 0 after the run, and if either check fails, writes a `FAILED-*.flag` file and exits non-zero — so a no-op run leaves visible evidence instead of masquerading as success
 - requires an explicit `-PermissionFlag` (e.g. `"--permission-mode acceptEdits"`) — nobody is there to approve prompts, so choose deliberately; `-Model` is optional and defaults to Claude Code's own default
 
