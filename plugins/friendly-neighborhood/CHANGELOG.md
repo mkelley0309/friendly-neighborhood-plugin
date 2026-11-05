@@ -7,7 +7,7 @@ All notable changes to this plugin are documented here. Format follows
 
 ### Fixed
 - **Run logs no longer dirty the tree.** `patrol-run.ps1` creates `_working/.gitignore` before each run, so a run's own commit no longer picks up a partial log that claude finishes writing at exit. Run logs are now local scratch and are not committed.
-- **A killed run now leaves evidence.** `patrol-run.ps1` writes a `RUNNING-*.flag` before claude starts and removes it when claude exits. If Task Scheduler or a sleep kills the wrapper, the flag survives and the next run renames it to `FAILED-*.flag`, keeping its timestamp. The killed run's work may still have landed, so check its commits.
+- **A killed run now leaves evidence.** `patrol-run.ps1` writes a `RUNNING-*.flag` before claude starts and removes it when claude exits. If Task Scheduler or a sleep kills the wrapper, the flag survives and the next run renames it to `FAILED-*.flag`, keeping its timestamp. The killed run's work may still have landed, so check its commits. A run that overlaps a live run renames that run's flag too, so check for overlap before treating a flag-only `FAILED` as a kill.
 - `patrol.py delete` no longer counts `.gitignore` as a leftover in `_working/`.
 
 ### Upgrading
