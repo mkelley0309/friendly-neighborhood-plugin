@@ -126,6 +126,7 @@ Type-specific fields are defined per `note_type` — see the relevant distiller 
 | `decision` | A captured decision with rationale |
 | `concept` | A domain concept or glossary entry |
 | `reference` | External-facing reference material |
+| `requirement` | Optional **requirement hub** in `_graph/requirements/req-<slug>.md`: what must be done for one standard (`requirement`, `standard`, `issuer`, `jurisdictions`, `aliases`, `derived_from`, `as_of`; `## Obligations` bullets carry immutable `^<slug>-<obligation>` block IDs). Notes link here via `requirements:`. See `vault/_graph/index.md`. |
 ### Provenance fields (for distilled notes)
 
 Notes curated from `knowledge/sources/` must track provenance:
@@ -200,7 +201,7 @@ Scope: curated notes under `SHAPE_SCOPE_PREFIXES` (`tools/vault-lint.py`, defaul
 |---|---|
 | Hub | Keeps path, H1, breadcrumb, lead, `note_type`. Moved blocks replaced by a `- [[leaf\|Title]] — gloss` list |
 | Leaf name | Sibling file `{hub-stem}-{slug}.md` |
-| Leaf frontmatter | Inherits `note_type`/`tags`/`confidence`/`authority`/`source_url`; `related: [hub]` |
+| Leaf frontmatter | Inherits `note_type`/`tags`/`confidence`/`authority`/`source_url`; `requirements` = the hub's `requirements:` entries the leaf relies on (quoted entries, inline or block list, `#^id` anchors only); `related: [hub]` |
 | Leaf body | H1 `{Hub} — {Leaf}`; extended breadcrumb; one-line lead; block moved verbatim, headings promoted one level; `## Related Notes` → hub only |
 | Links | No leaf→leaf links |
 | Folder `index.md` | Lists leaves as indented sub-bullets under the hub |
@@ -213,6 +214,7 @@ Scope: curated notes under `SHAPE_SCOPE_PREFIXES` (`tools/vault-lint.py`, defaul
 | C14 | Doubled directory segment |
 | C15 | Note shape R1–R4; severity per `SHAPE_SEVERITY` (default `warn`) |
 | C16 | Broken anchor: `[[t#Heading]]`, `[[#Heading]]`, `](#x)` or `#^block` matches no heading/block in the target (exact text or slug). `fail` vault-wide; `warn` under `ANCHOR_WARN_PREFIXES` (imported mirrors with opaque upstream anchor IDs) |
+| C17 | Requirement-hub integrity: `requirements:` entries resolve, hub fields and path, block IDs, alias uniqueness. Self-gating; `fail` |
 
 ---
 

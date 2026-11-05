@@ -48,6 +48,14 @@ class TestParseFrontmatter(unittest.TestCase):
         fm, _ = vault_lint.parse_frontmatter('---\nconfidence: "high"\n---\n')
         self.assertEqual(fm["confidence"], "high")
 
+    def test_block_list_parsed(self):
+        text = ('---\nrequirements:\n  - "[[req-a#^a-x]]"\n  - https://x.org/a:b\nsummary: s\n'
+                'completed:\n---\n')
+        fm, _ = vault_lint.parse_frontmatter(text)
+        self.assertEqual(fm["requirements"], ["[[req-a#^a-x]]", "https://x.org/a:b"])
+        self.assertEqual(fm["summary"], "s")
+        self.assertEqual(fm["completed"], "")
+
     def test_leading_bom_tolerated(self):
         text = "﻿---\nnote_type: knowledge\n---\nBody.\n"
         fm, _ = vault_lint.parse_frontmatter(text)
@@ -734,6 +742,139 @@ class TestC16(VaultTestCase):
 
 
 
+class TestC17(VaultTestCase):
+    """C17 — requirement-hub integrity: model `requirements:`, hub shape, aliases."""
+
+    def hub(self, req="iso-27001", aliases='["ISO 27001"]', extra="", body=None):
+        self.write("dk/iso-27001.md", "---\nnote_type: knowledge\n---\n\n# ISO 27001\n\n## Measurement\n")
+        fm = (f"---\nnote_type: requirement\nrequirement: {req}\nstandard: \"ISO 27001\"\nissuer: IASB\n"
+              f"jurisdictions: [eu]\naliases: {aliases}\nderived_from: [\"[[dk/iso-27001]]\"]\nas_of: 2026-10-28\n{extra}---\n\n")
+        if body is None:
+            body = (f"# ISO 27001\n\n## Obligations\n\n- **Curve.** Hold a discount curve. ^{req}-key-rotation\n"
+                    f"- **CSM.** Release CSM. ^{req}-access-review\n")
+        return self.write(f"_graph/requirements/req-{req}.md", fm + body)
+
+    def run17(self, p):
+        fm, b = vault_lint.parse_frontmatter(p.read_text(encoding="utf-8"))
+        return vault_lint.check_c17(p, fm, b, vault_lint.build_slug_index(), {},
+                                    vault_lint.build_requirement_alias_index())
+
+    def model(self, fm_lines):
+        return self.write("hg/m.md", "---\nnote_type: knowledge\n" + fm_lines + "---\n\n# M\n")
+
+    def rules(self, findings):
+        return [f["detail"].split(":", 1)[0] for f in findings]
+
+    def test_ungated_note_skipped(self):
+        self.assertEqual(self.run17(self.model("standards: [ISO 27001]\n")), [])
+
+    def test_r1_pass_and_fail(self):
+        self.hub()
+        ok = self.model('requirements: ["[[_graph/requirements/req-iso-27001]]", "[[_graph/requirements/req-iso-27001#^iso-27001-access-review|CSM]]"]\n')
+        self.assertEqual(self.run17(ok), [])
+        bad = self.model('requirements: ["[[dk/iso-27001]]", "[[_graph/requirements/req-gone]]"]\n')
+        self.assertEqual(self.rules(self.run17(bad)), ["R1", "R1"])
+
+    def test_obsidian_rename_form(self):
+        """Obsidian's rename rewrites to a block list with short links; C17 must still read it."""
+        self.hub()
+        ok = self.model('requirements:\n  - "[[req-iso-27001#^iso-27001-access-review]]"\n')
+        self.assertEqual(self.run17(ok), [])
+        bad = self.model('requirements:\n  - "[[req-iso-27001#^iso-27001-gone]]"\n  - "[[req-gone]]"\n')
+        self.assertEqual(self.rules(self.run17(bad)), ["R2", "R1"])
+
+    def test_r1_comma_split_entry(self):
+        self.hub()
+        p = self.model('requirements: ["[[_graph/requirements/req-iso-27001#A, B]]"]\n')
+        self.assertEqual(self.rules(self.run17(p)), ["R1", "R1"])
+
+    def test_r2_pass_and_fail(self):
+        self.hub()
+        ok = self.model('requirements: ["[[_graph/requirements/req-iso-27001#^iso-27001-key-rotation]]"]\n')
+        self.assertEqual(self.run17(ok), [])
+        bad = self.model('requirements: ["[[_graph/requirements/req-iso-27001#^iso-27001-nope]]"]\n')
+        self.assertEqual(self.rules(self.run17(bad)), ["R2"])
+
+    def test_r2_heading_anchor_is_finding(self):
+        self.hub()
+        p = self.model('requirements: ["[[_graph/requirements/req-iso-27001#Obligations]]"]\n')
+        f = self.run17(p)
+        self.assertEqual(self.rules(f), ["R2"])
+        self.assertIn("heading anchor", f[0]["detail"])
+
+    def test_r3_pass_and_fail(self):
+        self.assertEqual(self.run17(self.hub()), [])
+        self.write("dk/iso-27001.md", "---\nnote_type: knowledge\n---\n\n# ISO 27001\n")
+        p = self.write("_graph/requirements/req-wrong.md",
+                       "---\nnote_type: requirement\nrequirement: iso-27001\nderived_from: [\"[[dk/gone]]\"]\n---\n\n# X\n")
+        rules = self.rules(self.run17(p))
+        self.assertEqual(rules, ["R3", "R3", "R3"])
+
+    def test_r3_placeholder_field(self):
+        p = self.hub()
+        p.write_text(p.read_text(encoding="utf-8").replace("issuer: IASB", "issuer: TBD"), encoding="utf-8")
+        f = self.run17(p)
+        self.assertEqual(self.rules(f), ["R3"])
+        self.assertIn("placeholder: issuer", f[0]["detail"])
+
+    def test_r3_jurisdictions_unchecked_by_default(self):
+        p = self.hub()
+        txt = p.read_text(encoding="utf-8")
+        p.write_text(txt.replace("jurisdictions: [eu]", "jurisdictions: [mars]"), encoding="utf-8")
+        self.assertEqual(self.run17(p), [])
+
+    def test_r3_jurisdictions(self):
+        orig = vault_lint.JURISDICTIONS
+        vault_lint.JURISDICTIONS = {"eu"}
+        self.addCleanup(setattr, vault_lint, "JURISDICTIONS", orig)
+        p = self.hub()
+        txt = p.read_text(encoding="utf-8")
+        p.write_text(txt.replace("jurisdictions: [eu]", "jurisdictions: [eu, mars]"), encoding="utf-8")
+        f = self.run17(p)
+        self.assertEqual(self.rules(f), ["R3"])
+        self.assertIn("not in the fixed set: mars", f[0]["detail"])
+        p.write_text(txt.replace("jurisdictions: [eu]\n", ""), encoding="utf-8")
+        f = self.run17(p)
+        self.assertEqual(self.rules(f), ["R3"])
+        self.assertIn("missing field(s): jurisdictions", f[0]["detail"])
+
+    def test_r4_pass_and_fail(self):
+        self.assertEqual(self.run17(self.hub()), [])
+        body = "# X\n\n- **A.** a. ^iso-27001-a\n- **B.** b. ^iso-27001-a\n- **C.** c. ^other-c\n```\n^iso-27001-a\n```\n"
+        self.assertEqual(self.rules(self.run17(self.hub(body=body))), ["R4", "R4"])
+
+    def test_r5_pass_and_fail(self):
+        self.assertEqual(self.run17(self.hub()), [])
+        self.write("_graph/requirements/req-iso-27001x.md",
+                   "---\nnote_type: requirement\naliases: [\"iso 27001\"]\n---\n")
+        f = self.run17(self.hub())
+        self.assertEqual(self.rules(f), ["R5"])
+        self.assertIn("req-iso-27001x.md", f[0]["detail"])
+
+    def test_fail_severity_report_only(self):
+        p = self.model('requirements: ["[[dk/nope]]"]\n')
+        f = self.run17(p)
+        self.assertEqual(f[0]["severity"], "fail")
+        self.assertEqual(vault_lint.REQUIREMENT_SEVERITY, "fail")
+        self.assertFalse(f[0]["auto_fixable"])
+
+    def test_registered_and_fail_exits_1(self):
+        self.write("hg/index.md", "---\nnote_type: hub\n---\n")
+        self.model('requirements: ["[[dk/nope]]"]\n')
+        self.discover()
+        findings = vault_lint.run_checks(restrict_check="C17")
+        self.assertEqual([f["check"] for f in findings], ["C17"])
+        ns = argparse.Namespace(json=True, check="C17", prefix=None)
+        orig = vault_lint.REQUIREMENT_SEVERITY
+        vault_lint.REQUIREMENT_SEVERITY = "fail"
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaises(SystemExit) as cm:
+                    vault_lint.cmd_check(ns)
+        finally:
+            vault_lint.REQUIREMENT_SEVERITY = orig
+        self.assertEqual(cm.exception.code, 1)
+
 class TestApplyFix(VaultTestCase):
     def test_c6_creates_index(self):
         self.write("alpha/sub/note.md", "---\nnote_type: knowledge\n---\n")
@@ -778,6 +919,9 @@ class TestTemplateDefaults(unittest.TestCase):
 
     def test_c16(self):
         self.assertEqual(vault_lint.ANCHOR_WARN_PREFIXES, ())
+
+    def test_c17(self):
+        self.assertEqual(vault_lint.JURISDICTIONS, set())
 
 
 class TestRunChecks(VaultTestCase):

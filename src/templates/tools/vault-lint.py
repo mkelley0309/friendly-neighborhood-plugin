@@ -68,6 +68,16 @@ SUMMARY_MAX_CHARS = 250
 ANCHOR_SEVERITY = "fail"
 ANCHOR_WARN_PREFIXES = ()
 
+# C17 requirement-hub integrity (`requirements:` / `note_type: requirement`).
+# Self-gating: vaults without requirement hubs get no findings.
+REQUIREMENT_SEVERITY = "fail"
+REQUIREMENT_PREFIX = "_graph/requirements/"
+REQUIREMENT_FIELDS = ("requirement", "standard", "issuer", "jurisdictions", "aliases", "derived_from", "as_of")
+# Where a standard applies, not who issued it. Empty accepts any value; list your
+# fixed set here to have C17 R3 enforce it.
+JURISDICTIONS = set()
+PLACEHOLDER_VALUES = {"TBD", "TODO", "?", "UNKNOWN"}
+
 # Meta files that may live in the vault but are NOT vault notes (AI-instruction /
 # harness files) — exempt from all note-level checks (e.g. C1 note_type).
 NON_NOTE_FILES = {"CLAUDE.md", "AGENTS.md"}
@@ -98,6 +108,8 @@ def parse_frontmatter(text):
     Parses a leading YAML-ish --- block. Supports:
       key: value          → str
       key: [a, b, c]      → list[str]
+      key:                → list[str]  (block list, as Obsidian writes it)
+        - a
     Missing or malformed block → ({}, full_text).
     """
     if text and text[0] == "﻿":
@@ -114,7 +126,17 @@ def parse_frontmatter(text):
     body = text[end + 4:].lstrip("\n")
 
     fm = {}
+    block_key = None
     for line in fm_block.splitlines():
+        item = re.match(r"^[ \t]*-[ \t]+(.*)$", line)
+        if item and block_key is not None:
+            if not isinstance(fm[block_key], list):
+                fm[block_key] = []
+            val = item.group(1).strip().strip('"').strip("'")
+            if val:
+                fm[block_key].append(val)
+            continue
+        block_key = None
         if ":" not in line:
             continue
         key, _, raw_val = line.partition(":")
@@ -128,6 +150,8 @@ def parse_frontmatter(text):
             fm[key] = items
         else:
             fm[key] = raw_val.strip('"').strip("'")
+            if not raw_val and not line[:1].isspace():
+                block_key = key  # a following `- item` run makes this a list
 
     return fm, body
 
@@ -914,6 +938,120 @@ def check_c16(path, body, slug_index, cache):
     return findings
 
 
+_BLOCK_ID_RE = re.compile(r"(?:^|\s)\^([\w-]+)[ \t]*$")
+
+
+def build_requirement_alias_index():
+    """{casefolded alias: [hub rel paths]} over every `note_type: requirement` note."""
+    index: dict[str, list[str]] = {}
+    root = VAULT / REQUIREMENT_PREFIX
+    if not root.is_dir():
+        return index
+    for p in sorted(root.rglob("*.md")):
+        fm, _ = parse_frontmatter(p.read_text(encoding="utf-8", errors="replace"))
+        if fm.get("note_type") != "requirement":
+            continue
+        aliases = fm.get("aliases") or []
+        for a in ([aliases] if isinstance(aliases, str) else aliases):
+            if a.strip():
+                index.setdefault(a.strip().casefold(), []).append(p.relative_to(VAULT).as_posix())
+    return index
+
+
+def _wikilink_target(item):
+    """`[[t#a|x]]` → (t, a); None if the item is not one whole wikilink."""
+    m = re.fullmatch(r"\[\[([^\[\]]+)\]\]", item.strip())
+    if not m:
+        return None
+    target, _, anchor = m.group(1).split("|", 1)[0].partition("#")
+    return target.strip(), anchor.strip()
+
+
+def check_c17(path, fm, body, slug_index, cache, alias_index):
+    """
+    C17 — requirement-hub integrity. Self-gates on a `requirements:` key or
+    `note_type: requirement`.
+      R1  each `requirements:` entry is one wikilink resolving under _graph/requirements/
+      R2  its anchor, if any, is a `^id` that resolves (heading anchors are findings)
+      R3  hub has REQUIREMENT_FIELDS, lives at _graph/requirements/req-<requirement>.md,
+          every `jurisdictions` value is in JURISDICTIONS (when set), and every `derived_from`
+          entry resolves
+      R4  hub block IDs are unique and start with `<requirement>-`
+      R5  no alias is claimed by two hubs
+    Severity: REQUIREMENT_SEVERITY. Report-only.
+    """
+    is_hub = fm.get("note_type") == "requirement"
+    if not (is_hub or "requirements" in fm):
+        return []
+    rel = path.relative_to(VAULT).as_posix()
+    source_dir = PurePosixPath(rel).parent.as_posix()
+    findings = []
+
+    def add(rule, detail):
+        findings.append({"check": "C17", "path": rel, "detail": f"{rule}: {detail}",
+                         "auto_fixable": False, "severity": REQUIREMENT_SEVERITY})
+
+    def as_list(v):
+        return [v] if isinstance(v, str) and v else (v or [])
+
+    for item in as_list(fm.get("requirements")):
+        parsed = _wikilink_target(item)
+        if parsed is None:
+            add("R1", f"malformed requirements entry {item!r} (one [[wikilink]] per entry, no commas inside)")
+            continue
+        target, anchor = parsed
+        resolved, _ = resolve_target(target, slug_index, source_dir)
+        if not resolved or not resolved.startswith(REQUIREMENT_PREFIX):
+            add("R1", f"requirements entry [[{target}]] does not resolve to a hub under {REQUIREMENT_PREFIX}")
+            continue
+        if anchor and not anchor.startswith("^"):
+            add("R2", f"requirements entry [[{target}#{anchor}]] uses a heading anchor; use #^id")
+        elif anchor and not _anchor_resolves(resolved, anchor, cache):
+            add("R2", f"requirements entry [[{target}#{anchor}]] — no block ID {anchor} in {resolved}")
+
+    if is_hub:
+        missing = [k for k in REQUIREMENT_FIELDS if not fm.get(k)]
+        if missing:
+            add("R3", f"hub missing field(s): {', '.join(missing)}")
+        placeholder = [k for k in REQUIREMENT_FIELDS
+                       if isinstance(fm.get(k), str) and fm[k].strip().upper() in PLACEHOLDER_VALUES]
+        if placeholder:
+            add("R3", f"hub field(s) hold a placeholder: {', '.join(placeholder)}")
+        bad_j = [j for j in as_list(fm.get("jurisdictions")) if JURISDICTIONS and j not in JURISDICTIONS]
+        if bad_j:
+            add("R3", f"jurisdictions value(s) not in the fixed set: {', '.join(map(str, bad_j))}")
+        req = fm.get("requirement", "")
+        if req and rel != f"{REQUIREMENT_PREFIX}req-{req}.md":
+            add("R3", f"hub path should be {REQUIREMENT_PREFIX}req-{req}.md")
+        for item in as_list(fm.get("derived_from")):
+            parsed = _wikilink_target(item)
+            if parsed is None or not resolve_target(parsed[0], slug_index, source_dir)[0]:
+                add("R3", f"derived_from entry {item!r} does not resolve")
+
+        seen, fence = set(), False
+        for line in body.splitlines():
+            if line.lstrip().startswith(("```", "~~~")):
+                fence = not fence
+                continue
+            m = None if fence else _BLOCK_ID_RE.search(line)
+            if not m:
+                continue
+            bid = m.group(1)
+            if bid in seen:
+                add("R4", f"duplicate block ID ^{bid}")
+            seen.add(bid)
+            if req and not bid.startswith(f"{req}-"):
+                add("R4", f"block ID ^{bid} does not start with {req}-")
+
+        for a in as_list(fm.get("aliases")):
+            owners = alias_index.get(a.strip().casefold(), [])
+            others = [o for o in owners if o != rel]
+            if others:
+                add("R5", f"alias {a!r} also claimed by {', '.join(others)}")
+
+    return findings
+
+
 def check_c12(slug_index):
     """C12 — index navigation completeness. A folder's index.md should link to every
     child NOTE; a subfolder counts as covered if the index links ANY path under it
@@ -995,9 +1133,10 @@ def run_checks(restrict_check=None):
 
     slug_index = build_slug_index()
     anchor_cache = {}
+    alias_index = build_requirement_alias_index()
     all_findings = []
 
-    # Per-file checks (C1–C5, C7–C11, C13, C15, C16)
+    # Per-file checks (C1–C5, C7–C11, C13, C15–C17)
     for note in iter_notes():
         try:
             text = note.read_text(encoding="utf-8", errors="replace")
@@ -1028,6 +1167,7 @@ def run_checks(restrict_check=None):
             "C13": lambda: check_c13(note, fm, body),
             "C15": lambda: check_c15(note, fm, body, text),
             "C16": lambda: check_c16(note, body, slug_index, anchor_cache),
+            "C17": lambda: check_c17(note, fm, body, slug_index, anchor_cache, alias_index),
         }
 
         for cid, fn in checks_map.items():
@@ -1205,7 +1345,7 @@ def cmd_check(args):
     # Per-check counts
     from collections import Counter
     counts = Counter(f["check"] for f in findings)
-    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16"]:
+    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17"]:
         if not restrict or restrict == cid:
             n = counts.get(cid, 0)
             print(f"  {cid}: {n} finding{'s' if n != 1 else ''}")

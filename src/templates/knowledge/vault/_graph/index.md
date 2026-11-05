@@ -40,6 +40,33 @@ Body:
 
 Role headings under `## Evidence & supporting material` are yours to define — group by the *kind* of support a note provides, not by the subtree it happens to live in.
 
+## Requirement-hub schema
+
+Optional. `_graph/requirements/` holds **requirement hubs** (`note_type: requirement`): what must be done to meet one standard or policy. Notes link to a hub instead of to the domain note that explains the standard. Path `_graph/requirements/req-<requirement>.md`. The `req-` prefix is mandatory, because standard basenames repeat across a vault. The folder is created when the first hub is written.
+
+```yaml
+---
+note_type: requirement
+requirement: <slug>             # == filename minus req-; kebab slug of the domain note basename
+standard: "<Standard name>"
+issuer: <issuing body>
+jurisdictions: [<where it applies>]   # not who issued it
+aliases: ["<every token mapping here>"]   # unique across hubs
+derived_from: ["[[domain-knowledge/<path>/<note>]]"]
+as_of: YYYY-MM-DD
+summary: "<≤250 chars, no wikilink>"
+tags: [knowledge, graph, requirement/<slug>]
+---
+```
+
+Body: `# <Standard> — Requirements` → `**Standard.** [[domain note]]` (one line) → `## Obligations` with bullets `- **<Name>.** <obligation>. ^<id>` → `## Related requirements` with `- [[_graph/requirements/req-x]] — <rationale>`. There is no "satisfied by" list, because backlinks answer that. An obligation links to the domain note for any standard fact it depends on and never restates figures. Hubs carry `as_of` and `derived_from`, and no `confidence`.
+
+**Jurisdictions.** `jurisdictions:` says where a standard *applies*, which isn't the same as who issued it. `vault-lint` C17 R3 checks values against `JURISDICTIONS` (`tools/vault-lint.py`) when that set is non-empty. It ships empty, so any value passes until you define your own set.
+
+**Block IDs.** `^<requirement>-<obligation-kebab>` (e.g. `^iso-27001-access-review`). The ID is the last token on the bullet line and is unique vault-wide. **IDs are immutable once committed:** never rename or reuse one, and delete an obligation only when nothing references it (`vault-lint` C17). Notes declare `requirements:` as a list of quoted `[[_graph/requirements/req-x]]` or `[[…req-x#^id]]` entries. The list can be inline or block (one `- ` item per line, which is the form Obsidian writes on rename), and the short form `[[req-x]]` also resolves. Heading anchors are not allowed there.
+
+**Ownership.** Cartographer (the knowledge `cartograph` action, `Mode: requirements`) owns `_graph/requirements/`.
+
 ## Concept hubs
 
 <!-- One line per hub. Add as Cartographer creates them. -->
