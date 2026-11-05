@@ -3,6 +3,31 @@
 All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.5.0] — 2026-11-05
+
+### Added
+- **Vault-lint checks C13–C17 and C19.** C13 flags `confidence: high` with hedged prose. C14 flags doubled directories. C15 checks note shape (`summary`, `## Contents`, split candidates). C16 checks heading and block anchors. C17 checks requirement hubs. C19 checks `index.md` note types by folder depth and retires `> Part of:`. C18 is reserved.
+- **Vault-lint is configurable by constants at the top of the file.** C15 scope defaults to `domain-knowledge/` at `warn`. `ANCHOR_WARN_PREFIXES` and `JURISDICTIONS` ship empty. C17 stays silent until a vault has requirement hubs.
+- **`vault-lint check --prefix`, and `fix --check` / `--prefix`.** `check` now exits 1 on any `fail`-severity finding.
+- **Optional requirement hubs**: schema in `_graph/index.md`, and `Mode: requirements` on the web-archive skill's `cartograph` action.
+- **Queue and staging archives.** Scout moves `done` signals older than 30 days to `queue/_archive/`, and reports stale staging items with their state and next action. REJECT and MERGE now have defined end points. Adds `distillers/staging/README.md`.
+- **`tools/patrol-run.ps1`**, a scaffolded helper for unattended local patrol runs through Windows Task Scheduler. It flags failures instead of failing silently, and `-PermissionFlag` is required.
+- **Campaign action rules**: blueprint Data Inputs, chained research passes, the decisions-versus-data split in design, and a hand spot-check at validate for row-based deliverables.
+
+### Changed
+- **Renamed QRDBIV / RBIV to Payload Relay / Short Relay.** The enum values change from `qrdbiv` to `payload-relay` and from `rbiv` to `short-relay`. The tier docs now describe the tiers as one relay run at different lengths.
+- **Index stubs emit `parent:` frontmatter** instead of `> Part of:`. Conventions drop `documentation-hub`.
+- Distiller frontmatter gains `summary`.
+- Observation-deck `agent-*` identifiers are now `roster-*`.
+
+### Fixed
+- `workstream.py` keeps a file's line endings on every rewrite, and `check-step` matches a step's leading token, so a step citing `1.1` no longer matches.
+- `workstream.py` no longer crashes on status values containing backslashes.
+- Removed process residue from shipped prose.
+
+### Upgrading
+Existing workspaces keep their current `tools/` and `knowledge/` files, because the scaffolder never overwrites. To get the new linter, copy `tools/vault-lint.py` from the plugin's `templates/` by hand.
+
 ## [0.4.0] — 2026-08-13
 
 ### Changed
