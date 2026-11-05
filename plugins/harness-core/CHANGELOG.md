@@ -3,6 +3,16 @@
 All notable changes to this plugin are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow [SemVer](https://semver.org/).
 
+## [0.5.1] — 2026-11-05
+
+### Fixed
+- **Run logs no longer dirty the tree.** `cadence-run.ps1` creates `_working/.gitignore` before each run, so a run's own commit no longer picks up a partial log that claude finishes writing at exit. Run logs are now local scratch and are not committed.
+- **A killed run now leaves evidence.** `cadence-run.ps1` writes a `RUNNING-*.flag` before claude starts and removes it when claude exits. If Task Scheduler or a sleep kills the wrapper, the flag survives and the next run renames it to `FAILED-*.flag`, keeping its timestamp. The killed run's work may still have landed, so check its commits.
+- `cadence.py delete` no longer counts `.gitignore` as a leftover in `_working/`.
+
+### Upgrading
+Existing workspaces keep their current `tools/` files, because the scaffolder never overwrites. To get these fixes, copy `tools/cadence-run.ps1` and `tools/cadence.py` from the plugin's `templates/` by hand. The new `.gitignore` does not untrack logs that were already committed, so run `git rm --cached "control-plane/cadences/*/_working/run-*.log"` once and commit the result.
+
 ## [0.5.0] — 2026-11-05
 
 ### Added
