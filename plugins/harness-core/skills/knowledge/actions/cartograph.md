@@ -23,6 +23,7 @@ Cartographer is not a distiller. It operates post-curation and is explicitly exe
 | Read | `vault/` (any subtree) |
 | Write — existing notes | Append to `## Related` section; add `related:` frontmatter field |
 | Write — concept hubs | Create or update `vault/_graph/*.md` |
+| Write — `Mode: requirements` only | See § Mode: requirements (widened gate) |
 
 **Never:**
 - Create new content notes in distiller-owned subtrees
@@ -90,6 +91,8 @@ Build a deduplicated link plan before writing anything.
 ### 4. Write links and frontmatter
 
 **Link-target validation (MANDATORY — prevents phantom nodes).** Before writing ANY `[[target]]` wiki-link, verify the target resolves to an existing note. For a full vault-path target, confirm `vault/{target}.md` exists with a Glob/Read check — do NOT guess a sub-path (e.g. `…/topic/overview`) when the real note is the leaf (`…/topic`). For a short target, confirm exactly one note has that basename. If the target does not exist, do not write the link — point at the correct note or skip it. The same rule applies to slugs in `related:` frontmatter. A wiki-link to a nonexistent path renders as a greyed phantom node and spawns a blank stub on click.
+
+**Anchors too:** a `[[target#^id]]` or `[[target#Heading]]` link is valid only if the block ID or heading exists in the target (Grep for `^id` at a line end, or for the heading). `requirements:` entries take `#^id` only, never a heading anchor.
 
 **Route by subtree (MANDATORY).** If source and target are in the **same subtree**, write a `Related:` link (a, b below). If they are in **different subtrees**, do **not** write a direct `Related:` link — record the connection in a `vault/_graph/{concept}` hub instead (Step 5). Cartographer never authors branch-to-branch `Related:` links across subtrees.
 
@@ -194,6 +197,31 @@ For scopes larger than ~15 notes, use parallel Sonnet subagents:
 6. Execute all writes in main context (not delegated)
 
 Writes are never delegated. Only reading and candidate generation are delegated.
+
+---
+
+## Mode: requirements
+
+Optional. Use it when notes need to link to what a standard or policy obliges, rather than to the domain prose that explains it. It extracts a domain note's `## Implications` section into a **requirement hub** (`vault/_graph/requirements/req-<slug>.md`). Schema, block-ID rules and body shape: `vault/_graph/index.md` § Requirement-hub schema.
+
+**Input.** An explicit list of domain notes. Never self-select.
+
+**Write gate (this mode only, widens the File-Path Gate):**
+
+| Path | Allowed |
+|---|---|
+| `_graph/requirements/req-*.md` | create / update |
+| Domain note | remove the `## Implications` H2 section; add `summary` (and `## Contents` if >100 lines with ≥3 H2). Nothing else in the body |
+| Dependent notes | add `requirements:` (quoted entries, inline or block list), and replace direct domain-note body links with `_graph/requirements/` links (`#^id` where the sentence is about one obligation) |
+
+**Per note:**
+
+1. **Extract.** Turn each concrete obligation in the section into a bullet `- **<Name>.** <what must be done>. ^<slug>-<obligation-kebab>`. Link any standard fact the obligation depends on to the domain note; don't restate figures. Collect every token and variant that maps to this standard into `aliases`.
+2. **Thin sections.** No concrete obligation and no dependent note maps to the standard → don't create a hub. Delete the section and say so in the run report. An obligation that relies on a fact the domain note doesn't carry → report it as a gap; don't add the fact.
+3. **Remove + shape.** Remove the section from the domain note. Add its `summary` (≤250 chars, double-quoted, no wikilink).
+4. **Validate.** Run `python -B tools/vault-lint.py check --check <C3|C8|C15|C16|C17> --prefix <path>` on each touched path. Fix before moving on.
+
+**Block IDs are immutable once committed.** Never rename or reuse one. Delete an obligation only when C17 and a backlink search show nothing references it.
 
 ---
 

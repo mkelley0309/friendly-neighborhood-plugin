@@ -9,7 +9,7 @@ fn_log "STOP session-end"
 
 QUEUE_DIR="${FN_WS}/knowledge/distillers/queue"
 if [ -d "${QUEUE_DIR}" ]; then
-  PENDING="$(grep -rl 'status: pending' "${QUEUE_DIR}" --exclude='README.md' 2>/dev/null || true)"
+  PENDING="$(grep -rl 'status: pending' "${QUEUE_DIR}" --exclude='README.md' --exclude-dir='_archive' 2>/dev/null || true)"
   if [ -n "${PENDING}" ]; then
     fn_log "KNOWLEDGE-QUEUE pending items — run /harness-core:knowledge to process:"
     while IFS= read -r f; do

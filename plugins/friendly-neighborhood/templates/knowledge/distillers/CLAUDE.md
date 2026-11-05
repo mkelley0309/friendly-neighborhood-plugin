@@ -76,7 +76,7 @@ All vault-writing agents must follow these rules without exception:
 
 ## Cross-Distiller Frontmatter Contract
 
-All distiller-produced vault notes must include these six fields. No exceptions.
+All distiller-produced vault notes must include these eight fields. No exceptions.
 
 ```yaml
 note_type: vault-note
@@ -86,6 +86,7 @@ synced_at: <ISO date of last sync>
 distilled_at: <ISO date of distillation run>
 tags: [vendor/<slug>, ...]   # at minimum one vendor tag
 confidence: high             # distiller default; downgrade to medium/low if warranted
+summary: "<≤250-char extractive scope line>"   # required for curated notes; not for raw/mirror notes
 ```
 
 **Raw source notes** (docs-sync output, pre-distillation) use a different schema:

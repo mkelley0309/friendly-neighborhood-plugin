@@ -83,7 +83,7 @@ Every meaningful folder in the vault has an `index.md` that:
 
 ```markdown
 ---
-note_type: hub        # or: documentation-hub, section-hub, etc.
+note_type: hub        # top-level folder; use navigation in deeper folders
 tags: [...]
 ---
 
@@ -118,14 +118,16 @@ Type-specific fields are defined per `note_type` — see the relevant distiller 
 
 | `note_type` | Purpose |
 |---|---|
-| `hub` | Folder-level orientation (lives in `index.md`) |
-| `documentation-hub` | Hub for a curated documentation section |
+| `hub` | `index.md` of a top-level vault folder (parent is the vault root) |
+| `navigation` | `index.md` of any deeper folder. Non-index notes do not carry `hub` or `navigation` (vault-lint C19 R3) |
+| `vault-index` | `index.md` of a generated mirror; exempt from the depth rule |
 | `documentation` | A curated documentation page (from a source) |
 | `vendor-documentation` | Raw vendor doc (only valid in `sources/` — if it appears in `vault/`, it's been curated and should be `documentation`) |
 | `perspective` | Raw first-party note (only valid in `perspective/` — if it appears in `vault/`, it's been distilled and should be `vault-note` with `provenance: first-party`) |
 | `decision` | A captured decision with rationale |
 | `concept` | A domain concept or glossary entry |
 | `reference` | External-facing reference material |
+| `requirement` | Optional **requirement hub** in `_graph/requirements/req-<slug>.md`: what must be done for one standard (`requirement`, `standard`, `issuer`, `jurisdictions`, `aliases`, `derived_from`, `as_of`; `## Obligations` bullets carry immutable `^<slug>-<obligation>` block IDs). Notes link here via `requirements:`. See `vault/_graph/index.md`. |
 ### Provenance fields (for distilled notes)
 
 Notes curated from `knowledge/sources/` must track provenance:
@@ -172,6 +174,50 @@ Splitting guidance:
 - Replace the original combined note with a disambiguation hub if both concepts share a common term, or delete it if it was redundant.
 
 The Peer Reviewer rejects notes that bundle multiple independent concepts and provides split instructions.
+
+---
+
+## Note Shape
+
+Scope: curated notes under `SHAPE_SCOPE_PREFIXES` (`tools/vault-lint.py`, default `domain-knowledge/`), enforced by `vault-lint` C15. Other curated notes get R2/R4 warnings only. Paths in `SHAPE_EXCLUDE_PREFIXES` are skipped; use it for sync-owned mirrors.
+
+| Rule | Requirement |
+|---|---|
+| R1 | `summary: "…"` — one line, double-quoted, ≤250 chars, no wikilinks or markdown, extractive |
+| R2 | `## Contents` is the first H2 on notes >100 file lines with ≥3 H2s; plain-text bullets; H2 + indented H3 |
+| R3 | Contents matches the headings (regenerate with `vault-lint fix --check C15 --prefix <path>`) |
+| R4 | >500 lines = split candidate, warn only. Threshold is an analogy to the 500-line SKILL.md body guidance, not a reading limit |
+| R5 | Order: frontmatter → H1 → breadcrumb (if present) → lead → `## Contents` → body |
+
+### Summary
+
+- Extract from the note's own lead. Nothing absent from the body.
+- Write `"` inside the value as `'`.
+- Regenerate `summary` whenever the lead changes. C15 cannot detect a stale summary.
+- Conclusion-first is met by `summary`. Do not move body sections for it.
+
+### Split Pattern
+
+| Element | Rule |
+|---|---|
+| Hub | Keeps path, H1, breadcrumb, lead, `note_type`. Moved blocks replaced by a `- [[leaf\|Title]] — gloss` list |
+| Leaf name | Sibling file `{hub-stem}-{slug}.md` |
+| Leaf frontmatter | Inherits `note_type`/`tags`/`confidence`/`authority`/`source_url`; `requirements` = the hub's `requirements:` entries the leaf relies on (quoted entries, inline or block list, `#^id` anchors only); `related: [hub]` |
+| Leaf body | H1 `{Hub} — {Leaf}`; extended breadcrumb; one-line lead; block moved verbatim, headings promoted one level; `## Related Notes` → hub only |
+| Links | No leaf→leaf links |
+| Folder `index.md` | Lists leaves as indented sub-bullets under the hub |
+
+### Lint Checks
+
+| Check | Flags |
+|---|---|
+| C13 | `confidence: high` with hedged prose |
+| C14 | Doubled directory segment |
+| C15 | Note shape R1–R4; severity per `SHAPE_SEVERITY` (default `warn`) |
+| C16 | Broken anchor: `[[t#Heading]]`, `[[#Heading]]`, `](#x)` or `#^block` matches no heading/block in the target (exact text or slug). `fail` vault-wide; `warn` under `ANCHOR_WARN_PREFIXES` (imported mirrors with opaque upstream anchor IDs) |
+| C17 | Requirement-hub integrity: `requirements:` entries resolve, hub fields and path, block IDs, alias uniqueness. Self-gating; `fail` |
+| C18 | Reserved |
+| C19 | Navigation: `index.md` `note_type` matches folder depth; `> Part of:` retired; non-index `hub`/`navigation` warns |
 
 ---
 
@@ -293,6 +339,11 @@ The sanctioned distillation path into the vault is via the `web-archive` skill.
 
 ---
 
-## No breadcrumb footers
+## Parent pointers and breadcrumbs
 
-Don't embed breadcrumb footers — Obsidian's backlinks panel and graph handle upward navigation. If a note needs an explicit "up one level" link, use the frontmatter `parent:` field or a one-line `> Part of: [[parent-hub]]` callout at the top.
+Breadcrumb footers at the bottom of notes are retired.
+
+- `parent:` frontmatter is canonical for "up one level". Index fixers emit it
+- A one-line `**Breadcrumb:**` body line under the H1 is allowed as display
+- `> Part of:` callouts are retired (vault-lint C19 R2); convert to `parent:`
+- Obsidian's backlinks panel + graph view also handle upward navigation natively

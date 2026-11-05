@@ -152,7 +152,7 @@ Write each candidate to:
 knowledge/distillers/staging/{slug}.md
 ```
 
-Do not write to any other path. Do not create subdirectories inside `staging/`.
+Do not write to any other path. Do not create subdirectories inside `staging/`, other than the existing `_archive/`.
 
 After writing all candidates for the source, proceed immediately to Step 6.
 
@@ -242,11 +242,15 @@ After each Peer Reviewer subagent completes, read the review file at `knowledge/
 1. Leave `knowledge/distillers/staging/{slug}.md` in place
 2. Leave `knowledge/distillers/staging/{slug}-review.md` in place
 3. Record as rejected in the session report with the rationale summary
+4. Ask the operator to rework or drop:
+   - **Rework:** edit the candidate and re-run the Peer Reviewer, which replaces the review file.
+   - **Drop:** move both files to `knowledge/distillers/staging/_archive/`.
 
 **On MERGE:**
 1. Leave both staging files in place
 2. Record as pending merge in the session report with the target note path
 3. Surface the merge instruction to the user — do not perform the merge automatically
+4. Once the merge is applied to the vault, delete both staging files. If the operator declines it, move both to `knowledge/distillers/staging/_archive/`.
 
 ### 8. Update queue signal status
 

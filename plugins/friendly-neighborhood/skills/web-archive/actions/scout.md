@@ -13,7 +13,7 @@ Session-start health check for the knowledge pipeline. Reads the distiller queue
 
 ### 1. Read the queue for pending signals
 
-Read all files in `knowledge/distillers/queue/`.
+Read the top-level files in `knowledge/distillers/queue/`. Do not read `queue/_archive/`.
 
 For each file, check its frontmatter `status` field:
 - Collect all items where `status: pending`
@@ -98,21 +98,35 @@ status: done
 
 Write the updated file to `knowledge/distillers/queue/{item}.md`.
 
-Do not delete queue files — they serve as a processing log.
+Do not delete queue files — they serve as a processing log. Step 4a archives them.
 
 ---
 
 ### 4. Scan staging for stale items
 
-Read the file list in `knowledge/distillers/staging/` (filenames and modification times only — do not read file contents).
+Read the top-level file list in `knowledge/distillers/staging/` (filenames and modification times). Skip `README.md` and `_archive/`. Treat `{slug}.md` and `{slug}-review.md` as one item, and read only the `decision:` frontmatter field of each `-review.md`. Do not read candidate contents.
 
-An item is **stale** if its last modification time is more than 14 days before today's date.
+An item is **stale** if its newest modification time is more than 14 days before today's date.
 
 For each stale item, record:
-- File name
+- Slug
 - Age in days (calculated from mtime to today)
+- State and next action:
+
+| State | Next action to surface |
+|---|---|
+| No review file | Run Peer Review |
+| `REJECT` | Operator: rework and re-review, or drop to `staging/_archive/` |
+| `MERGE` | Apply the merge, or decline and move to `staging/_archive/` |
+| `ADMIT` | Interrupted: finish the move to vault |
 
 Do not delete, modify, or move any staging files.
+
+---
+
+### 4a. Archive aged queue signals
+
+Move every top-level queue signal with `status: done` and a `queued_at` date more than 30 days before today to `knowledge/distillers/queue/_archive/`. If `queued_at` is missing, use the date in the filename. Leave `pending` and `processing` signals in place, whatever their age. Never delete a signal.
 
 ---
 
@@ -157,6 +171,7 @@ Queue:
   - Sources verified: <list of source slugs>
   - Sources stale/failed: <list, or "none">
   - Campaign signals: <harvest-pending: list | source-lost (artifact gone): list | none>
+  - Archived this pass: <N>
 
 Perspective:
   - Domains: <list of perspective/{domain} folders>
@@ -165,7 +180,7 @@ Perspective:
 
 Staging:
   - Stale items (>14 days): <N>
-  <If N > 0, list each: "{filename}" — {age} days old>
+  <If N > 0, list each: "{slug}" — {age} days old — {state}: {next action}>
   <If N = 0, write "None.">
 
 Next recommended action: <one of: Harvest, Distill, "Distill perspective/{domain}", or "Queue is clear — no action needed">
@@ -192,13 +207,14 @@ This ensures the queue file self-documents when it was last touched.
 | Path | Allowed operation |
 |---|---|
 | `knowledge/distillers/queue/{item}.md` | Update `status` field (pending → processing → done); append breadcrumb |
+| `knowledge/distillers/queue/_archive/` | Move aged `done` signals here (Step 4a) |
 | `knowledge/sources/verified/{source-slug}.md` | Write or overwrite verification record |
 | `knowledge/perspective/{domain}/{note}.md` | Write auto-routed first-party content only (Step 4c) |
 
 ## Do NOT write to
 
 - `knowledge/vault/` or any subtree of it
-- `knowledge/distillers/staging/` (read mtime only)
+- `knowledge/distillers/staging/` (read-only: mtimes and review `decision:` fields)
 - `knowledge/sources/{source-slug}/` beyond reading manifest
 - `knowledge/perspective/` beyond Step 4c auto-routing (registration in Step 4b is read-only)
 - `control-plane/` or any campaign path

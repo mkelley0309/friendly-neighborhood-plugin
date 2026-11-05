@@ -184,7 +184,7 @@ knowledge/distillers/staging/{slug}.md
 
 If a `{slug}.md` already exists in staging from a previous incomplete session, read it before writing — do not blindly overwrite. If the existing staging note has a newer `distilled_at` than what the subagent produced, keep the existing file.
 
-Do not create subdirectories inside `staging/`. Do not write to vault at this step.
+Do not create subdirectories inside `staging/`, other than the existing `_archive/`. Do not write to vault at this step.
 
 ### 6. Invoke Peer Reviewer subagent for each candidate
 
@@ -239,11 +239,15 @@ After each Peer Reviewer subagent completes, read its review file at `knowledge/
 1. Leave `knowledge/distillers/staging/{slug}.md` in staging
 2. Leave `knowledge/distillers/staging/{slug}-review.md` in staging
 3. Record slug and one-line rationale in the rejected list
+4. Ask the operator to rework or drop:
+   - **Rework:** edit the candidate and re-run the Peer Reviewer, which replaces the review file.
+   - **Drop:** move both files to `knowledge/distillers/staging/_archive/`.
 
 **On MERGE:**
 1. Leave both staging files in staging
 2. Record slug, target note path, and merge instruction in the pending-merge list
 3. Surface the merge instruction to the user — do not perform the merge automatically
+4. Once the merge is applied to the vault, delete both staging files. If the operator declines it, move both to `knowledge/distillers/staging/_archive/`.
 
 ### 8. Rebuild index.md hubs in affected vault subtrees
 

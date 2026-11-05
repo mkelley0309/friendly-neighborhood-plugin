@@ -39,9 +39,9 @@ Scout processes one pending item per invocation. Multiple pending items are proc
 
 ## Retention
 
-Done files are retained for 30 days. They are never automatically deleted — manual cleanup only. The 30-day window allows audit and rollback if a distillation pass produces unexpected vault writes.
+Done files stay in `queue/` for 30 days, which allows audit and rollback if a distillation pass produces unexpected vault writes.
 
-Scout surfaces items older than 30 days with `status: done` as candidates for manual deletion.
+After that, Scout moves them to `queue/_archive/` (`actions/scout.md` Step 4a). Archived signals are the processing log: they are never deleted, and Scout does not read them. `pending` and `processing` signals are never archived.
 
 ---
 

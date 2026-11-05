@@ -18,6 +18,7 @@ import os
 import re
 import sys
 from pathlib import Path, PurePosixPath
+from urllib.parse import unquote
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
@@ -49,6 +50,41 @@ def discover_subtrees():
 # note_type values that are structural/navigation (exempt from C4 zero-outbound check)
 NAV_TYPES = {"vault-index", "navigation", "hub"}
 
+# C15 note-shape rules. Scope is path-prefix based (relative to VAULT); excluded
+# prefixes get no C15 findings at all. Set both to fit your vault's taxonomy.
+# SHAPE_SEVERITY is the severity of the in-scope R1–R3 findings: "warn" reports
+# them; "fail" makes `check` exit 1 (set it once existing notes are backfilled).
+SHAPE_SCOPE_PREFIXES = ("domain-knowledge/",)
+SHAPE_EXCLUDE_PREFIXES = ()
+SHAPE_SEVERITY = "warn"
+CONTENTS_MIN_LINES = 100
+CONTENTS_MIN_H2 = 3
+SPLIT_WARN_LINES = 500
+SUMMARY_MAX_CHARS = 250
+
+# C16 anchor integrity. Broken anchors are ANCHOR_SEVERITY everywhere except
+# under ANCHOR_WARN_PREFIXES: list imported mirrors here when their anchors are
+# opaque upstream IDs that no local heading can satisfy. Those report as warn.
+ANCHOR_SEVERITY = "fail"
+ANCHOR_WARN_PREFIXES = ()
+
+# C17 requirement-hub integrity (`requirements:` / `note_type: requirement`).
+# Self-gating: vaults without requirement hubs get no findings.
+REQUIREMENT_SEVERITY = "fail"
+REQUIREMENT_PREFIX = "_graph/requirements/"
+REQUIREMENT_FIELDS = ("requirement", "standard", "issuer", "jurisdictions", "aliases", "derived_from", "as_of")
+# Where a standard applies, not who issued it. Empty accepts any value; list your
+# fixed set here to have C17 R3 enforce it.
+JURISDICTIONS = set()
+PLACEHOLDER_VALUES = {"TBD", "TODO", "?", "UNKNOWN"}
+
+# C18 is reserved: the source workspace uses it for a taxonomy this template doesn't have.
+
+# C19 navigation / pointer convention. `> Part of:` is retired in favour of
+# `parent:` frontmatter; index.md note_type must match folder depth.
+PART_OF_RE = re.compile(r"^\s*>\s*Part of:")
+C19_SEVERITY = "fail"
+
 # Meta files that may live in the vault but are NOT vault notes (AI-instruction /
 # harness files) — exempt from all note-level checks (e.g. C1 note_type).
 NON_NOTE_FILES = {"CLAUDE.md", "AGENTS.md"}
@@ -79,6 +115,8 @@ def parse_frontmatter(text):
     Parses a leading YAML-ish --- block. Supports:
       key: value          → str
       key: [a, b, c]      → list[str]
+      key:                → list[str]  (block list, as Obsidian writes it)
+        - a
     Missing or malformed block → ({}, full_text).
     """
     if text and text[0] == "﻿":
@@ -95,7 +133,17 @@ def parse_frontmatter(text):
     body = text[end + 4:].lstrip("\n")
 
     fm = {}
+    block_key = None
     for line in fm_block.splitlines():
+        item = re.match(r"^[ \t]*-[ \t]+(.*)$", line)
+        if item and block_key is not None:
+            if not isinstance(fm[block_key], list):
+                fm[block_key] = []
+            val = item.group(1).strip().strip('"').strip("'")
+            if val:
+                fm[block_key].append(val)
+            continue
+        block_key = None
         if ":" not in line:
             continue
         key, _, raw_val = line.partition(":")
@@ -109,6 +157,8 @@ def parse_frontmatter(text):
             fm[key] = items
         else:
             fm[key] = raw_val.strip('"').strip("'")
+            if not raw_val and not line[:1].isspace():
+                block_key = key  # a following `- item` run makes this a list
 
     return fm, body
 
@@ -607,6 +657,447 @@ def check_c11(path, fm, body):
     return findings
 
 
+_C13_HEDGE_RE = re.compile(
+    r"\barguably\b|\bsome would say\b|\bit could be argued\b",
+    re.IGNORECASE,
+)
+
+
+def check_c13(path, fm, body):
+    """
+    C13 — declared confidence vs hedged prose.
+
+    Flag a note whose frontmatter asserts ``confidence: high`` while its body
+    carries a term from the closed hedge list (``arguably`` / ``some would say``
+    / ``it could be argued``). It reports a frontmatter/prose contradiction for
+    human review, not a confirmed defect.
+
+    Exclusion: verbatim external mirrors — a note carrying a real ``source_url``
+    (present and not na/none) — where a hedge is the source author's device, not
+    internal negotiated hedging.
+
+    Report only. Never auto-fixable: the resolution is a human choice among
+    strengthening the prose, downgrading confidence, or adding corroborated_by.
+    """
+    findings = []
+    if fm.get("confidence") != "high":
+        return findings
+    src = str(fm.get("source_url", "")).strip().lower()
+    if src and src not in ("na", "none"):
+        return findings
+    terms = sorted({m.group(0).lower() for m in _C13_HEDGE_RE.finditer(body)})
+    if not terms:
+        return findings
+    shown = ", ".join(f"'{t}'" for t in terms[:3])
+    findings.append({
+        "check": "C13",
+        "path": path.relative_to(VAULT).as_posix(),
+        "detail": f"confidence: high but body hedges: {shown}",
+        "auto_fixable": False,
+    })
+    return findings
+
+
+def _shape_scan(lines):
+    """
+    Scan body lines for the C15 heading structure. Fence-aware (```/~~~ toggle);
+    the `## Contents` block (through the line before the next H2) is excluded.
+
+    Returns dict:
+      entries         — generated Contents bullet lines (H2 `- t`, H3 `  - t`)
+      h2_count        — H2 headings excluding Contents
+      first_is_contents — first H2 of the body is `## Contents`
+      span            — (start, end) of the existing Contents block, or None
+      anchor          — line index of the first non-Contents H2, or None
+    """
+    entries = []
+    h2_count = 0
+    first_h2 = None
+    start = end = anchor = None
+    in_contents = False
+    in_fence = False
+    for i, line in enumerate(lines):
+        stripped = line.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if line.startswith("## "):
+            title = line[3:].rstrip()
+            if first_h2 is None:
+                first_h2 = title
+            if title == "Contents" and start is None:
+                start, in_contents = i, True
+                continue
+            if in_contents:
+                end, in_contents = i, False
+            if anchor is None:
+                anchor = i
+            h2_count += 1
+            entries.append(f"- {title}")
+        elif in_contents:
+            continue
+        elif line.startswith("### ") and h2_count:
+            entries.append(f"  - {line[4:].rstrip()}")
+    if in_contents:
+        end = len(lines)
+    return {
+        "entries": entries,
+        "h2_count": h2_count,
+        "first_is_contents": first_h2 == "Contents",
+        "span": (start, end) if start is not None else None,
+        "anchor": anchor,
+    }
+
+
+def _contents_block(entries):
+    """Generated Contents block: heading, blank, bullets, one trailing blank."""
+    return ["## Contents", ""] + entries + [""]
+
+
+def _shape_scope(rel):
+    """'excluded' | 'in' | 'out' for a vault-relative posix path."""
+    if rel.startswith(SHAPE_EXCLUDE_PREFIXES):
+        return "excluded"
+    if rel.startswith(SHAPE_SCOPE_PREFIXES):
+        return "in"
+    return "out"
+
+
+def check_c15(path, fm, body, text):
+    """
+    C15 — note shape for long-form guides.
+
+    R1 (in scope): summary present, <=SUMMARY_MAX_CHARS, no wikilink, written
+       double-quoted. Report-only.
+    R2: long note (>CONTENTS_MIN_LINES lines, >=CONTENTS_MIN_H2 H2s) whose first
+       H2 is not `## Contents`. Fixable in scope; warn-only out of scope.
+    R3 (in scope): R2 applies and the Contents block is stale. Fixable.
+    R4 (everywhere but excluded): note over SPLIT_WARN_LINES lines — split
+       candidate. Always warn, report-only.
+    """
+    rel = path.relative_to(VAULT).as_posix()
+    scope = _shape_scope(rel)
+    if scope == "excluded":
+        return []
+    findings = []
+
+    def add(detail, sev, fixable=False):
+        findings.append({
+            "check": "C15", "path": rel, "detail": detail,
+            "auto_fixable": fixable, "severity": sev,
+        })
+
+    n_lines = len(text.splitlines())
+
+    if scope == "in":
+        summary = fm.get("summary", "")
+        if not isinstance(summary, str) or not summary.strip():
+            add("R1: missing summary", SHAPE_SEVERITY)
+        else:
+            if len(summary) > SUMMARY_MAX_CHARS:
+                add(f"R1: summary >{SUMMARY_MAX_CHARS} chars", SHAPE_SEVERITY)
+            if "[[" in summary:
+                add("R1: summary contains wikilink", SHAPE_SEVERITY)
+            raw = next((l.partition(":")[2].strip() for l in text.splitlines()[1:]
+                        if l.startswith("summary:")), "")
+            if not (len(raw) >= 2 and raw.startswith('"') and raw.endswith('"')):
+                add("R1: summary not double-quoted", SHAPE_SEVERITY)
+
+    lines = body.splitlines()
+    scan = _shape_scan(lines)
+    if n_lines > CONTENTS_MIN_LINES and scan["h2_count"] >= CONTENTS_MIN_H2:
+        if not scan["first_is_contents"]:
+            add("R2: missing Contents", SHAPE_SEVERITY if scope == "in" else "warn",
+                fixable=(scope == "in"))
+        if scope == "in" and scan["span"]:
+            s, e = scan["span"]
+            have = [l.rstrip() for l in lines[s:e]]
+            if have != _contents_block(scan["entries"]):
+                add("R3: Contents out of date", SHAPE_SEVERITY, fixable=True)
+
+    if n_lines > SPLIT_WARN_LINES:
+        add(f"R4: split candidate ({n_lines} lines)", "warn")
+    return findings
+
+
+def _fix_c15_text(text):
+    """Return text with a regenerated Contents block placed before the first
+    non-Contents H2, or None if the note is not eligible. Keeps newline style."""
+    nl = "\r\n" if "\r\n" in text else "\n"
+    lines = text.split(nl)
+    body_start = 0
+    if lines and lines[0].lstrip("﻿").startswith("---"):
+        for i in range(1, len(lines)):
+            if lines[i].startswith("---"):
+                body_start = i + 1
+                break
+        else:
+            return None
+    head, body = lines[:body_start], lines[body_start:]
+    scan = _shape_scan(body)
+    if len(text.splitlines()) <= CONTENTS_MIN_LINES or scan["h2_count"] < CONTENTS_MIN_H2:
+        return None
+    if scan["span"]:
+        s, e = scan["span"]
+        body = body[:s] + body[e:]
+        scan = _shape_scan(body)
+    a = scan["anchor"]
+    body = body[:a] + _contents_block(scan["entries"]) + body[a:]
+    return nl.join(head + body)
+
+
+_HEADING_RE = re.compile(r"^#{1,6}[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*$")
+_MD_SELF_ANCHOR_RE = re.compile(r"\]\(#([^)]*)\)")
+
+
+def _anchor_slug(s):
+    """Heading slug: lowercase, spaces to hyphens, drop everything but word chars and '-'."""
+    return re.sub(r"[^\w\-]", "", s.lower().replace(" ", "-"))
+
+
+def _note_anchors(rel, cache):
+    """(exact heading texts, heading slugs, body text) of a vault note. Fence-aware;
+    frontmatter excluded. Cached per run in `cache`."""
+    if rel not in cache:
+        text = (VAULT / rel).read_text(encoding="utf-8", errors="replace")
+        _, body = parse_frontmatter(text)
+        heads, fence = [], False
+        for line in body.splitlines():
+            if line.lstrip().startswith(("```", "~~~")):
+                fence = not fence
+                continue
+            if fence:
+                continue
+            m = _HEADING_RE.match(line)
+            if m:
+                heads.append(m.group(1).strip())
+        cache[rel] = (set(heads), {_anchor_slug(h) for h in heads}, body)
+    return cache[rel]
+
+
+def _anchor_resolves(rel, anchor, cache):
+    """True if every `#`-separated part of `anchor` names a heading in `rel` (exact
+    text or same slug), or, for `^id`, a block ID present in the note."""
+    exact, slugs, body = _note_anchors(rel, cache)
+    if anchor.startswith("^"):
+        return re.search(r"(?m)(?:^|\s)\^" + re.escape(anchor[1:]) + r"[ \t]*$", body) is not None
+    return all(p in exact or _anchor_slug(p) in slugs
+               for p in (x.strip() for x in anchor.split("#")) if p)
+
+
+def iter_anchored_links(body):
+    """
+    Yield (target, anchor) in file order for `[[target#anchor|alias]]` and
+    `[text](#anchor)` links. target '' means the note itself (`[[#x]]`,
+    `](#x)`). Skips fenced code and inline code spans; `](#x)` is URL-decoded.
+    """
+    in_fence = False
+    for line in body.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        line = re.sub(r"`[^`]*`", "", line)
+        hits = []
+        for m in re.finditer(r"\[\[([^\]]*)\]\]", line):
+            left = m.group(1).replace("\\|", "|").split("|", 1)[0]
+            if "#" not in left:
+                continue
+            target, _, anchor = left.partition("#")
+            hits.append((m.start(), target.strip().rstrip("\\").strip(),
+                         anchor.strip().rstrip("\\").strip()))
+        for m in _MD_SELF_ANCHOR_RE.finditer(line):
+            hits.append((m.start(), "", unquote(m.group(1)).strip()))
+        for _, t, a in sorted(hits):
+            yield t, a
+
+
+def check_c16(path, body, slug_index, cache):
+    """
+    C16 — anchor integrity. A heading or block anchor (`[[t#Heading]]`,
+    `[[#Heading]]`, `[x](#heading)`, `[[t#^block]]`) must match a heading in the
+    resolved target by exact text or slug, or a block ID. Links whose target does
+    not resolve are left to C3. Severity: ANCHOR_SEVERITY, or warn for sources
+    under ANCHOR_WARN_PREFIXES. Report-only.
+    """
+    rel = path.relative_to(VAULT).as_posix()
+    source_dir = PurePosixPath(rel).parent.as_posix()
+    sev = "warn" if rel.startswith(ANCHOR_WARN_PREFIXES) else ANCHOR_SEVERITY
+    findings = []
+    for target, anchor in iter_anchored_links(body):
+        if not anchor:
+            continue
+        if target:
+            resolved, _ambig = resolve_target(target, slug_index, source_dir)
+            if not resolved or not resolved.endswith(".md") or not (VAULT / resolved).is_file():
+                continue
+        else:
+            resolved = rel
+        if not _anchor_resolves(resolved, anchor, cache):
+            findings.append({
+                "check": "C16", "path": rel,
+                "detail": f"broken anchor [[{target}#{anchor}]] — no matching heading in {resolved}",
+                "auto_fixable": False, "severity": sev,
+            })
+    return findings
+
+
+_BLOCK_ID_RE = re.compile(r"(?:^|\s)\^([\w-]+)[ \t]*$")
+
+
+def build_requirement_alias_index():
+    """{casefolded alias: [hub rel paths]} over every `note_type: requirement` note."""
+    index: dict[str, list[str]] = {}
+    root = VAULT / REQUIREMENT_PREFIX
+    if not root.is_dir():
+        return index
+    for p in sorted(root.rglob("*.md")):
+        fm, _ = parse_frontmatter(p.read_text(encoding="utf-8", errors="replace"))
+        if fm.get("note_type") != "requirement":
+            continue
+        aliases = fm.get("aliases") or []
+        for a in ([aliases] if isinstance(aliases, str) else aliases):
+            if a.strip():
+                index.setdefault(a.strip().casefold(), []).append(p.relative_to(VAULT).as_posix())
+    return index
+
+
+def _wikilink_target(item):
+    """`[[t#a|x]]` → (t, a); None if the item is not one whole wikilink."""
+    m = re.fullmatch(r"\[\[([^\[\]]+)\]\]", item.strip())
+    if not m:
+        return None
+    target, _, anchor = m.group(1).split("|", 1)[0].partition("#")
+    return target.strip(), anchor.strip()
+
+
+def check_c17(path, fm, body, slug_index, cache, alias_index):
+    """
+    C17 — requirement-hub integrity. Self-gates on a `requirements:` key or
+    `note_type: requirement`.
+      R1  each `requirements:` entry is one wikilink resolving under _graph/requirements/
+      R2  its anchor, if any, is a `^id` that resolves (heading anchors are findings)
+      R3  hub has REQUIREMENT_FIELDS, lives at _graph/requirements/req-<requirement>.md,
+          every `jurisdictions` value is in JURISDICTIONS (when set), and every `derived_from`
+          entry resolves
+      R4  hub block IDs are unique and start with `<requirement>-`
+      R5  no alias is claimed by two hubs
+    Severity: REQUIREMENT_SEVERITY. Report-only.
+    """
+    is_hub = fm.get("note_type") == "requirement"
+    if not (is_hub or "requirements" in fm):
+        return []
+    rel = path.relative_to(VAULT).as_posix()
+    source_dir = PurePosixPath(rel).parent.as_posix()
+    findings = []
+
+    def add(rule, detail):
+        findings.append({"check": "C17", "path": rel, "detail": f"{rule}: {detail}",
+                         "auto_fixable": False, "severity": REQUIREMENT_SEVERITY})
+
+    def as_list(v):
+        return [v] if isinstance(v, str) and v else (v or [])
+
+    for item in as_list(fm.get("requirements")):
+        parsed = _wikilink_target(item)
+        if parsed is None:
+            add("R1", f"malformed requirements entry {item!r} (one [[wikilink]] per entry, no commas inside)")
+            continue
+        target, anchor = parsed
+        resolved, _ = resolve_target(target, slug_index, source_dir)
+        if not resolved or not resolved.startswith(REQUIREMENT_PREFIX):
+            add("R1", f"requirements entry [[{target}]] does not resolve to a hub under {REQUIREMENT_PREFIX}")
+            continue
+        if anchor and not anchor.startswith("^"):
+            add("R2", f"requirements entry [[{target}#{anchor}]] uses a heading anchor; use #^id")
+        elif anchor and not _anchor_resolves(resolved, anchor, cache):
+            add("R2", f"requirements entry [[{target}#{anchor}]] — no block ID {anchor} in {resolved}")
+
+    if is_hub:
+        missing = [k for k in REQUIREMENT_FIELDS if not fm.get(k)]
+        if missing:
+            add("R3", f"hub missing field(s): {', '.join(missing)}")
+        placeholder = [k for k in REQUIREMENT_FIELDS
+                       if isinstance(fm.get(k), str) and fm[k].strip().upper() in PLACEHOLDER_VALUES]
+        if placeholder:
+            add("R3", f"hub field(s) hold a placeholder: {', '.join(placeholder)}")
+        bad_j = [j for j in as_list(fm.get("jurisdictions")) if JURISDICTIONS and j not in JURISDICTIONS]
+        if bad_j:
+            add("R3", f"jurisdictions value(s) not in the fixed set: {', '.join(map(str, bad_j))}")
+        req = fm.get("requirement", "")
+        if req and rel != f"{REQUIREMENT_PREFIX}req-{req}.md":
+            add("R3", f"hub path should be {REQUIREMENT_PREFIX}req-{req}.md")
+        for item in as_list(fm.get("derived_from")):
+            parsed = _wikilink_target(item)
+            if parsed is None or not resolve_target(parsed[0], slug_index, source_dir)[0]:
+                add("R3", f"derived_from entry {item!r} does not resolve")
+
+        seen, fence = set(), False
+        for line in body.splitlines():
+            if line.lstrip().startswith(("```", "~~~")):
+                fence = not fence
+                continue
+            m = None if fence else _BLOCK_ID_RE.search(line)
+            if not m:
+                continue
+            bid = m.group(1)
+            if bid in seen:
+                add("R4", f"duplicate block ID ^{bid}")
+            seen.add(bid)
+            if req and not bid.startswith(f"{req}-"):
+                add("R4", f"block ID ^{bid} does not start with {req}-")
+
+        for a in as_list(fm.get("aliases")):
+            owners = alias_index.get(a.strip().casefold(), [])
+            others = [o for o in owners if o != rel]
+            if others:
+                add("R5", f"alias {a!r} also claimed by {', '.join(others)}")
+
+    return findings
+
+
+def check_c19(path, fm, body):
+    """
+    C19 — navigation / pointer convention.
+      R1 (fail) index.md note_type does not match depth: `hub` when its folder is
+         a top-level vault folder, `navigation` when deeper (`vault-index` exempt)
+      R2 (fail) a `> Part of:` line exists outside code fences
+      R3 (warn) a non-index note has note_type `hub` or `navigation`
+    The vault-root index.md and everything under _graph/ are out of scope.
+    """
+    rel = path.relative_to(VAULT).as_posix()
+    parts = PurePosixPath(rel).parts
+    if "_graph" in parts:
+        return []
+    findings = []
+
+    def add(rule, detail, sev):
+        findings.append({"check": "C19", "path": rel, "detail": f"{rule}: {detail}",
+                         "auto_fixable": False, "severity": sev})
+
+    ntype = fm.get("note_type")
+    if path.name == "index.md":
+        if len(parts) > 1 and ntype != "vault-index":
+            want = "hub" if len(parts) == 2 else "navigation"
+            if ntype != want:
+                add("R1", f"index.md note_type is {ntype!r}; depth requires {want!r}", C19_SEVERITY)
+    elif ntype in ("hub", "navigation"):
+        add("R3", f"non-index note has note_type {ntype!r}", "warn")
+
+    fence = False
+    for line in body.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            fence = not fence
+            continue
+        if not fence and PART_OF_RE.match(line):
+            add("R2", "`> Part of:` line is retired; use `parent:` frontmatter", C19_SEVERITY)
+            break
+    return findings
+
+
 def check_c12(slug_index):
     """C12 — index navigation completeness. A folder's index.md should link to every
     child NOTE; a subfolder counts as covered if the index links ANY path under it
@@ -644,6 +1135,38 @@ def check_c12(slug_index):
     return findings
 
 
+def check_c14():
+    """
+    C14 — Doubled directory segment: a directory whose name equals its
+    immediate parent directory's name (e.g. `documentation/documentation/`).
+
+    Report-only: a merge with potential index.md collisions is not a safe
+    mechanical operation of the kind this tool's existing auto-fixes perform.
+    EXCEPTION: _graph directory is exempt.
+    """
+    findings = []
+
+    for dirpath in VAULT.rglob("*"):
+        if not dirpath.is_dir():
+            continue
+        # Exempt _graph at any depth
+        rel = dirpath.relative_to(VAULT)
+        if "_graph" in rel.parts:
+            continue
+        # Skip Obsidian system dirs and any hidden dot-directory (.obsidian, .trash, etc.)
+        if any(p.startswith(".") for p in rel.parts):
+            continue
+        if dirpath.name == dirpath.parent.name:
+            findings.append({
+                "check": "C14",
+                "path": rel.as_posix() + "/",
+                "detail": f"directory name equals parent directory name: {dirpath.name}",
+                "auto_fixable": False,
+            })
+
+    return findings
+
+
 # ── runner ───────────────────────────────────────────────────────────────────
 
 def run_checks(restrict_check=None):
@@ -655,9 +1178,11 @@ def run_checks(restrict_check=None):
         die(f"VAULT not found: {VAULT}")
 
     slug_index = build_slug_index()
+    anchor_cache = {}
+    alias_index = build_requirement_alias_index()
     all_findings = []
 
-    # Per-file checks (C1–C5, C7–C9)
+    # Per-file checks (C1–C5, C7–C11, C13, C15–C17, C19)
     for note in iter_notes():
         try:
             text = note.read_text(encoding="utf-8", errors="replace")
@@ -685,6 +1210,11 @@ def run_checks(restrict_check=None):
             "C9": lambda: check_c9(note, fm, body),
             "C10": lambda: check_c10(note, fm, body),
             "C11": lambda: check_c11(note, fm, body),
+            "C13": lambda: check_c13(note, fm, body),
+            "C15": lambda: check_c15(note, fm, body, text),
+            "C16": lambda: check_c16(note, body, slug_index, anchor_cache),
+            "C17": lambda: check_c17(note, fm, body, slug_index, anchor_cache, alias_index),
+            "C19": lambda: check_c19(note, fm, body),
         }
 
         for cid, fn in checks_map.items():
@@ -697,6 +1227,8 @@ def run_checks(restrict_check=None):
         all_findings.extend(check_c6(slug_index))
     if not restrict_check or restrict_check == "C12":
         all_findings.extend(check_c12(slug_index))
+    if not restrict_check or restrict_check == "C14":
+        all_findings.extend(check_c14())
 
     return all_findings
 
@@ -722,11 +1254,12 @@ def build_index_stub(dir_path):
     use note_type: hub; deeper folders use note_type: navigation."""
     title = dir_path.name.replace("-", " ").title()
     ntype = "hub" if dir_path.parent == VAULT else "navigation"
-    lines = ["---", f"note_type: {ntype}", "tags: [navigation]", "---", "", f"# {title}", ""]
+    fm_lines = ["---", f"note_type: {ntype}", "tags: [navigation]"]
     if dir_path.parent != VAULT:
         prel = dir_path.parent.relative_to(VAULT).as_posix()
         ptitle = dir_path.parent.name.replace("-", " ").title()
-        lines += [f"> Part of: [[{prel}/index|{ptitle}]]", ""]
+        fm_lines.append(f'parent: "[[{prel}/index|{ptitle}]]"')
+    lines = fm_lines + ["---", "", f"# {title}", ""]
     subdirs = sorted(d for d in dir_path.iterdir() if d.is_dir() and not d.name.startswith("."))
     notes = sorted(f for f in dir_path.iterdir()
                    if f.is_file() and f.suffix == ".md" and f.name != "index.md")
@@ -765,6 +1298,18 @@ def apply_fix(finding, slug_index):
     note_path = VAULT / rel
     if not note_path.exists():
         return False
+
+    # C15 R2/R3: regenerate Contents. Works on raw bytes so newline style and the
+    # trailing newline survive; R1/R4 are never fixable.
+    if cid == "C15":
+        if not finding["detail"].startswith(("R2", "R3")) or _shape_scope(rel) != "in":
+            return False
+        raw = note_path.read_bytes().decode("utf-8", errors="replace")
+        new = _fix_c15_text(raw)
+        if new is None or new == raw:
+            return False
+        note_path.write_bytes(new.encode("utf-8"))
+        return True
 
     text = note_path.read_text(encoding="utf-8", errors="replace")
     original = text
@@ -831,10 +1376,14 @@ def apply_fix(finding, slug_index):
 def cmd_check(args):
     """check subcommand — report only, no mutation."""
     restrict = args.check if hasattr(args, "check") else None
-    findings = run_checks(restrict_check=restrict)
+    findings = _filter_findings(run_checks(restrict_check=restrict),
+                                restrict, getattr(args, "prefix", None))
+    failing = any(f.get("severity") == "fail" for f in findings)
 
     if args.json:
         print(json.dumps(findings, ensure_ascii=False, indent=2))
+        if failing:
+            sys.exit(1)
         return
 
     # Human-readable report
@@ -844,23 +1393,35 @@ def cmd_check(args):
     # Per-check counts
     from collections import Counter
     counts = Counter(f["check"] for f in findings)
-    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12"]:
+    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C19"]:
         if not restrict or restrict == cid:
             n = counts.get(cid, 0)
             print(f"  {cid}: {n} finding{'s' if n != 1 else ''}")
 
     print()
     for f in findings:
-        print(f"  [{f['check']}] {f['path']}: {f['detail']}")
+        tag = f"[{f['check']}][{f['severity']}]" if "severity" in f else f"[{f['check']}]"
+        print(f"  {tag} {f['path']}: {f['detail']}")
 
     fixable = sum(1 for f in findings if f["auto_fixable"])
     print()
     print(f"Total: {len(findings)} finding(s), {fixable} auto-fixable.")
+    if failing:
+        sys.exit(1)
+
+
+def _filter_findings(findings, check=None, prefix=None):
+    """Keep findings matching --check ID and --prefix P (path startswith)."""
+    return [f for f in findings
+            if (not check or f["check"] == check)
+            and (not prefix or f["path"].startswith(prefix))]
 
 
 def cmd_fix(args):
     """fix subcommand — apply auto-fixable findings only. Idempotent."""
-    findings = run_checks()
+    restrict = getattr(args, "check", None)
+    findings = _filter_findings(run_checks(restrict_check=restrict),
+                                restrict, getattr(args, "prefix", None))
     fixable = [f for f in findings if f["auto_fixable"]]
 
     if not fixable:
@@ -917,7 +1478,11 @@ def main():
     s_check.add_argument("--json", action="store_true", help="Emit findings as JSON list")
     s_check.add_argument("--check", metavar="ID", help="Restrict to one check ID (e.g. C8)")
 
-    sub.add_parser("fix", help="Apply auto-fixable findings only")
+    s_check.add_argument("--prefix", metavar="P", help="Restrict to paths starting with P (vault-relative)")
+
+    s_fix = sub.add_parser("fix", help="Apply auto-fixable findings only")
+    s_fix.add_argument("--check", metavar="ID", help="Fix only this check ID (e.g. C15)")
+    s_fix.add_argument("--prefix", metavar="P", help="Fix only paths starting with P (vault-relative)")
     sub.add_parser("reindex", help="Regenerate hollow-stub index.md files as directory maps")
 
     args = p.parse_args()
