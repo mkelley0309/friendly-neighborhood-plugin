@@ -40,6 +40,7 @@ Vault root resolves from `WORKSPACE_ROOT` (defaults to the current working direc
 | C13 | `confidence: high` with hedged prose | no |
 | C14 | Doubled directory segment | no |
 | C15 | Note shape: summary, `## Contents`, split candidates | partial (`## Contents`) |
+| C16 | Broken heading or block anchors | no |
 
 ## Steps
 

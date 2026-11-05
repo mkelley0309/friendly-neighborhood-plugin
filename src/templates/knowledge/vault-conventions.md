@@ -212,6 +212,7 @@ Scope: curated notes under `SHAPE_SCOPE_PREFIXES` (`tools/vault-lint.py`, defaul
 | C13 | `confidence: high` with hedged prose |
 | C14 | Doubled directory segment |
 | C15 | Note shape R1–R4; severity per `SHAPE_SEVERITY` (default `warn`) |
+| C16 | Broken anchor: `[[t#Heading]]`, `[[#Heading]]`, `](#x)` or `#^block` matches no heading/block in the target (exact text or slug). `fail` vault-wide; `warn` under `ANCHOR_WARN_PREFIXES` (imported mirrors with opaque upstream anchor IDs) |
 
 ---
 

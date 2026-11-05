@@ -665,6 +665,75 @@ class TestC15(VaultTestCase):
         self.assertTrue(all(f["check"] == "C15" for f in findings))
 
 
+class TestC16(VaultTestCase):
+    """C16 — anchor integrity: heading/block anchors must match the resolved target."""
+
+    A = "---\nnote_type: knowledge\n---\n\n# A\n\n## General Section\n\n## Exact Text (x)\n\n```\n## Fenced Head\n```\n\nPara. ^blk1\n"
+
+    def run16(self, rel, body):
+        self.write("d/a.md", self.A)
+        p = self.write(rel, "---\nnote_type: knowledge\n---\n\n" + body)
+        fm, b = vault_lint.parse_frontmatter(p.read_text(encoding="utf-8"))
+        return vault_lint.check_c16(p, b, vault_lint.build_slug_index(), {})
+
+    def broken(self, findings):
+        return [f["detail"].split("]]")[0].split("[[", 1)[1] for f in findings]
+
+    def test_exact_slug_and_alias_resolve(self):
+        body = ("[[d/a#General Section]] [[a#general-section|alias]]\n"
+                "| [[d/a#General Section\\|label]] |\n[[d/a#Exact Text (x)]]\n")
+        self.assertEqual(self.run16("d/b.md", body), [])
+
+    def test_missing_heading_fails(self):
+        f = self.run16("d/b.md", "[[d/a#Nope]]\n")
+        self.assertEqual(self.broken(f), ["d/a#Nope"])
+        self.assertEqual(f[0]["severity"], vault_lint.ANCHOR_SEVERITY)
+        self.assertFalse(f[0]["auto_fixable"])
+
+    def test_self_anchors(self):
+        body = "## Sec One\n\n[ok](#sec%20one) [[#Sec One]] [bad](#missing)\n"
+        self.assertEqual(self.broken(self.run16("d/b.md", body)), ["#missing"])
+
+    def test_fenced_heading_is_not_a_target(self):
+        self.assertEqual(self.broken(self.run16("d/b.md", "[[d/a#Fenced Head]]\n")), ["d/a#Fenced Head"])
+
+    def test_links_in_code_ignored(self):
+        self.assertEqual(self.run16("d/b.md", "`[[d/a#x]]`\n```\n[[d/a#y]]\n```\n"), [])
+
+    def test_unresolved_target_left_to_c3(self):
+        self.assertEqual(self.run16("d/b.md", "[[nonexistent#x]]\n"), [])
+
+    def test_block_ref(self):
+        self.assertEqual(self.broken(self.run16("d/b.md", "[[d/a#^blk1]] [[d/a#^nope]]\n")), ["d/a#^nope"])
+
+    def test_nested_subpath(self):
+        self.write("d/n.md", "---\nnote_type: knowledge\n---\n\n## Top\n\n### Inner\n")
+        f = self.run16("d/b.md", "[[d/n#Top#Inner]] [[d/n#Top#Gone]]\n")
+        self.assertEqual(self.broken(f), ["d/n#Top#Gone"])
+
+    def test_warn_prefix(self):
+        orig = vault_lint.ANCHOR_WARN_PREFIXES
+        vault_lint.ANCHOR_WARN_PREFIXES = ("mirror/",)
+        self.addCleanup(setattr, vault_lint, "ANCHOR_WARN_PREFIXES", orig)
+        self.write("mirror/t.md", "---\nnote_type: knowledge\n---\n\n## H\n")
+        f = self.run16("mirror/s.md", "[[mirror/t#AbC12]]\n")
+        self.assertEqual([x["severity"] for x in f], ["warn"])
+
+    def test_registered_and_fail_exits_1(self):
+        self.write("d/index.md", "---\nnote_type: hub\n---\n")
+        self.write("d/a.md", self.A)
+        self.write("d/b.md", "---\nnote_type: knowledge\n---\n\n[[d/a#Nope]]\n")
+        self.discover()
+        findings = vault_lint.run_checks(restrict_check="C16")
+        self.assertEqual([f["check"] for f in findings], ["C16"])
+        ns = argparse.Namespace(json=True, check="C16", prefix=None)
+        with contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit) as cm:
+                vault_lint.cmd_check(ns)
+        self.assertEqual(cm.exception.code, 1)
+
+
+
 class TestApplyFix(VaultTestCase):
     def test_c6_creates_index(self):
         self.write("alpha/sub/note.md", "---\nnote_type: knowledge\n---\n")
@@ -706,6 +775,9 @@ class TestTemplateDefaults(unittest.TestCase):
         self.assertEqual(vault_lint.SHAPE_SCOPE_PREFIXES, ("domain-knowledge/",))
         self.assertEqual(vault_lint.SHAPE_EXCLUDE_PREFIXES, ())
         self.assertEqual(vault_lint.SHAPE_SEVERITY, "warn")
+
+    def test_c16(self):
+        self.assertEqual(vault_lint.ANCHOR_WARN_PREFIXES, ())
 
 
 class TestRunChecks(VaultTestCase):

@@ -18,6 +18,7 @@ import os
 import re
 import sys
 from pathlib import Path, PurePosixPath
+from urllib.parse import unquote
 
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
@@ -60,6 +61,12 @@ CONTENTS_MIN_LINES = 100
 CONTENTS_MIN_H2 = 3
 SPLIT_WARN_LINES = 500
 SUMMARY_MAX_CHARS = 250
+
+# C16 anchor integrity. Broken anchors are ANCHOR_SEVERITY everywhere except
+# under ANCHOR_WARN_PREFIXES: list imported mirrors here when their anchors are
+# opaque upstream IDs that no local heading can satisfy. Those report as warn.
+ANCHOR_SEVERITY = "fail"
+ANCHOR_WARN_PREFIXES = ()
 
 # Meta files that may live in the vault but are NOT vault notes (AI-instruction /
 # harness files) — exempt from all note-level checks (e.g. C1 note_type).
@@ -810,6 +817,103 @@ def _fix_c15_text(text):
     return nl.join(head + body)
 
 
+_HEADING_RE = re.compile(r"^#{1,6}[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*$")
+_MD_SELF_ANCHOR_RE = re.compile(r"\]\(#([^)]*)\)")
+
+
+def _anchor_slug(s):
+    """Heading slug: lowercase, spaces to hyphens, drop everything but word chars and '-'."""
+    return re.sub(r"[^\w\-]", "", s.lower().replace(" ", "-"))
+
+
+def _note_anchors(rel, cache):
+    """(exact heading texts, heading slugs, body text) of a vault note. Fence-aware;
+    frontmatter excluded. Cached per run in `cache`."""
+    if rel not in cache:
+        text = (VAULT / rel).read_text(encoding="utf-8", errors="replace")
+        _, body = parse_frontmatter(text)
+        heads, fence = [], False
+        for line in body.splitlines():
+            if line.lstrip().startswith(("```", "~~~")):
+                fence = not fence
+                continue
+            if fence:
+                continue
+            m = _HEADING_RE.match(line)
+            if m:
+                heads.append(m.group(1).strip())
+        cache[rel] = (set(heads), {_anchor_slug(h) for h in heads}, body)
+    return cache[rel]
+
+
+def _anchor_resolves(rel, anchor, cache):
+    """True if every `#`-separated part of `anchor` names a heading in `rel` (exact
+    text or same slug), or, for `^id`, a block ID present in the note."""
+    exact, slugs, body = _note_anchors(rel, cache)
+    if anchor.startswith("^"):
+        return re.search(r"(?m)(?:^|\s)\^" + re.escape(anchor[1:]) + r"[ \t]*$", body) is not None
+    return all(p in exact or _anchor_slug(p) in slugs
+               for p in (x.strip() for x in anchor.split("#")) if p)
+
+
+def iter_anchored_links(body):
+    """
+    Yield (target, anchor) in file order for `[[target#anchor|alias]]` and
+    `[text](#anchor)` links. target '' means the note itself (`[[#x]]`,
+    `](#x)`). Skips fenced code and inline code spans; `](#x)` is URL-decoded.
+    """
+    in_fence = False
+    for line in body.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        line = re.sub(r"`[^`]*`", "", line)
+        hits = []
+        for m in re.finditer(r"\[\[([^\]]*)\]\]", line):
+            left = m.group(1).replace("\\|", "|").split("|", 1)[0]
+            if "#" not in left:
+                continue
+            target, _, anchor = left.partition("#")
+            hits.append((m.start(), target.strip().rstrip("\\").strip(),
+                         anchor.strip().rstrip("\\").strip()))
+        for m in _MD_SELF_ANCHOR_RE.finditer(line):
+            hits.append((m.start(), "", unquote(m.group(1)).strip()))
+        for _, t, a in sorted(hits):
+            yield t, a
+
+
+def check_c16(path, body, slug_index, cache):
+    """
+    C16 — anchor integrity. A heading or block anchor (`[[t#Heading]]`,
+    `[[#Heading]]`, `[x](#heading)`, `[[t#^block]]`) must match a heading in the
+    resolved target by exact text or slug, or a block ID. Links whose target does
+    not resolve are left to C3. Severity: ANCHOR_SEVERITY, or warn for sources
+    under ANCHOR_WARN_PREFIXES. Report-only.
+    """
+    rel = path.relative_to(VAULT).as_posix()
+    source_dir = PurePosixPath(rel).parent.as_posix()
+    sev = "warn" if rel.startswith(ANCHOR_WARN_PREFIXES) else ANCHOR_SEVERITY
+    findings = []
+    for target, anchor in iter_anchored_links(body):
+        if not anchor:
+            continue
+        if target:
+            resolved, _ambig = resolve_target(target, slug_index, source_dir)
+            if not resolved or not resolved.endswith(".md") or not (VAULT / resolved).is_file():
+                continue
+        else:
+            resolved = rel
+        if not _anchor_resolves(resolved, anchor, cache):
+            findings.append({
+                "check": "C16", "path": rel,
+                "detail": f"broken anchor [[{target}#{anchor}]] — no matching heading in {resolved}",
+                "auto_fixable": False, "severity": sev,
+            })
+    return findings
+
+
 def check_c12(slug_index):
     """C12 — index navigation completeness. A folder's index.md should link to every
     child NOTE; a subfolder counts as covered if the index links ANY path under it
@@ -890,9 +994,10 @@ def run_checks(restrict_check=None):
         die(f"VAULT not found: {VAULT}")
 
     slug_index = build_slug_index()
+    anchor_cache = {}
     all_findings = []
 
-    # Per-file checks (C1–C5, C7–C11, C13, C15)
+    # Per-file checks (C1–C5, C7–C11, C13, C15, C16)
     for note in iter_notes():
         try:
             text = note.read_text(encoding="utf-8", errors="replace")
@@ -922,6 +1027,7 @@ def run_checks(restrict_check=None):
             "C11": lambda: check_c11(note, fm, body),
             "C13": lambda: check_c13(note, fm, body),
             "C15": lambda: check_c15(note, fm, body, text),
+            "C16": lambda: check_c16(note, body, slug_index, anchor_cache),
         }
 
         for cid, fn in checks_map.items():
@@ -1099,7 +1205,7 @@ def cmd_check(args):
     # Per-check counts
     from collections import Counter
     counts = Counter(f["check"] for f in findings)
-    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15"]:
+    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16"]:
         if not restrict or restrict == cid:
             n = counts.get(cid, 0)
             print(f"  {cid}: {n} finding{'s' if n != 1 else ''}")
