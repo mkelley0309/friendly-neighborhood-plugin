@@ -105,7 +105,9 @@ $ErrorActionPreference = "Continue"
 & $gitBash $claudeShim @claudeArgs *> $logFile
 $exitCode = $LASTEXITCODE
 $ErrorActionPreference = "Stop"
-Remove-Item -Path $runFlag -Force
+# Tolerate a missing flag: an overlapping run renames any flag it finds, and
+# this run must still reach its own checks below.
+Remove-Item -Path $runFlag -Force -ErrorAction SilentlyContinue
 
 if (-not (Test-Path $logFile) -or (Get-Item $logFile).Length -eq 0) {
     Fail "claude produced a 0-byte log (exit code $exitCode) - the run almost certainly no-op'd. Check that Git Bash and the claude shim are still valid, and that the task's logon type lets it run at trigger time."

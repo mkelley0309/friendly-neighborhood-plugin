@@ -128,7 +128,7 @@ One-time PowerShell script to set API keys as persistent user-level environment 
 
 ### cadence-run.ps1
 
-Shared unattended-run helper for cadences triggered by Windows Task Scheduler. Runs `claude -p` through Git Bash (the PowerShell `&` operator can't run the `claude` shell shim, and fails silently), logs to the cadence's `_working/`, and writes a `FAILED-*.flag` on a 0-byte log or non-zero exit. A cadence's own `run.ps1` only calls this — see the cadence skill → *Local unattended trigger*.
+Shared unattended-run helper for cadences triggered by Windows Task Scheduler. Runs `claude -p` through Git Bash (the PowerShell `&` operator can't run the `claude` shell shim, and fails silently), logs to the cadence's `_working/` (ignored by `_working/.gitignore`, not committed), and writes a `FAILED-*.flag` on a 0-byte log or non-zero exit. A `RUNNING-*.flag` marks each run in progress; the next run renames a leftover one to `FAILED-*.flag`, so a killed run leaves evidence. A cadence's own `run.ps1` only calls this — see the cadence skill → *Local unattended trigger*.
 
 ```powershell
 .\tools\cadence-run.ps1 -CadenceName "<name>" -PromptFile "control-plane\cadences\<name>\prompt.md" -PermissionFlag "--permission-mode acceptEdits" [-Model <model>]

@@ -66,6 +66,9 @@ VAULT_LINT_TOOLS=build/_generated/harness-core/templates/tools python -B build/t
 VAULT_LINT_TOOLS=build/_generated/friendly-neighborhood/templates/tools python -B build/tests/test_vault_lint.py
 ```
 
+`test_workstream.py` and `test_cadence.py` run the same way. `test_cadence.py` uses `patrol.py` when
+the tools directory is a themed edition's.
+
 ## How it works
 
 1. Load `vocabulary/data-model.yml` (pinned identifiers), `vocabulary/display.yml`
