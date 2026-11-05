@@ -875,6 +875,63 @@ class TestC17(VaultTestCase):
             vault_lint.REQUIREMENT_SEVERITY = orig
         self.assertEqual(cm.exception.code, 1)
 
+class TestC19(VaultTestCase):
+    """C19 — navigation / pointer convention: index depth typing, retired `> Part of:`."""
+
+    def run19(self, rel, content):
+        p = self.write(rel, content)
+        fm, b = vault_lint.parse_frontmatter(p.read_text(encoding="utf-8"))
+        return vault_lint.check_c19(p, fm, b)
+
+    def rules(self, findings):
+        return [f["detail"].split(":", 1)[0] for f in findings]
+
+    def test_r1_top_level_hub_pass_and_fail(self):
+        self.assertEqual(self.run19("alpha/index.md", "---\nnote_type: hub\n---\n\n# A\n"), [])
+        f = self.run19("beta/index.md", "---\nnote_type: navigation\n---\n\n# B\n")
+        self.assertEqual(self.rules(f), ["R1"])
+        self.assertEqual(f[0]["severity"], "fail")
+
+    def test_r1_deep_navigation_pass_and_fail(self):
+        self.assertEqual(self.run19("alpha/sub/index.md", "---\nnote_type: navigation\n---\n\n# S\n"), [])
+        self.assertEqual(self.rules(self.run19("alpha/sub2/index.md", "---\nnote_type: hub\n---\n\n# S\n")), ["R1"])
+
+    def test_r1_vault_index_exempt(self):
+        self.assertEqual(self.run19("alpha/sub/index.md", "---\nnote_type: vault-index\n---\n\n# S\n"), [])
+
+    def test_r2_part_of_pass_and_fail(self):
+        ok = self.run19("alpha/a.md", "---\nnote_type: knowledge\nparent: \"[[alpha/index]]\"\n---\n\n# A\n")
+        self.assertEqual(ok, [])
+        bad = self.run19("alpha/b.md", "---\nnote_type: knowledge\n---\n\n# B\n\n> Part of: [[alpha/index|A]]\n")
+        self.assertEqual(self.rules(bad), ["R2"])
+        self.assertEqual(bad[0]["severity"], "fail")
+
+    def test_r2_ignores_code_fence(self):
+        fenced = self.run19("alpha/c.md", "---\nnote_type: knowledge\n---\n\n# C\n\n```\n> Part of: x\n```\n")
+        self.assertEqual(fenced, [])
+
+    def test_r3_warn_non_index_hub(self):
+        f = self.run19("alpha/d.md", "---\nnote_type: hub\n---\n\n# D\n")
+        self.assertEqual(self.rules(f), ["R3"])
+        self.assertEqual(f[0]["severity"], "warn")
+        self.assertEqual(self.run19("alpha/e.md", "---\nnote_type: knowledge\n---\n\n# E\n"), [])
+
+
+class TestBuildIndexStub(VaultTestCase):
+    def test_top_level_dir_is_hub(self):
+        self.write("alpha/note.md", "---\nnote_type: knowledge\n---\n\n# Note\n")
+        stub = vault_lint.build_index_stub(self.vault / "alpha")
+        self.assertIn("note_type: hub", stub)
+        self.assertIn("[[alpha/note|Note]]", stub)
+
+    def test_nested_dir_is_navigation_with_breadcrumb(self):
+        self.write("alpha/sub/note.md", "---\nnote_type: knowledge\n---\n\n# Note\n")
+        stub = vault_lint.build_index_stub(self.vault / "alpha" / "sub")
+        self.assertIn("note_type: navigation", stub)
+        self.assertIn('parent: "[[alpha/index|Alpha]]"', stub)
+        self.assertNotIn("Part of:", stub)
+
+
 class TestApplyFix(VaultTestCase):
     def test_c6_creates_index(self):
         self.write("alpha/sub/note.md", "---\nnote_type: knowledge\n---\n")

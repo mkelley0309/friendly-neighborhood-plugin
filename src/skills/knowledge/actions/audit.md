@@ -42,6 +42,7 @@ Vault root resolves from `WORKSPACE_ROOT` (defaults to the current working direc
 | C15 | Note shape: summary, `## Contents`, split candidates | partial (`## Contents`) |
 | C16 | Broken heading or block anchors | no |
 | C17 | Requirement-hub integrity (self-gating) | no — editorial |
+| C19 | Navigation: `index.md` depth, retired `> Part of:` | no |
 
 ## Steps
 

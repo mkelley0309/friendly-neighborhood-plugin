@@ -83,7 +83,7 @@ Every meaningful folder in the vault has an `index.md` that:
 
 ```markdown
 ---
-note_type: hub        # or: documentation-hub, section-hub, etc.
+note_type: hub        # top-level folder; use navigation in deeper folders
 tags: [...]
 ---
 
@@ -118,8 +118,9 @@ Type-specific fields are defined per `note_type` — see the relevant distiller 
 
 | `note_type` | Purpose |
 |---|---|
-| `hub` | Folder-level orientation (lives in `index.md`) |
-| `documentation-hub` | Hub for a curated documentation section |
+| `hub` | `index.md` of a top-level vault folder (parent is the vault root) |
+| `navigation` | `index.md` of any deeper folder. Non-index notes do not carry `hub` or `navigation` (vault-lint C19 R3) |
+| `vault-index` | `index.md` of a generated mirror; exempt from the depth rule |
 | `documentation` | A curated documentation page (from a source) |
 | `vendor-documentation` | Raw vendor doc (only valid in `sources/` — if it appears in `vault/`, it's been curated and should be `documentation`) |
 | `perspective` | Raw first-party note (only valid in `perspective/` — if it appears in `vault/`, it's been distilled and should be `vault-note` with `provenance: first-party`) |
@@ -215,6 +216,8 @@ Scope: curated notes under `SHAPE_SCOPE_PREFIXES` (`tools/vault-lint.py`, defaul
 | C15 | Note shape R1–R4; severity per `SHAPE_SEVERITY` (default `warn`) |
 | C16 | Broken anchor: `[[t#Heading]]`, `[[#Heading]]`, `](#x)` or `#^block` matches no heading/block in the target (exact text or slug). `fail` vault-wide; `warn` under `ANCHOR_WARN_PREFIXES` (imported mirrors with opaque upstream anchor IDs) |
 | C17 | Requirement-hub integrity: `requirements:` entries resolve, hub fields and path, block IDs, alias uniqueness. Self-gating; `fail` |
+| C18 | Reserved |
+| C19 | Navigation: `index.md` `note_type` matches folder depth; `> Part of:` retired; non-index `hub`/`navigation` warns |
 
 ---
 
@@ -336,6 +339,11 @@ The sanctioned distillation path into the vault is via the `knowledge` skill.
 
 ---
 
-## No breadcrumb footers
+## Parent pointers and breadcrumbs
 
-Don't embed breadcrumb footers — Obsidian's backlinks panel and graph handle upward navigation. If a note needs an explicit "up one level" link, use the frontmatter `parent:` field or a one-line `> Part of: [[parent-hub]]` callout at the top.
+Breadcrumb footers at the bottom of notes are retired.
+
+- `parent:` frontmatter is canonical for "up one level". Index fixers emit it
+- A one-line `**Breadcrumb:**` body line under the H1 is allowed as display
+- `> Part of:` callouts are retired (vault-lint C19 R2); convert to `parent:`
+- Obsidian's backlinks panel + graph view also handle upward navigation natively

@@ -78,6 +78,13 @@ REQUIREMENT_FIELDS = ("requirement", "standard", "issuer", "jurisdictions", "ali
 JURISDICTIONS = set()
 PLACEHOLDER_VALUES = {"TBD", "TODO", "?", "UNKNOWN"}
 
+# C18 is reserved: the source workspace uses it for a taxonomy this template doesn't have.
+
+# C19 navigation / pointer convention. `> Part of:` is retired in favour of
+# `parent:` frontmatter; index.md note_type must match folder depth.
+PART_OF_RE = re.compile(r"^\s*>\s*Part of:")
+C19_SEVERITY = "fail"
+
 # Meta files that may live in the vault but are NOT vault notes (AI-instruction /
 # harness files) — exempt from all note-level checks (e.g. C1 note_type).
 NON_NOTE_FILES = {"CLAUDE.md", "AGENTS.md"}
@@ -1052,6 +1059,45 @@ def check_c17(path, fm, body, slug_index, cache, alias_index):
     return findings
 
 
+def check_c19(path, fm, body):
+    """
+    C19 — navigation / pointer convention.
+      R1 (fail) index.md note_type does not match depth: `hub` when its folder is
+         a top-level vault folder, `navigation` when deeper (`vault-index` exempt)
+      R2 (fail) a `> Part of:` line exists outside code fences
+      R3 (warn) a non-index note has note_type `hub` or `navigation`
+    The vault-root index.md and everything under _graph/ are out of scope.
+    """
+    rel = path.relative_to(VAULT).as_posix()
+    parts = PurePosixPath(rel).parts
+    if "_graph" in parts:
+        return []
+    findings = []
+
+    def add(rule, detail, sev):
+        findings.append({"check": "C19", "path": rel, "detail": f"{rule}: {detail}",
+                         "auto_fixable": False, "severity": sev})
+
+    ntype = fm.get("note_type")
+    if path.name == "index.md":
+        if len(parts) > 1 and ntype != "vault-index":
+            want = "hub" if len(parts) == 2 else "navigation"
+            if ntype != want:
+                add("R1", f"index.md note_type is {ntype!r}; depth requires {want!r}", C19_SEVERITY)
+    elif ntype in ("hub", "navigation"):
+        add("R3", f"non-index note has note_type {ntype!r}", "warn")
+
+    fence = False
+    for line in body.splitlines():
+        if line.lstrip().startswith(("```", "~~~")):
+            fence = not fence
+            continue
+        if not fence and PART_OF_RE.match(line):
+            add("R2", "`> Part of:` line is retired; use `parent:` frontmatter", C19_SEVERITY)
+            break
+    return findings
+
+
 def check_c12(slug_index):
     """C12 — index navigation completeness. A folder's index.md should link to every
     child NOTE; a subfolder counts as covered if the index links ANY path under it
@@ -1136,7 +1182,7 @@ def run_checks(restrict_check=None):
     alias_index = build_requirement_alias_index()
     all_findings = []
 
-    # Per-file checks (C1–C5, C7–C11, C13, C15–C17)
+    # Per-file checks (C1–C5, C7–C11, C13, C15–C17, C19)
     for note in iter_notes():
         try:
             text = note.read_text(encoding="utf-8", errors="replace")
@@ -1168,6 +1214,7 @@ def run_checks(restrict_check=None):
             "C15": lambda: check_c15(note, fm, body, text),
             "C16": lambda: check_c16(note, body, slug_index, anchor_cache),
             "C17": lambda: check_c17(note, fm, body, slug_index, anchor_cache, alias_index),
+            "C19": lambda: check_c19(note, fm, body),
         }
 
         for cid, fn in checks_map.items():
@@ -1207,11 +1254,12 @@ def build_index_stub(dir_path):
     use note_type: hub; deeper folders use note_type: navigation."""
     title = dir_path.name.replace("-", " ").title()
     ntype = "hub" if dir_path.parent == VAULT else "navigation"
-    lines = ["---", f"note_type: {ntype}", "tags: [navigation]", "---", "", f"# {title}", ""]
+    fm_lines = ["---", f"note_type: {ntype}", "tags: [navigation]"]
     if dir_path.parent != VAULT:
         prel = dir_path.parent.relative_to(VAULT).as_posix()
         ptitle = dir_path.parent.name.replace("-", " ").title()
-        lines += [f"> Part of: [[{prel}/index|{ptitle}]]", ""]
+        fm_lines.append(f'parent: "[[{prel}/index|{ptitle}]]"')
+    lines = fm_lines + ["---", "", f"# {title}", ""]
     subdirs = sorted(d for d in dir_path.iterdir() if d.is_dir() and not d.name.startswith("."))
     notes = sorted(f for f in dir_path.iterdir()
                    if f.is_file() and f.suffix == ".md" and f.name != "index.md")
@@ -1345,7 +1393,7 @@ def cmd_check(args):
     # Per-check counts
     from collections import Counter
     counts = Counter(f["check"] for f in findings)
-    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17"]:
+    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C19"]:
         if not restrict or restrict == cid:
             n = counts.get(cid, 0)
             print(f"  {cid}: {n} finding{'s' if n != 1 else ''}")
