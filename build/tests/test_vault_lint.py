@@ -434,6 +434,237 @@ class TestCheckC13(VaultTestCase):
         self.assertTrue(all(f["check"] == "C13" for f in findings))
 
 
+class TestC15(VaultTestCase):
+    """C15 — note shape: summary (R1), Contents (R2/R3), split candidate (R4)."""
+
+    IN = "domain-knowledge/g.md"
+    OUT = "reference/g.md"
+    EXC = "mirror/g.md"
+    FM = '---\nnote_type: knowledge\nsummary: "A summary."\n---\n\n'
+
+    def setUp(self):
+        super().setUp()
+        orig = vault_lint.SHAPE_EXCLUDE_PREFIXES
+        vault_lint.SHAPE_EXCLUDE_PREFIXES = ("mirror/",)
+        self.addCleanup(setattr, vault_lint, "SHAPE_EXCLUDE_PREFIXES", orig)
+
+    @staticmethod
+    def long_body(h2=3, lines=101, h3=False):
+        """Body so that whole-file line count == `lines` (FM is 5 lines)."""
+        out = ["# Title", ""]
+        for i in range(h2):
+            out += [f"## Sec {i}", ""]
+            if h3:
+                out += [f"### Sub {i}", ""]
+        out += ["text"] * (lines - 5 - len(out))
+        return "\n".join(out) + "\n"
+
+    def run15(self, rel, content):
+        p = self.vault / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(content.encode("utf-8"))  # bytes: no platform newline translation
+        text = p.read_bytes().decode("utf-8")
+        fm, body = vault_lint.parse_frontmatter(text)
+        return vault_lint.check_c15(p, fm, body, text)
+
+    def rules(self, findings):
+        return sorted(f["detail"].split(":")[0] for f in findings)
+
+    # R1
+    def test_r1_missing_summary(self):
+        f = self.run15(self.IN, "---\nnote_type: knowledge\n---\n\nbody\n")
+        self.assertEqual([x["detail"] for x in f], ["R1: missing summary"])
+        self.assertFalse(f[0]["auto_fixable"])
+
+    def test_r1_empty_summary(self):
+        f = self.run15(self.IN, '---\nsummary: ""\n---\n\nbody\n')
+        self.assertEqual([x["detail"] for x in f], ["R1: missing summary"])
+
+    def test_r1_long_summary(self):
+        f = self.run15(self.IN, '---\nsummary: "%s"\n---\n\nbody\n' % ("x" * 251))
+        self.assertEqual([x["detail"] for x in f], ["R1: summary >250 chars"])
+
+    def test_r1_250_chars_ok(self):
+        self.assertEqual(self.run15(self.IN, '---\nsummary: "%s"\n---\n\nb\n' % ("x" * 250)), [])
+
+    def test_r1_wikilink(self):
+        f = self.run15(self.IN, '---\nsummary: "see [[a/b]]"\n---\n\nbody\n')
+        self.assertEqual([x["detail"] for x in f], ["R1: summary contains wikilink"])
+
+    def test_r1_unquoted(self):
+        f = self.run15(self.IN, "---\nsummary: plain words\n---\n\nbody\n")
+        self.assertEqual([x["detail"] for x in f], ["R1: summary not double-quoted"])
+
+    def test_r1_ok(self):
+        self.assertEqual(self.run15(self.IN, self.FM + "body\n"), [])
+
+    # R2
+    def test_r2_fires_at_101_lines_3_h2(self):
+        f = self.run15(self.IN, self.FM + self.long_body(3, 101))
+        self.assertEqual([x["detail"] for x in f], ["R2: missing Contents"])
+        self.assertTrue(f[0]["auto_fixable"])
+        self.assertEqual(f[0]["severity"], vault_lint.SHAPE_SEVERITY)
+
+    def test_r2_not_at_100_lines(self):
+        self.assertEqual(self.run15(self.IN, self.FM + self.long_body(3, 100)), [])
+
+    def test_r2_not_with_2_h2(self):
+        self.assertEqual(self.run15(self.IN, self.FM + self.long_body(2, 101)), [])
+
+    def test_r2_not_when_contents_first(self):
+        body = self.long_body(3, 101)
+        fixed = vault_lint._fix_c15_text(self.FM + body)
+        self.assertEqual(self.run15(self.IN, fixed), [])
+
+    # R3
+    def test_r3_stale_contents(self):
+        fixed = vault_lint._fix_c15_text(self.FM + self.long_body(3, 101, h3=True))
+        stale = fixed.replace("- Sec 1\n", "- Sec One\n", 1)
+        f = self.run15(self.IN, stale)
+        self.assertEqual([x["detail"] for x in f], ["R3: Contents out of date"])
+        self.assertTrue(f[0]["auto_fixable"])
+
+    def test_r3_current_and_trailing_whitespace_ok(self):
+        fixed = vault_lint._fix_c15_text(self.FM + self.long_body(3, 101, h3=True))
+        padded = fixed.replace("- Sec 1\n", "- Sec 1   \n", 1)
+        self.assertEqual(self.run15(self.IN, padded), [])
+
+    def test_contents_block_shape(self):
+        fixed = vault_lint._fix_c15_text(self.FM + self.long_body(3, 130, h3=True))
+        self.assertIn("## Contents\n\n- Sec 0\n  - Sub 0\n- Sec 1\n  - Sub 1\n- Sec 2\n  - Sub 2\n\n## Sec 0", fixed)
+
+    # R4
+    def test_r4_at_500_and_501(self):
+        self.assertEqual(self.rules(self.run15(self.IN, self.FM + self.long_body(1, 500))), [])
+        f = self.run15(self.IN, self.FM + self.long_body(1, 501))
+        self.assertEqual([x["detail"] for x in f], ["R4: split candidate (501 lines)"])
+        self.assertEqual(f[0]["severity"], "warn")
+        self.assertFalse(f[0]["auto_fixable"])
+
+    # scope
+    def test_out_of_scope_r2_warn_not_fixable_no_r1(self):
+        f = self.run15(self.OUT, "---\nnote_type: knowledge\n---\n\n" + self.long_body(3, 110))
+        self.assertEqual([x["detail"] for x in f], ["R2: missing Contents"])
+        self.assertEqual(f[0]["severity"], "warn")
+        self.assertFalse(f[0]["auto_fixable"])
+
+    def test_out_of_scope_gets_r4(self):
+        f = self.run15(self.OUT, "---\nnote_type: knowledge\n---\n\n" + self.long_body(1, 600))
+        self.assertEqual(self.rules(f), ["R4"])
+
+    def test_excluded_gets_nothing(self):
+        self.assertEqual(self.run15(self.EXC, "---\nnote_type: knowledge\n---\n\n" + self.long_body(3, 600)), [])
+
+    # fences
+    def test_fenced_headings_ignored(self):
+        body = "# T\n\n## A\n\n## B\n\n```\n## C\n```\n\n~~~\n## D\n~~~\n" + "text\n" * 100
+        self.assertEqual(self.run15(self.IN, self.FM + body), [])  # only 2 real H2s
+        fixed = vault_lint._fix_c15_text(self.FM + body + "## E\n")
+        self.assertNotIn("- C", fixed)
+        self.assertNotIn("- D", fixed)
+        self.assertIn("- E", fixed)
+
+    # severity
+    def test_severity_fail_exits_1(self):
+        self.write("domain-knowledge/index.md", "---\nnote_type: hub\n---\n")
+        self.write(self.IN, "---\nnote_type: knowledge\n---\n\nbody\n")
+        self.discover()
+        orig = vault_lint.SHAPE_SEVERITY
+        vault_lint.SHAPE_SEVERITY = "fail"
+        self.addCleanup(setattr, vault_lint, "SHAPE_SEVERITY", orig)
+        ns = argparse.Namespace(json=True, check="C15", prefix=None)
+        with contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaises(SystemExit) as cm:
+                vault_lint.cmd_check(ns)
+        self.assertEqual(cm.exception.code, 1)
+
+    def test_severity_warn_does_not_exit(self):
+        orig = vault_lint.SHAPE_SEVERITY
+        vault_lint.SHAPE_SEVERITY = "warn"
+        self.addCleanup(setattr, vault_lint, "SHAPE_SEVERITY", orig)
+        self.write(self.IN, "---\nnote_type: knowledge\n---\n\nbody\n")
+        self.discover()
+        ns = argparse.Namespace(json=True, check="C15", prefix=None)
+        with contextlib.redirect_stdout(io.StringIO()):
+            vault_lint.cmd_check(ns)
+
+    # fix
+    def _fix(self, rel):
+        f = {"check": "C15", "path": rel, "detail": "R2: missing Contents", "auto_fixable": True}
+        return vault_lint.apply_fix(f, {})
+
+    def test_fix_idempotent(self):
+        p = self.write(self.IN, self.FM + self.long_body(3, 120, h3=True))
+        self.assertTrue(self._fix(self.IN))
+        once = p.read_bytes()
+        self.assertFalse(self._fix(self.IN))
+        self.assertEqual(p.read_bytes(), once)
+        self.assertEqual(self.run15(self.IN, once.decode("utf-8")), [])
+
+    def test_fix_placement_before_first_h2(self):
+        p = self.write(self.IN, self.FM + "# Title\n\n> Part of: x\n\nLead.\n\n---\n\n## A\n\n## B\n\n## C\n"
+                       + "text\n" * 100)
+        self._fix(self.IN)
+        text = p.read_text(encoding="utf-8")
+        self.assertIn("Lead.\n\n---\n\n## Contents\n\n- A\n- B\n- C\n\n## A\n", text)
+
+    def test_fix_replaces_stale_block(self):
+        p = self.write(self.IN, self.FM + "## Contents\n\n- Old\n\n## A\n\n## B\n\n## C\n" + "text\n" * 100)
+        f = {"check": "C15", "path": self.IN, "detail": "R3: Contents out of date", "auto_fixable": True}
+        self.assertTrue(vault_lint.apply_fix(f, {}))
+        text = p.read_text(encoding="utf-8")
+        self.assertNotIn("- Old", text)
+        self.assertEqual(text.count("## Contents"), 1)
+        self.assertEqual(self.run15(self.IN, text), [])
+
+    def test_fix_preserves_crlf_and_no_trailing_newline(self):
+        src = (self.FM + self.long_body(3, 120)).replace("\n", "\r\n").rstrip("\r\n")
+        p = self.vault / self.IN
+        p.parent.mkdir(parents=True)
+        p.write_bytes(src.encode("utf-8"))
+        self._fix(self.IN)
+        data = p.read_bytes().decode("utf-8")
+        self.assertNotIn("\n", data.replace("\r\n", ""))
+        self.assertFalse(data.endswith("\n"))
+        self.assertIn("## Contents\r\n", data)
+
+    def test_fix_refuses_r1_r4_and_out_of_scope(self):
+        p = self.write(self.IN, self.FM + self.long_body(3, 120))
+        before = p.read_bytes()
+        for d in ("R1: missing summary", "R4: split candidate (501 lines)"):
+            f = {"check": "C15", "path": self.IN, "detail": d, "auto_fixable": True}
+            self.assertFalse(vault_lint.apply_fix(f, {}))
+        self.assertEqual(p.read_bytes(), before)
+        o = self.write(self.OUT, self.FM + self.long_body(3, 120))
+        self.assertFalse(self._fix(self.OUT))
+
+    # filters
+    def test_check_and_fix_filters(self):
+        self.write("domain-knowledge/index.md", "---\nnote_type: hub\n---\n")
+        a = self.write("domain-knowledge/a.md", self.FM + self.long_body(3, 120))
+        b = self.write("reference/b.md", "---\nnote_type: knowledge\n---\n\n" + self.long_body(3, 120))
+        self.discover()
+        fs = vault_lint._filter_findings(vault_lint.run_checks(), "C15", "domain-knowledge/")
+        self.assertTrue(fs and all(f["path"].startswith("domain-knowledge/") and f["check"] == "C15" for f in fs))
+        ns = argparse.Namespace(check="C15", prefix="reference/")
+        with contextlib.redirect_stdout(io.StringIO()):
+            vault_lint.cmd_fix(ns)
+        self.assertNotIn("## Contents", a.read_text(encoding="utf-8"))
+        ns = argparse.Namespace(check="C15", prefix="domain-knowledge/")
+        with contextlib.redirect_stdout(io.StringIO()):
+            vault_lint.cmd_fix(ns)
+        self.assertIn("## Contents", a.read_text(encoding="utf-8"))
+        self.assertNotIn("## Contents", b.read_text(encoding="utf-8"))
+
+    def test_registered_in_run_checks(self):
+        self.write("domain-knowledge/index.md", "---\nnote_type: hub\n---\n")
+        self.write(self.IN, "---\nnote_type: knowledge\n---\n\nbody\n")
+        self.discover()
+        findings = vault_lint.run_checks(restrict_check="C15")
+        self.assertTrue(findings)
+        self.assertTrue(all(f["check"] == "C15" for f in findings))
+
+
 class TestApplyFix(VaultTestCase):
     def test_c6_creates_index(self):
         self.write("alpha/sub/note.md", "---\nnote_type: knowledge\n---\n")
@@ -466,6 +697,15 @@ class TestApplyFix(VaultTestCase):
         text = p.read_text(encoding="utf-8")
         self.assertIn("[[alpha/b]]", text)
         self.assertNotIn("[[vault/alpha/b]]", text)
+
+
+class TestTemplateDefaults(unittest.TestCase):
+    """Shipped defaults must stay domain-neutral."""
+
+    def test_c15(self):
+        self.assertEqual(vault_lint.SHAPE_SCOPE_PREFIXES, ("domain-knowledge/",))
+        self.assertEqual(vault_lint.SHAPE_EXCLUDE_PREFIXES, ())
+        self.assertEqual(vault_lint.SHAPE_SEVERITY, "warn")
 
 
 class TestRunChecks(VaultTestCase):

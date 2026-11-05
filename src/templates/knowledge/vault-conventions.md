@@ -175,6 +175,46 @@ The Peer Reviewer rejects notes that bundle multiple independent concepts and pr
 
 ---
 
+## Note Shape
+
+Scope: curated notes under `SHAPE_SCOPE_PREFIXES` (`tools/vault-lint.py`, default `domain-knowledge/`), enforced by `vault-lint` C15. Other curated notes get R2/R4 warnings only. Paths in `SHAPE_EXCLUDE_PREFIXES` are skipped; use it for sync-owned mirrors.
+
+| Rule | Requirement |
+|---|---|
+| R1 | `summary: "…"` — one line, double-quoted, ≤250 chars, no wikilinks or markdown, extractive |
+| R2 | `## Contents` is the first H2 on notes >100 file lines with ≥3 H2s; plain-text bullets; H2 + indented H3 |
+| R3 | Contents matches the headings (regenerate with `vault-lint fix --check C15 --prefix <path>`) |
+| R4 | >500 lines = split candidate, warn only. Threshold is an analogy to the 500-line SKILL.md body guidance, not a reading limit |
+| R5 | Order: frontmatter → H1 → breadcrumb (if present) → lead → `## Contents` → body |
+
+### Summary
+
+- Extract from the note's own lead. Nothing absent from the body.
+- Write `"` inside the value as `'`.
+- Regenerate `summary` whenever the lead changes. C15 cannot detect a stale summary.
+- Conclusion-first is met by `summary`. Do not move body sections for it.
+
+### Split Pattern
+
+| Element | Rule |
+|---|---|
+| Hub | Keeps path, H1, breadcrumb, lead, `note_type`. Moved blocks replaced by a `- [[leaf\|Title]] — gloss` list |
+| Leaf name | Sibling file `{hub-stem}-{slug}.md` |
+| Leaf frontmatter | Inherits `note_type`/`tags`/`confidence`/`authority`/`source_url`; `related: [hub]` |
+| Leaf body | H1 `{Hub} — {Leaf}`; extended breadcrumb; one-line lead; block moved verbatim, headings promoted one level; `## Related Notes` → hub only |
+| Links | No leaf→leaf links |
+| Folder `index.md` | Lists leaves as indented sub-bullets under the hub |
+
+### Lint Checks
+
+| Check | Flags |
+|---|---|
+| C13 | `confidence: high` with hedged prose |
+| C14 | Doubled directory segment |
+| C15 | Note shape R1–R4; severity per `SHAPE_SEVERITY` (default `warn`) |
+
+---
+
 ## Minimum Outbound Links
 
 Hard minimum: ≥1 outbound wiki-link (`[[...]]`) required for admission. Isolated nodes (0 outbound links) are rejected by the Peer Reviewer.

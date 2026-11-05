@@ -39,6 +39,7 @@ Vault root resolves from `WORKSPACE_ROOT` (defaults to the current working direc
 | C12 | Hub/index completeness | no |
 | C13 | `confidence: high` with hedged prose | no |
 | C14 | Doubled directory segment | no |
+| C15 | Note shape: summary, `## Contents`, split candidates | partial (`## Contents`) |
 
 ## Steps
 
@@ -46,7 +47,7 @@ Vault root resolves from `WORKSPACE_ROOT` (defaults to the current working direc
 2. **Sanity-check the counts before trusting them.** Sample findings per check and verify against disk — resolver false-positives, escaped-pipe `\|` links, code-fenced `[[`, and `_graph`-sourced links are all known traps. Never present raw counts you have not spot-checked.
 3. **Render the report** to `knowledge/audits/vault-lint-YYYY-MM-DD.md`, grouped by defect class, every affected path listed, each item tagged auto-fix / manual / confirm-delete. Add a row to `knowledge/audits/index.md`.
 4. **GATE.** Present the report to the user before ANY mutation. Call out deletions and cross-tree migrations explicitly. Do not proceed without an explicit go/no-go.
-5. **Apply safe auto-fixes** with `fix` (C1, C2, C3 prefix-truncation, C5, C6).
+5. **Apply safe auto-fixes** with `fix` (C1, C2, C3 prefix-truncation, C5, C6, C15 `## Contents`).
 6. **Editorial items are NOT auto-fixed:**
    - **C8 cross-tree** → migrate into `_graph/` concept hubs (a rationale per link, plus concept-to-concept edges), then prune from the source note. This is Cartographer work — see `actions/cartograph.md`.
    - **C9 ownership fields** → convert ownership framing to a plain `author:` credit (keep the person as author; drop the "mine" framing).

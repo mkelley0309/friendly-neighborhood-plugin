@@ -49,6 +49,18 @@ def discover_subtrees():
 # note_type values that are structural/navigation (exempt from C4 zero-outbound check)
 NAV_TYPES = {"vault-index", "navigation", "hub"}
 
+# C15 note-shape rules. Scope is path-prefix based (relative to VAULT); excluded
+# prefixes get no C15 findings at all. Set both to fit your vault's taxonomy.
+# SHAPE_SEVERITY is the severity of the in-scope R1–R3 findings: "warn" reports
+# them; "fail" makes `check` exit 1 (set it once existing notes are backfilled).
+SHAPE_SCOPE_PREFIXES = ("domain-knowledge/",)
+SHAPE_EXCLUDE_PREFIXES = ()
+SHAPE_SEVERITY = "warn"
+CONTENTS_MIN_LINES = 100
+CONTENTS_MIN_H2 = 3
+SPLIT_WARN_LINES = 500
+SUMMARY_MAX_CHARS = 250
+
 # Meta files that may live in the vault but are NOT vault notes (AI-instruction /
 # harness files) — exempt from all note-level checks (e.g. C1 note_type).
 NON_NOTE_FILES = {"CLAUDE.md", "AGENTS.md"}
@@ -648,6 +660,156 @@ def check_c13(path, fm, body):
     return findings
 
 
+def _shape_scan(lines):
+    """
+    Scan body lines for the C15 heading structure. Fence-aware (```/~~~ toggle);
+    the `## Contents` block (through the line before the next H2) is excluded.
+
+    Returns dict:
+      entries         — generated Contents bullet lines (H2 `- t`, H3 `  - t`)
+      h2_count        — H2 headings excluding Contents
+      first_is_contents — first H2 of the body is `## Contents`
+      span            — (start, end) of the existing Contents block, or None
+      anchor          — line index of the first non-Contents H2, or None
+    """
+    entries = []
+    h2_count = 0
+    first_h2 = None
+    start = end = anchor = None
+    in_contents = False
+    in_fence = False
+    for i, line in enumerate(lines):
+        stripped = line.lstrip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if line.startswith("## "):
+            title = line[3:].rstrip()
+            if first_h2 is None:
+                first_h2 = title
+            if title == "Contents" and start is None:
+                start, in_contents = i, True
+                continue
+            if in_contents:
+                end, in_contents = i, False
+            if anchor is None:
+                anchor = i
+            h2_count += 1
+            entries.append(f"- {title}")
+        elif in_contents:
+            continue
+        elif line.startswith("### ") and h2_count:
+            entries.append(f"  - {line[4:].rstrip()}")
+    if in_contents:
+        end = len(lines)
+    return {
+        "entries": entries,
+        "h2_count": h2_count,
+        "first_is_contents": first_h2 == "Contents",
+        "span": (start, end) if start is not None else None,
+        "anchor": anchor,
+    }
+
+
+def _contents_block(entries):
+    """Generated Contents block: heading, blank, bullets, one trailing blank."""
+    return ["## Contents", ""] + entries + [""]
+
+
+def _shape_scope(rel):
+    """'excluded' | 'in' | 'out' for a vault-relative posix path."""
+    if rel.startswith(SHAPE_EXCLUDE_PREFIXES):
+        return "excluded"
+    if rel.startswith(SHAPE_SCOPE_PREFIXES):
+        return "in"
+    return "out"
+
+
+def check_c15(path, fm, body, text):
+    """
+    C15 — note shape for long-form guides.
+
+    R1 (in scope): summary present, <=SUMMARY_MAX_CHARS, no wikilink, written
+       double-quoted. Report-only.
+    R2: long note (>CONTENTS_MIN_LINES lines, >=CONTENTS_MIN_H2 H2s) whose first
+       H2 is not `## Contents`. Fixable in scope; warn-only out of scope.
+    R3 (in scope): R2 applies and the Contents block is stale. Fixable.
+    R4 (everywhere but excluded): note over SPLIT_WARN_LINES lines — split
+       candidate. Always warn, report-only.
+    """
+    rel = path.relative_to(VAULT).as_posix()
+    scope = _shape_scope(rel)
+    if scope == "excluded":
+        return []
+    findings = []
+
+    def add(detail, sev, fixable=False):
+        findings.append({
+            "check": "C15", "path": rel, "detail": detail,
+            "auto_fixable": fixable, "severity": sev,
+        })
+
+    n_lines = len(text.splitlines())
+
+    if scope == "in":
+        summary = fm.get("summary", "")
+        if not isinstance(summary, str) or not summary.strip():
+            add("R1: missing summary", SHAPE_SEVERITY)
+        else:
+            if len(summary) > SUMMARY_MAX_CHARS:
+                add(f"R1: summary >{SUMMARY_MAX_CHARS} chars", SHAPE_SEVERITY)
+            if "[[" in summary:
+                add("R1: summary contains wikilink", SHAPE_SEVERITY)
+            raw = next((l.partition(":")[2].strip() for l in text.splitlines()[1:]
+                        if l.startswith("summary:")), "")
+            if not (len(raw) >= 2 and raw.startswith('"') and raw.endswith('"')):
+                add("R1: summary not double-quoted", SHAPE_SEVERITY)
+
+    lines = body.splitlines()
+    scan = _shape_scan(lines)
+    if n_lines > CONTENTS_MIN_LINES and scan["h2_count"] >= CONTENTS_MIN_H2:
+        if not scan["first_is_contents"]:
+            add("R2: missing Contents", SHAPE_SEVERITY if scope == "in" else "warn",
+                fixable=(scope == "in"))
+        if scope == "in" and scan["span"]:
+            s, e = scan["span"]
+            have = [l.rstrip() for l in lines[s:e]]
+            if have != _contents_block(scan["entries"]):
+                add("R3: Contents out of date", SHAPE_SEVERITY, fixable=True)
+
+    if n_lines > SPLIT_WARN_LINES:
+        add(f"R4: split candidate ({n_lines} lines)", "warn")
+    return findings
+
+
+def _fix_c15_text(text):
+    """Return text with a regenerated Contents block placed before the first
+    non-Contents H2, or None if the note is not eligible. Keeps newline style."""
+    nl = "\r\n" if "\r\n" in text else "\n"
+    lines = text.split(nl)
+    body_start = 0
+    if lines and lines[0].lstrip("﻿").startswith("---"):
+        for i in range(1, len(lines)):
+            if lines[i].startswith("---"):
+                body_start = i + 1
+                break
+        else:
+            return None
+    head, body = lines[:body_start], lines[body_start:]
+    scan = _shape_scan(body)
+    if len(text.splitlines()) <= CONTENTS_MIN_LINES or scan["h2_count"] < CONTENTS_MIN_H2:
+        return None
+    if scan["span"]:
+        s, e = scan["span"]
+        body = body[:s] + body[e:]
+        scan = _shape_scan(body)
+    a = scan["anchor"]
+    body = body[:a] + _contents_block(scan["entries"]) + body[a:]
+    return nl.join(head + body)
+
+
 def check_c12(slug_index):
     """C12 — index navigation completeness. A folder's index.md should link to every
     child NOTE; a subfolder counts as covered if the index links ANY path under it
@@ -730,7 +892,7 @@ def run_checks(restrict_check=None):
     slug_index = build_slug_index()
     all_findings = []
 
-    # Per-file checks (C1–C5, C7–C9)
+    # Per-file checks (C1–C5, C7–C11, C13, C15)
     for note in iter_notes():
         try:
             text = note.read_text(encoding="utf-8", errors="replace")
@@ -759,6 +921,7 @@ def run_checks(restrict_check=None):
             "C10": lambda: check_c10(note, fm, body),
             "C11": lambda: check_c11(note, fm, body),
             "C13": lambda: check_c13(note, fm, body),
+            "C15": lambda: check_c15(note, fm, body, text),
         }
 
         for cid, fn in checks_map.items():
@@ -842,6 +1005,18 @@ def apply_fix(finding, slug_index):
     if not note_path.exists():
         return False
 
+    # C15 R2/R3: regenerate Contents. Works on raw bytes so newline style and the
+    # trailing newline survive; R1/R4 are never fixable.
+    if cid == "C15":
+        if not finding["detail"].startswith(("R2", "R3")) or _shape_scope(rel) != "in":
+            return False
+        raw = note_path.read_bytes().decode("utf-8", errors="replace")
+        new = _fix_c15_text(raw)
+        if new is None or new == raw:
+            return False
+        note_path.write_bytes(new.encode("utf-8"))
+        return True
+
     text = note_path.read_text(encoding="utf-8", errors="replace")
     original = text
 
@@ -907,10 +1082,14 @@ def apply_fix(finding, slug_index):
 def cmd_check(args):
     """check subcommand — report only, no mutation."""
     restrict = args.check if hasattr(args, "check") else None
-    findings = run_checks(restrict_check=restrict)
+    findings = _filter_findings(run_checks(restrict_check=restrict),
+                                restrict, getattr(args, "prefix", None))
+    failing = any(f.get("severity") == "fail" for f in findings)
 
     if args.json:
         print(json.dumps(findings, ensure_ascii=False, indent=2))
+        if failing:
+            sys.exit(1)
         return
 
     # Human-readable report
@@ -920,23 +1099,35 @@ def cmd_check(args):
     # Per-check counts
     from collections import Counter
     counts = Counter(f["check"] for f in findings)
-    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14"]:
+    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15"]:
         if not restrict or restrict == cid:
             n = counts.get(cid, 0)
             print(f"  {cid}: {n} finding{'s' if n != 1 else ''}")
 
     print()
     for f in findings:
-        print(f"  [{f['check']}] {f['path']}: {f['detail']}")
+        tag = f"[{f['check']}][{f['severity']}]" if "severity" in f else f"[{f['check']}]"
+        print(f"  {tag} {f['path']}: {f['detail']}")
 
     fixable = sum(1 for f in findings if f["auto_fixable"])
     print()
     print(f"Total: {len(findings)} finding(s), {fixable} auto-fixable.")
+    if failing:
+        sys.exit(1)
+
+
+def _filter_findings(findings, check=None, prefix=None):
+    """Keep findings matching --check ID and --prefix P (path startswith)."""
+    return [f for f in findings
+            if (not check or f["check"] == check)
+            and (not prefix or f["path"].startswith(prefix))]
 
 
 def cmd_fix(args):
     """fix subcommand — apply auto-fixable findings only. Idempotent."""
-    findings = run_checks()
+    restrict = getattr(args, "check", None)
+    findings = _filter_findings(run_checks(restrict_check=restrict),
+                                restrict, getattr(args, "prefix", None))
     fixable = [f for f in findings if f["auto_fixable"]]
 
     if not fixable:
@@ -993,7 +1184,11 @@ def main():
     s_check.add_argument("--json", action="store_true", help="Emit findings as JSON list")
     s_check.add_argument("--check", metavar="ID", help="Restrict to one check ID (e.g. C8)")
 
-    sub.add_parser("fix", help="Apply auto-fixable findings only")
+    s_check.add_argument("--prefix", metavar="P", help="Restrict to paths starting with P (vault-relative)")
+
+    s_fix = sub.add_parser("fix", help="Apply auto-fixable findings only")
+    s_fix.add_argument("--check", metavar="ID", help="Fix only this check ID (e.g. C15)")
+    s_fix.add_argument("--prefix", metavar="P", help="Fix only paths starting with P (vault-relative)")
     sub.add_parser("reindex", help="Regenerate hollow-stub index.md files as directory maps")
 
     args = p.parse_args()
