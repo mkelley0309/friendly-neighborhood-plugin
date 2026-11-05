@@ -96,24 +96,43 @@ def status_row_set(text, field, value):
     Consumes to end of line rather than to the first pipe, so a row already
     corrupted by an unescaped pipe is repaired rather than partially rewritten.
     """
+    replacement = f"| {field} | {md_cell(value)} |"
     return re.sub(
         rf"\|[ \t]*{re.escape(field)}[ \t]*\|.*?\|[ \t]*$",
-        f"| {field} | {md_cell(value)} |",
+        lambda _m: replacement,
         text, count=1, flags=re.MULTILINE
     )
 
 STEP_NUM_RE = re.compile(r"^\d+(?:\.\d+)*$")
 
-def step_matches(line, query):
+STEP_PREFIX_RE = re.compile(r"^\s*[-*]\s*\[[ xX]\]\s*\**")
+
+def step_matches(line, query, leading_only=True):
     """Match a blueprint step by number token, falling back to substring.
 
     A bare substring test makes '1.1' match '1.10' — silently ticking the
     wrong step. When the query looks like a step number, match it as a whole
-    token instead.
+    token instead, and by default only as the step's own leading token: a step
+    whose text cites another step ("vs the 1.1 baseline") must not match.
     """
     if STEP_NUM_RE.match(query):
-        return re.search(rf"(?<![\d.]){re.escape(query)}(?![\d.])", line) is not None
+        token = rf"{re.escape(query)}(?![\d.])"
+        if leading_only:
+            return re.match(token, STEP_PREFIX_RE.sub("", line, count=1)) is not None
+        return re.search(rf"(?<![\d.]){token}", line) is not None
     return query in line
+
+def write_keeping_eol(path, text):
+    """Write text back using the line endings the file already has.
+
+    read_text() normalises CRLF to LF, so writing the result with write_bytes
+    flips a CRLF file to LF, while write_text re-translates to CRLF on Windows
+    — the file's endings then depend on which subcommand ran last, and every
+    flip is whole-file churn. New files get LF.
+    """
+    raw = path.read_bytes() if path.exists() else b""
+    eol = "\r\n" if raw.count(b"\r\n") * 2 > raw.count(b"\n") else "\n"
+    path.write_bytes(text.replace("\r\n", "\n").replace("\n", eol).encode("utf-8"))
 
 def blueprint_path(ws):
     """blueprint.md is the current name; plan.md is the pre-rename name still in
@@ -332,7 +351,7 @@ tags: [workstream/{name}]
             out.append(new_row)
             inserted = True
     portfolio = "\n".join(out) + "\n"
-    PORTFOLIO_INDEX.write_text(portfolio, encoding="utf-8")
+    write_keeping_eol(PORTFOLIO_INDEX, portfolio)
     print(f"updated: {PORTFOLIO_INDEX}")
     print(f"next: python -B tools/workstream.py next {name}")
 
@@ -356,7 +375,7 @@ def cmd_link(args):
         f"\\g<1>{new_row}\n",
         idx_text
     )
-    idx_path.write_text(idx_text, encoding="utf-8")
+    write_keeping_eol(idx_path, idx_text)
     print(f"linked: {task} → {workstream}")
 
 
@@ -408,7 +427,7 @@ def cmd_aside(args):
         t = re.sub(
             r"(## Assignment\n\n)\*What this assignment is[^*]*\*",
             lambda m: m.group(1) + body, t, count=1)
-        a_idx.write_text(t, encoding="utf-8")
+        write_keeping_eol(a_idx, t)
 
     # Roster line on the workstream (supports both the old and new section heading).
     heading = "Child Assignments" if "## Child Assignments" in idx_text else "Child Tasks"
@@ -423,7 +442,7 @@ def cmd_aside(args):
         if not n:
             idx_text = idx_text.rstrip("\n") + (
                 f"\n\n## {heading}\n\n| Assignment | Spawned | Kind |\n|---|---|---|\n{row}\n")
-        idx_path.write_text(idx_text, encoding="utf-8")
+        write_keeping_eol(idx_path, idx_text)
         print(f"linked: {name} → {ws} ({args.kind}, {'blocking' if args.blocking else 'parallel'})")
 
     if args.blocking:
@@ -432,7 +451,7 @@ def cmd_aside(args):
         t2 = status_row_set(t2, "Health", "blocked")
         t2 = status_row_set(t2, "Blocker", f"assignments/{name} — {args.reason}")
         t2 = status_row_set(t2, "Last Active", today())
-        idx_path2.write_text(t2, encoding="utf-8")
+        write_keeping_eol(idx_path2, t2)
         print(f"blocked: {ws} on assignments/{name}")
 
     print("\n--- run this in a SEPARATE session, so the aside stays out of this context ---")
@@ -448,13 +467,15 @@ def cmd_check_step(args):
     if not plan_path.exists():
         die("blueprint.md not found")
 
-    # keepends: rebuilding with "\n".join() drops the trailing newline, and
-    # write_text re-translates every LF to CRLF on Windows — a one-line tick
-    # would rewrite the whole file.
+    # keepends: rebuilding with "\n".join() drops the trailing newline; the
+    # write goes through write_keeping_eol so a one-line tick never rewrites
+    # the whole file's line endings.
     lines = plan_path.read_text(encoding="utf-8").splitlines(keepends=True)
     query = args.step
 
     matches = [i for i, l in enumerate(lines) if "[ ]" in l and step_matches(l, query)]
+    if not matches:  # blueprints whose step number isn't the leading token
+        matches = [i for i, l in enumerate(lines) if "[ ]" in l and step_matches(l, query, leading_only=False)]
     if not matches:
         die(f"unchecked step not found: '{query}'")
     if len(matches) > 1:
@@ -464,7 +485,7 @@ def cmd_check_step(args):
 
     print(f"checked: {lines[match_idx].strip()}")
     lines[match_idx] = lines[match_idx].replace("[ ]", "[x]", 1)
-    plan_path.write_bytes("".join(lines).encode("utf-8"))
+    write_keeping_eol(plan_path, "".join(lines))
 
     next_steps = [l for l in lines[match_idx + 1:] if "[ ]" in l]
     next_step = re.sub(r"^[-*]\s*\[\s*\]\s*", "", next_steps[0].strip()) if next_steps else "—"
@@ -473,7 +494,7 @@ def cmd_check_step(args):
     idx_text = fm_set(idx_text, "current_step", f'"{yaml_dq(next_step)}"')
     idx_text = status_row_set(idx_text, "Current Step", next_step)
     idx_text = status_row_set(idx_text, "Last Active", today())
-    idx_path.write_bytes(idx_text.encode("utf-8"))
+    write_keeping_eol(idx_path, idx_text)
     print(f"next step: {next_step}")
 
 
@@ -498,7 +519,7 @@ def cmd_advance(args):
                 idx_text = fm_set(idx_text, "current_step", f'"{first}"')
                 idx_text = status_row_set(idx_text, "Current Step", first)
 
-    idx_path.write_text(idx_text, encoding="utf-8")
+    write_keeping_eol(idx_path, idx_text)
 
     portfolio = PORTFOLIO_INDEX.read_text(encoding="utf-8")
     portfolio = re.sub(
@@ -506,7 +527,7 @@ def cmd_advance(args):
         f"\\g<1> {phase} \\2",
         portfolio
     )
-    PORTFOLIO_INDEX.write_text(portfolio, encoding="utf-8")
+    write_keeping_eol(PORTFOLIO_INDEX, portfolio)
     print(f"advanced: {args.name}  {old_phase} → {phase}")
 
 
@@ -516,7 +537,7 @@ def cmd_block(args):
     idx_text = status_row_set(idx_text, "Health", "blocked")
     idx_text = status_row_set(idx_text, "Blocker", args.reason)
     idx_text = status_row_set(idx_text, "Last Active", today())
-    idx_path.write_text(idx_text, encoding="utf-8")
+    write_keeping_eol(idx_path, idx_text)
     print(f"blocked: {args.name}  reason: {args.reason}")
 
 
@@ -526,7 +547,7 @@ def cmd_unblock(args):
     idx_text = status_row_set(idx_text, "Health", "healthy")
     idx_text = status_row_set(idx_text, "Blocker", "—")
     idx_text = status_row_set(idx_text, "Last Active", today())
-    idx_path.write_text(idx_text, encoding="utf-8")
+    write_keeping_eol(idx_path, idx_text)
     by = getattr(args, "by", None)
     print(f"unblocked: {args.name}" + (f"  (cleared by assignments/{by})" if by else ""))
     if by:
@@ -544,7 +565,7 @@ def cmd_complete(args):
     idx_text = status_row_set(idx_text, "Phase", "complete")
     idx_text = status_row_set(idx_text, "Current Step", "—")
     idx_text = status_row_set(idx_text, "Last Active", today_s)
-    idx_path.write_text(idx_text, encoding="utf-8")
+    write_keeping_eol(idx_path, idx_text)
     print(f"marked complete: {args.name}")
     print(f"next: write log entry → python -B tools/workstream.py archive {args.name} --log-date {today_s}")
 
@@ -563,7 +584,7 @@ def cmd_archive(args):
         f"\\g<1>{new_row}\n",
         portfolio
     )
-    PORTFOLIO_INDEX.write_text(portfolio, encoding="utf-8")
+    write_keeping_eol(PORTFOLIO_INDEX, portfolio)
     print(f"archived: {name} → _log/{log_date}-{name}.md")
     print(f"next: python -B tools/workstream.py delete {name}")
 
