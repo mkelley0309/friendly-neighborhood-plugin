@@ -607,6 +607,47 @@ def check_c11(path, fm, body):
     return findings
 
 
+_C13_HEDGE_RE = re.compile(
+    r"\barguably\b|\bsome would say\b|\bit could be argued\b",
+    re.IGNORECASE,
+)
+
+
+def check_c13(path, fm, body):
+    """
+    C13 — declared confidence vs hedged prose.
+
+    Flag a note whose frontmatter asserts ``confidence: high`` while its body
+    carries a term from the closed hedge list (``arguably`` / ``some would say``
+    / ``it could be argued``). It reports a frontmatter/prose contradiction for
+    human review, not a confirmed defect.
+
+    Exclusion: verbatim external mirrors — a note carrying a real ``source_url``
+    (present and not na/none) — where a hedge is the source author's device, not
+    internal negotiated hedging.
+
+    Report only. Never auto-fixable: the resolution is a human choice among
+    strengthening the prose, downgrading confidence, or adding corroborated_by.
+    """
+    findings = []
+    if fm.get("confidence") != "high":
+        return findings
+    src = str(fm.get("source_url", "")).strip().lower()
+    if src and src not in ("na", "none"):
+        return findings
+    terms = sorted({m.group(0).lower() for m in _C13_HEDGE_RE.finditer(body)})
+    if not terms:
+        return findings
+    shown = ", ".join(f"'{t}'" for t in terms[:3])
+    findings.append({
+        "check": "C13",
+        "path": path.relative_to(VAULT).as_posix(),
+        "detail": f"confidence: high but body hedges: {shown}",
+        "auto_fixable": False,
+    })
+    return findings
+
+
 def check_c12(slug_index):
     """C12 — index navigation completeness. A folder's index.md should link to every
     child NOTE; a subfolder counts as covered if the index links ANY path under it
@@ -641,6 +682,38 @@ def check_c12(slug_index):
                 "detail": f"index does not link child: {m}",
                 "auto_fixable": False,
             })
+    return findings
+
+
+def check_c14():
+    """
+    C14 — Doubled directory segment: a directory whose name equals its
+    immediate parent directory's name (e.g. `documentation/documentation/`).
+
+    Report-only: a merge with potential index.md collisions is not a safe
+    mechanical operation of the kind this tool's existing auto-fixes perform.
+    EXCEPTION: _graph directory is exempt.
+    """
+    findings = []
+
+    for dirpath in VAULT.rglob("*"):
+        if not dirpath.is_dir():
+            continue
+        # Exempt _graph at any depth
+        rel = dirpath.relative_to(VAULT)
+        if "_graph" in rel.parts:
+            continue
+        # Skip Obsidian system dirs and any hidden dot-directory (.obsidian, .trash, etc.)
+        if any(p.startswith(".") for p in rel.parts):
+            continue
+        if dirpath.name == dirpath.parent.name:
+            findings.append({
+                "check": "C14",
+                "path": rel.as_posix() + "/",
+                "detail": f"directory name equals parent directory name: {dirpath.name}",
+                "auto_fixable": False,
+            })
+
     return findings
 
 
@@ -685,6 +758,7 @@ def run_checks(restrict_check=None):
             "C9": lambda: check_c9(note, fm, body),
             "C10": lambda: check_c10(note, fm, body),
             "C11": lambda: check_c11(note, fm, body),
+            "C13": lambda: check_c13(note, fm, body),
         }
 
         for cid, fn in checks_map.items():
@@ -697,6 +771,8 @@ def run_checks(restrict_check=None):
         all_findings.extend(check_c6(slug_index))
     if not restrict_check or restrict_check == "C12":
         all_findings.extend(check_c12(slug_index))
+    if not restrict_check or restrict_check == "C14":
+        all_findings.extend(check_c14())
 
     return all_findings
 
@@ -844,7 +920,7 @@ def cmd_check(args):
     # Per-check counts
     from collections import Counter
     counts = Counter(f["check"] for f in findings)
-    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12"]:
+    for cid in ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14"]:
         if not restrict or restrict == cid:
             n = counts.get(cid, 0)
             print(f"  {cid}: {n} finding{'s' if n != 1 else ''}")

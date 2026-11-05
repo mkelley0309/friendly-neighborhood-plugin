@@ -54,6 +54,18 @@ python build/generate.py
 python build/difflint.py
 ```
 
+## Tests
+
+`build/tests/` holds repo-only tests for the template CLIs. They are not scaffolded.
+They run against `src/templates/tools` by default. Set `VAULT_LINT_TOOLS` to test a
+generated edition's copy:
+
+```
+python -B build/tests/test_vault_lint.py
+VAULT_LINT_TOOLS=build/_generated/harness-core/templates/tools python -B build/tests/test_vault_lint.py
+VAULT_LINT_TOOLS=build/_generated/friendly-neighborhood/templates/tools python -B build/tests/test_vault_lint.py
+```
+
 ## How it works
 
 1. Load `vocabulary/data-model.yml` (pinned identifiers), `vocabulary/display.yml`

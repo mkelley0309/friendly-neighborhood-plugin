@@ -37,6 +37,8 @@ Vault root resolves from `WORKSPACE_ROOT` (defaults to the current working direc
 | C10 | Concept-hub links missing a `— rationale` | no |
 | C11 | Concept-hub frontmatter schema | no |
 | C12 | Hub/index completeness | no |
+| C13 | `confidence: high` with hedged prose | no |
+| C14 | Doubled directory segment | no |
 
 ## Steps
 
